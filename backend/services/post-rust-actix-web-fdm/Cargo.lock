@@ -1236,6 +1236,35 @@ dependencies = [
 ]
 
 [[package]]
+name = "post-rust-actix-web-fdm"
+version = "0.1.0"
+dependencies = [
+ "actix-rt",
+ "actix-web",
+ "apply",
+ "async-trait",
+ "base64 0.20.0",
+ "bcrypt",
+ "dotenv",
+ "env_logger",
+ "envy",
+ "futures-util",
+ "humantime",
+ "ifmt",
+ "jsonwebtoken",
+ "log",
+ "once_cell",
+ "parking_lot 0.12.1",
+ "rand",
+ "rs-snowflake",
+ "serde",
+ "serde_json",
+ "sqlx",
+ "url",
+ "uuid",
+]
+
+[[package]]
 name = "ppv-lite86"
 version = "0.2.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1404,35 +1433,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0864aeff53f8c05aa08d86e5ef839d3dfcf07aeba2db32f12db0ef716e87bd55"
 dependencies = [
  "base64 0.13.0",
-]
-
-[[package]]
-name = "rustpost-api"
-version = "0.1.0"
-dependencies = [
- "actix-rt",
- "actix-web",
- "apply",
- "async-trait",
- "base64 0.20.0",
- "bcrypt",
- "dotenv",
- "env_logger",
- "envy",
- "futures-util",
- "humantime",
- "ifmt",
- "jsonwebtoken",
- "log",
- "once_cell",
- "parking_lot 0.12.1",
- "rand",
- "rs-snowflake",
- "serde",
- "serde_json",
- "sqlx",
- "url",
- "uuid",
 ]
 
 [[package]]

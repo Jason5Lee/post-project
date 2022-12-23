@@ -1,8 +1,8 @@
 use actix_web::{middleware::Logger, App, HttpServer};
 use serde::Deserialize;
 use sqlx::mysql::MySqlPoolOptions;
-use rustpost_api::common::utils::auth::AuthConfig;
-use rustpost_api::common::utils::Encryptor;
+use post_rust_actix_web_fdm::common::utils::auth::AuthConfig;
+use post_rust_actix_web_fdm::common::utils::Encryptor;
 
 #[actix_web::main]
 async fn main() {
@@ -46,7 +46,7 @@ async fn main() {
 
     let cost = config.cost.unwrap_or(bcrypt::DEFAULT_COST);
 
-    let deps = actix_web::web::Data::new(rustpost_api::common::utils::Deps {
+    let deps = actix_web::web::Data::new(post_rust_actix_web_fdm::common::utils::Deps {
         id_gen,
         pool,
         encryptor: Encryptor { cost },
@@ -61,16 +61,16 @@ async fn main() {
         App::new()
             .wrap(Logger::default())
             .app_data(deps.clone())
-            .service(rustpost_api::create_post::api::api)
-            .service(rustpost_api::user_login::api::api)
-            .service(rustpost_api::list_posts::api::api)
-            .service(rustpost_api::user_register::api::api)
-            .service(rustpost_api::get_post::api::api)
-            .service(rustpost_api::delete_post::api::api)
-            .service(rustpost_api::edit_post::api::api)
-            .service(rustpost_api::admin_login::api::api)
-            .service(rustpost_api::get_identity::api::api)
-            .service(rustpost_api::get_user::api::api)
+            .service(post_rust_actix_web_fdm::create_post::api::api)
+            .service(post_rust_actix_web_fdm::user_login::api::api)
+            .service(post_rust_actix_web_fdm::list_posts::api::api)
+            .service(post_rust_actix_web_fdm::user_register::api::api)
+            .service(post_rust_actix_web_fdm::get_post::api::api)
+            .service(post_rust_actix_web_fdm::delete_post::api::api)
+            .service(post_rust_actix_web_fdm::edit_post::api::api)
+            .service(post_rust_actix_web_fdm::admin_login::api::api)
+            .service(post_rust_actix_web_fdm::get_identity::api::api)
+            .service(post_rust_actix_web_fdm::get_user::api::api)
     })
     .bind(&config.listen_addr)
 .expect("unable to bind")
