@@ -108,7 +108,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/eslint@npm:^8.4.5":
+"@types/eslint@npm:^8.4.10":
   version: 8.4.10
   resolution: "@types/eslint@npm:8.4.10"
   dependencies:
@@ -132,7 +132,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^18.6.5":
+"@types/node@npm:^18.11.17":
   version: 18.11.17
   resolution: "@types/node@npm:18.11.17"
   checksum: 1933afd068d5c75c068c6c4df6d10edb3b0b2bb6503d544e2f0496ac007c90596e6a5e284a8ef032451bc16f871b7e46719d7d2bea60e9b25d13a77d52161cac
@@ -146,7 +146,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@typescript-eslint/eslint-plugin@npm:^5.33.0":
+"@typescript-eslint/eslint-plugin@npm:^5.47.0":
   version: 5.47.0
   resolution: "@typescript-eslint/eslint-plugin@npm:5.47.0"
   dependencies:
@@ -169,7 +169,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@typescript-eslint/parser@npm:^5.33.0":
+"@typescript-eslint/parser@npm:^5.47.0":
   version: 5.47.0
   resolution: "@typescript-eslint/parser@npm:5.47.0"
   dependencies:
@@ -1781,10 +1781,10 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "playground@workspace:."
   dependencies:
-    "@types/eslint": ^8.4.5
-    "@types/node": ^18.6.5
-    "@typescript-eslint/eslint-plugin": ^5.33.0
-    "@typescript-eslint/parser": ^5.33.0
+    "@types/eslint": ^8.4.10
+    "@types/node": ^18.11.17
+    "@typescript-eslint/eslint-plugin": ^5.47.0
+    "@typescript-eslint/parser": ^5.47.0
     axios: ^1.2.1
     concurrently: ^7.6.0
     eslint: ^8.30.0
