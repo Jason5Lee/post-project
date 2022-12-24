@@ -34,11 +34,6 @@ Thumbs.db
 # Ignore built ts files
 dist
 
-# Yarn
-.yarn
-.pnp.cjs
-.pnp.loader.mjs
-
 # Rust
 target
 
