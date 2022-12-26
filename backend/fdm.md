@@ -19,7 +19,7 @@ This development method utilizes code-as-documentation. The information containe
     * `api` file includes the information of the API. This file can serve as API documentation. It includes
       * The API endpoint.
       * Authentication and authorization.
-      * How the workflow input is built from the request. It explains the meaning of the request fields. It also contains the validations of the request.
+      * How the workflow input is built from the request. It explains the meaning of the request fields. It also shows the validations of the request.
       * How the response is built from the workflow output. It explains the meaning of the response fields.
       * The response of a certain error.
 
@@ -29,7 +29,8 @@ This development method utilizes code-as-documentation. The information containe
 * Under the `common` directory
     * `models` (or `mod.rs` for Rust) file includes the shared domain models.
       * It uses wrapper types over primitive types to represent business model. For example, a type `UserName` that wraps over a string.
-        * The wrapper types are the boundary of validated values. It is impossible (or hard) to construct the wrapper type with an invalid value.
+        * The wrapper types are the boundary of validated values. You cannot implicitly use an unvalidated `string` as a `UserName`, for example.
+          * Ideally, it should be impossible to construct the wrapper type with an invalid value.
     * `api` file includes the shared information of the API.
       * It contains the response of the invalid value errors of each domain model.
     * Some other common utilities.
