@@ -1,8 +1,6 @@
 use std::fmt;
 use std::fmt::Formatter;
 
-use super::utils::error::{ErrorBody, ErrBody};
-
 #[derive(Copy, Clone, Eq, PartialEq)]
 pub struct Table(pub &'static str);
 impl From<&'static str> for Table {
@@ -40,17 +38,13 @@ impl fmt::Display for UniqueColumn {
 }
 impl From<UniqueColumn> for Column {
     fn from(u: UniqueColumn) -> Self {
-        Self {
-            name: u.name,
-        }
+        Self { name: u.name }
     }
 }
 
 impl Column {
     pub const fn name(name: &'static str) -> Self {
-        Column {
-            name,
-        }
+        Column { name }
     }
     pub const fn primary(name: &'static str) -> UniqueColumn {
         UniqueColumn {
@@ -75,8 +69,8 @@ pub mod posts {
     pub const CREATION_TIME: Column = Column::name("creation_time");
     pub const LAST_MODIFIED: Column = Column::name("last_modified");
     pub const TITLE: UniqueColumn = Column::unique("title", "UC_title");
+    pub const TEXT: Column = Column::name("text_content");
     pub const URL: Column = Column::name("url_link");
-    pub const POST: Column = Column::name("post");
 }
 pub const USERS: Table = Table("users");
 pub mod users {
@@ -95,45 +89,11 @@ pub mod admin {
 
 pub fn is_unique_violation_in(err: &sqlx::Error, column: UniqueColumn) -> bool {
     if let Some(err) = err.as_database_error() {
-        err.code().map_or(false, |code| code == "23000") &&
-            (err.message().ends_with(&iformat!("'" column.unique_constraint "'")) || // MariaDB
-                err.message().ends_with(&iformat!("." column.unique_constraint "'"))) // MySQL
+        err.code().map_or(false, |code| code == "23000")
+            && (err.message().ends_with(&iformat!("'" column.unique_constraint "'")) || // MariaDB
+                err.message().ends_with(&iformat!("." column.unique_constraint "'")))
+    // MySQL
     } else {
         false
-    }
-}
-pub struct PostContent<TypeStr = String> {
-    pub post_type: TypeStr,
-    pub content: String,
-}
-
-impl PostContent<&'static str> {
-    pub fn from_model(model: crate::common::PostContent) -> PostContent<&'static str> {
-        match model {
-            crate::common::PostContent::Post(post) => PostContent {
-                post_type: "post",
-                content: post,
-            },
-            crate::common::PostContent::Url(url) => PostContent {
-                post_type: "url",
-                content: url.to_string(),
-            },
-        }
-    }
-}
-
-impl PostContent {
-    pub fn try_into_model(self) -> Result<crate::common::PostContent, (String, ErrorBody)> {
-        match &*self.post_type {
-            "post" => Ok(crate::common::PostContent::Post(self.content)),
-            "url" => crate::common::PostContent::try_new_url(self.content),
-            _ => Err((self.post_type, ErrorBody {
-                error: ErrBody {
-                    error: "INVALID_POST_TYPE".into(),
-                    reason: "post type should be either `post` or `url`".into(),
-                    message: "invalid post type".into(),
-                },
-            })),
-        }
     }
 }

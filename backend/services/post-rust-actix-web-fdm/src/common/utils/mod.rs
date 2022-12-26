@@ -1,21 +1,19 @@
-use std::{
-    convert::{Infallible, TryInto},
-};
+use std::convert::{Infallible, TryInto};
 
-use actix_web::{
-    dev::Payload,
-    FromRequest, HttpRequest,
-};
-use futures_util::future::{ready, Ready};
 use crate::common::api::invalid_id;
+use actix_web::{dev::Payload, FromRequest, HttpRequest};
+use futures_util::future::{ready, Ready};
 
-use super::{Result, api::handle_internal_error};
 use self::error::ErrorBody;
-use base64::{alphabet, engine::fast_portable::{self, FastPortable}};
+use super::{api::handle_internal_error, Result};
+use base64::{
+    alphabet,
+    engine::fast_portable::{self, FastPortable},
+};
 
 pub mod auth;
-pub mod macros;
 pub mod error;
+pub mod macros;
 
 pub struct Context {
     pub request: HttpRequest,

@@ -14,7 +14,7 @@ CREATE TABLE posts (
     last_modified BIGINT UNSIGNED,
     title VARCHAR(255) NOT NULL,
     url_link TEXT,
-    post TEXT,
+    text_content TEXT,
     CONSTRAINT UC_title UNIQUE (title)
 );
 CREATE INDEX idx_creator

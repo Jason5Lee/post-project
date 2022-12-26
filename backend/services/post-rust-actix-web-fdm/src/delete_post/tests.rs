@@ -15,7 +15,9 @@ async fn test_not_delete_by_not_creator() {
     }
 
     assert_eq!(
-        super::Steps(&Mock).workflow(Identity::User(UserId(2)), PostId(1)).await,
+        super::Steps(&Mock)
+            .workflow(Identity::User(UserId(2)), PostId(1))
+            .await,
         Err(super::forbidden())
     );
 }
@@ -35,7 +37,9 @@ async fn test_deleted_by_creator() {
     }
 
     assert_eq!(
-        super::Steps(&Mock).workflow(Identity::User(UserId(1)), PostId(1)).await,
+        super::Steps(&Mock)
+            .workflow(Identity::User(UserId(1)), PostId(1))
+            .await,
         Ok(())
     );
 }
@@ -55,7 +59,9 @@ async fn test_deleted_by_admin() {
     }
 
     assert_eq!(
-        super::Steps(&Mock).workflow(Identity::Admin(AdminId(2)), PostId(1)).await,
+        super::Steps(&Mock)
+            .workflow(Identity::Admin(AdminId(2)), PostId(1))
+            .await,
         Ok(()),
     );
 }

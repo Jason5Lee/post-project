@@ -1,8 +1,8 @@
-use std::borrow::Cow;
+use crate::common::db;
 use actix_web::http::StatusCode;
 use actix_web::HttpResponse;
 use serde::Serialize;
-use crate::common::db;
+use std::borrow::Cow;
 
 #[derive(PartialEq, Debug)]
 pub struct ErrorResponse {
@@ -51,8 +51,12 @@ pub fn as_unprocessable_entity<T>((_, body): (T, ErrorBody)) -> ErrorResponse {
     (StatusCode::UNPROCESSABLE_ENTITY, body).into()
 }
 
-pub fn handle_invalid_value_in_db<T: std::fmt::Debug>(table: db::Table, column: db::Column, primary_key_value: impl std::fmt::Debug) -> impl FnOnce((T, ErrorBody)) -> ErrorResponse {
-    move |(value, body)|
+pub fn handle_invalid_value_in_db<T: std::fmt::Debug>(
+    table: db::Table,
+    column: db::Column,
+    primary_key_value: impl std::fmt::Debug,
+) -> impl FnOnce((T, ErrorBody)) -> ErrorResponse {
+    move |(value, body)| {
         crate::common::api::handle_internal_error(
             format_args!(
                 "invalid value found in DB|table={table}|column={column}|value={:?}|primary_key_value={:?}|reason={} ({})| ",
@@ -62,4 +66,5 @@ pub fn handle_invalid_value_in_db<T: std::fmt::Debug>(table: db::Table, column: 
                 body.error.reason
             )
         )
+    }
 }

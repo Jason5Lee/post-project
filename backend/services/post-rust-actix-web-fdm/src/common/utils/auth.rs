@@ -1,5 +1,5 @@
-use crate::common::*;
 use crate::common::api::*;
+use crate::common::*;
 
 use apply::Apply;
 use jsonwebtoken::{DecodingKey, EncodingKey};
@@ -61,10 +61,14 @@ impl super::Context {
                 exp,
                 userId: None,
                 adminId: Some(utils::format_id(admin_id.0)),
-            }
+            },
         };
-        jsonwebtoken::encode(&jsonwebtoken::Header::default(), &claim, &EncodingKey::from_secret(&self.deps.auth.secret))
-            .unwrap()
+        jsonwebtoken::encode(
+            &jsonwebtoken::Header::default(),
+            &claim,
+            &EncodingKey::from_secret(&self.deps.auth.secret),
+        )
+        .unwrap()
     }
 
     pub fn auth_user_only(&self) -> Result<UserId> {
@@ -114,9 +118,16 @@ impl super::Context {
 }
 
 fn decode_jwt(deps: &utils::Deps, token: &str) -> Result<Claim> {
-    jsonwebtoken::decode::<Claim>(token, &DecodingKey::from_secret(&deps.auth.secret), &jsonwebtoken::Validation::default())
-        .map(|data| data.claims)
-        .map_err(|e| { log::info!("error: {e}"); invalid_token()})
+    jsonwebtoken::decode::<Claim>(
+        token,
+        &DecodingKey::from_secret(&deps.auth.secret),
+        &jsonwebtoken::Validation::default(),
+    )
+    .map(|data| data.claims)
+    .map_err(|e| {
+        log::info!("error: {e}");
+        invalid_token()
+    })
 }
 
 fn decode_jwt_from_auth_header(deps: &utils::Deps, token: &[u8]) -> Result<Claim> {
@@ -132,8 +143,6 @@ fn get_claim(ctx: &utils::Context) -> Result<Claim> {
 fn get_claim_optional(ctx: &utils::Context) -> Result<Option<Claim>> {
     match api::get_auth_token(ctx)? {
         None => Ok(None),
-        Some(token) => {
-            decode_jwt_from_auth_header(&ctx.deps, token).map(Some)
-        }
+        Some(token) => decode_jwt_from_auth_header(&ctx.deps, token).map(Some),
     }
 }

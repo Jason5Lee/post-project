@@ -1,18 +1,19 @@
+use crate::common::utils::error::*;
 use std::fmt::{Debug, Formatter};
 use std::rc::Rc;
-use crate::common::utils::error::*;
+use url::Url;
 
 pub mod api;
 pub mod db;
-pub mod utils;
 #[cfg(test)]
 mod tests;
+pub mod utils;
 
 pub type Result<T, E = ErrorResponse> = std::result::Result<T, E>;
 
 #[derive(Debug, Ord, PartialOrd, Eq, PartialEq, Copy, Clone)]
 pub struct Time {
-    pub utc: u64, 
+    pub utc: u64,
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
@@ -52,9 +53,15 @@ pub struct PostId(pub u64);
 pub struct Title(String);
 
 #[derive(Debug, PartialEq, Eq, Clone)]
+pub struct TextPostContent(String);
+
+#[derive(Debug, PartialEq, Eq, Clone)]
+pub struct UrlPostContent(String);
+
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub enum PostContent {
-    Post(String),
-    Url(url::Url),
+    Text(TextPostContent),
+    Url(UrlPostContent),
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
@@ -78,7 +85,7 @@ impl UserName {
             Ok(Self(value.into()))
         }
     }
-    
+
     pub fn as_str(&self) -> &str {
         &self.0
     }
@@ -88,7 +95,7 @@ impl UserName {
 }
 
 impl Title {
-    pub fn try_new(value: String) -> Result<Self, (String, ErrorBody)>  {
+    pub fn try_new(value: String) -> Result<Self, (String, ErrorBody)> {
         if value.is_empty() {
             Err((value, Self::title_empty()))
         } else if value.len() < 3 {
@@ -99,7 +106,7 @@ impl Title {
             Ok(Self(value))
         }
     }
-    
+
     pub fn as_str(&self) -> &str {
         &self.0
     }
@@ -108,28 +115,44 @@ impl Title {
     }
 }
 
-impl PostContent {
-    pub fn try_new_url(value: String) -> Result<Self, (String, ErrorBody)> {
+impl TextPostContent {
+    pub fn try_new(value: String) -> Result<Self, (String, ErrorBody)> {
         if value.is_empty() {
-            Err((value, Self::url_empty()))
+            Err((value, Self::text_post_content_empty()))
         } else if value.len() > 65535 {
-            Err((value, Self::url_too_long()))
+            Err((value, Self::text_post_content_too_long()))
         } else {
-            match url::Url::parse(&value) {
-                Ok(url) => Ok(Self::Url(url)),
-                Err(err) => Err((value, Self::url_invalid(err))),
+            Ok(Self(value))
+        }
+    }
+
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+    pub fn into_string(self) -> String {
+        self.0
+    }
+}
+
+impl UrlPostContent {
+    pub fn try_new(value: String) -> Result<Self, (String, ErrorBody)> {
+        if value.is_empty() {
+            Err((value, Self::url_post_content_empty()))
+        } else if value.len() > 65535 {
+            Err((value, Self::url_post_content_too_long()))
+        } else {
+            match Url::parse(&value) {
+                Ok(_) => Ok(Self(value)),
+                Err(err) => Err((value, Self::url_post_content_invalid(err))),
             }
         }
     }
 
-    pub fn try_new_post(value: String) -> Result<Self, (String, ErrorBody)> {
-        if value.is_empty() {
-            Err((value, Self::post_empty()))
-        } else if value.len() > 65535 {
-            Err((value, Self::post_too_long()))
-        } else {
-            Ok(Self::Post(value))
-        }
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+    pub fn into_string(self) -> String {
+        self.0
     }
 }
 
@@ -158,7 +181,7 @@ impl Password {
             Ok(Self { plain: value })
         }
     }
-    
+
     pub fn to_encrypted(&self, encryptor: &utils::Encryptor) -> Result<String> {
         encryptor.encrypt(&self.plain)
     }
@@ -186,7 +209,7 @@ impl Size {
             }
         }
     }
-    
+
     pub fn to_u32(self) -> u32 {
         self.0
     }

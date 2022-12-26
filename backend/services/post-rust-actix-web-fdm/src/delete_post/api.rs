@@ -1,14 +1,13 @@
-use crate::common::*;
 use crate::common::api::*;
-use actix_web::{delete, web::Path as UrlPath, HttpResponse};
-use actix_web::http::StatusCode;
-use apply::Apply;
 use crate::common::utils::error::*;
+use crate::common::*;
+use actix_web::http::StatusCode;
+use actix_web::{delete, web::Path as UrlPath, HttpResponse};
+use apply::Apply;
 
 #[delete("/post/{id}")]
 pub async fn api(mut ctx: utils::Context) -> Result<HttpResponse> {
-    let caller = ctx.get_identity()?
-        .ok_or_else(forbidden)?;
+    let caller = ctx.get_identity()?.ok_or_else(not_creator_admin)?;
     let (id,): (String,) = ctx
         .to::<UrlPath<(String,)>>()
         .await
@@ -21,23 +20,30 @@ pub async fn api(mut ctx: utils::Context) -> Result<HttpResponse> {
     Ok(HttpResponse::NoContent().finish())
 }
 
-pub fn forbidden() -> ErrorResponse {
-    (StatusCode::FORBIDDEN, ErrorBody {
-        error: ErrBody {
-            error: "FORBIDDEN".into(),
-            reason: "the user is neither the creator of the post nor admin".to_string(),
-            message: "you are neither the creator of the post nor admin".to_string()
-        }
-    }).into()
+pub fn not_creator_admin() -> ErrorResponse {
+    (
+        StatusCode::FORBIDDEN,
+        ErrorBody {
+            error: ErrBody {
+                error: "NOT_CREATOR_ADMIN".into(),
+                reason: "the user is neither the creator of the post nor admin".to_string(),
+                message: "you are neither the creator of the post nor admin".to_string(),
+            },
+        },
+    )
+        .into()
 }
 
 pub fn post_not_found() -> ErrorResponse {
-    (StatusCode::NOT_FOUND, ErrorBody {
-        error: ErrBody {
-            error: "POST_NOT_FOUND".into(),
-            reason: "post not found".to_string(),
-            message: "post not found".to_string()
-        }
-    }).into()
+    (
+        StatusCode::NOT_FOUND,
+        ErrorBody {
+            error: ErrBody {
+                error: "POST_NOT_FOUND".into(),
+                reason: "post not found".to_string(),
+                message: "post not found".to_string(),
+            },
+        },
+    )
+        .into()
 }
-

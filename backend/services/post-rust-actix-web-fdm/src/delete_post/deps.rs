@@ -1,5 +1,5 @@
 use super::*;
-use crate::common::{*, api::handle_internal_error};
+use crate::common::{api::handle_internal_error, *};
 
 pub async fn get_post_creator(deps: &utils::Deps, post: PostId) -> Result<UserId> {
     sqlx::query_as(&iformat!("SELECT `" db::posts::CREATOR "` FROM `" db::POSTS "` WHERE `" db::posts::POST_ID "`=?"))

@@ -1,8 +1,8 @@
 use actix_web::{middleware::Logger, App, HttpServer};
-use serde::Deserialize;
-use sqlx::mysql::MySqlPoolOptions;
 use post_rust_actix_web_fdm::common::utils::auth::AuthConfig;
 use post_rust_actix_web_fdm::common::utils::Encryptor;
+use serde::Deserialize;
+use sqlx::mysql::MySqlPoolOptions;
 
 #[actix_web::main]
 async fn main() {
@@ -22,6 +22,12 @@ async fn main() {
 
     let config: Config = envy::from_env().expect("unable to read config");
 
+    if config.machine_id < 0 || config.machine_id >= 32 {
+        panic!("machine_id must be between 0 and 31");
+    }
+    if config.node_id < 0 || config.node_id >= 32 {
+        panic!("node_id must be between 0 and 31");
+    }
     let id_gen = parking_lot::Mutex::new(snowflake::SnowflakeIdGenerator::new(
         config.machine_id,
         config.node_id,
@@ -50,10 +56,7 @@ async fn main() {
         id_gen,
         pool,
         encryptor: Encryptor { cost },
-        auth: AuthConfig {
-            valid_secs,
-            secret,
-        },
+        auth: AuthConfig { valid_secs, secret },
     });
 
     env_logger::init();
@@ -73,10 +76,8 @@ async fn main() {
             .service(post_rust_actix_web_fdm::get_user::api::api)
     })
     .bind(&config.listen_addr)
-.expect("unable to bind")
+    .expect("unable to bind")
     .run();
     log::info!("Listening {}", config.listen_addr);
-    server
-        .await
-        .expect("error while running the server");
+    server.await.expect("error while running the server");
 }

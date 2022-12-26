@@ -28,13 +28,16 @@ All errors cause by invalid value are `422 Unprocessable Entity`.
 - `TITLE_TOO_SHORT`: The title is too short.
 - `TITLE_TOO_LONG`: The title is too long.
 
-### Post content
+### Text post content
 
-- `URL_EMPTY`: The URL is empty.
-- `URL_TOO_LONG`: The URL is too long.
-- `URL_INVALID`: The URL is invalid.
-- `POST_EMPTY`: The post is empty.
-- `POST_TOO_LONG`: The post is too long.
+- `TEXT_POST_CONTENT_EMPTY`: The post is empty.
+- `TEXT_POST_CONTENT_TOO_LONG`: The post is too long.
+
+### URL post content
+
+- `URL_POST_CONTENT_EMPTY`: The URL is empty.
+- `URL_POST_CONTENT_TOO_LONG`: The URL is too long.
+- `URL_POST_CONTENT_INVALID`: The URL is invalid.
 
 ### Password
 

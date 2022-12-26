@@ -1,5 +1,5 @@
-use crate::common::api::{handle_internal_error, low_probability_error};
 use super::*;
+use crate::common::api::{handle_internal_error, low_probability_error};
 
 pub async fn insert_user(
     deps: &utils::Deps,

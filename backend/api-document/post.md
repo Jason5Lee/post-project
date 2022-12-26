@@ -18,8 +18,8 @@ Body:
     "creatorName": "<creator name>",
     "creationTime": <creation timestamp>,
     "title": "<post title>",
-    "post": "<post content, exists only for post type>",
-    "url": "<post URL, exists only for URL type>",
+    "text": "<text post content, exists only for text type>",
+    "url": "<URL post content, exists only for URL type>",
     "lastModified": <last modified timestamp, exists only if it has been modified>
 }
 ```
@@ -41,12 +41,12 @@ Body:
 ```json
 {
     "title": "<post title>",
-    "post": "<the post content>",
-    "url": "<the URL content>"
+    "text": "<the text post content>",
+    "url": "<the URL post content>"
 }
 ```
 
-Only exact one of `url` and `post` should present.
+Exact one of the `text` and the `url` field should exist.
 
 ### Response
 
@@ -65,15 +65,16 @@ Body:
 ### Errors
 
 - Invalid errors of Title.
-- Invalid errors of Post content.
-- `POST_AND_URL_SHOULD_HAVE_EXACTLY_ONE`: `422 Unprocessable Entity`, only exact one of `url` and `post` should present.
+- Invalid errors of text post content.
+- Invalid errors of URL post content.
+- `TEXT_URL_EXACT_ONE`: `422 Unprocessable Entity`, exact one of `url` and `text` should present.
 - `DUPLICATE_TITLE`: `409 Conflict`, the post title duplicated.
 
 ## Edit a post
 
 `POST /post/<post ID>`
 
-Authorization: user only.
+Authorization: the post creator only.
 
 ### Request
 
@@ -81,12 +82,12 @@ Body:
 
 ```json
 {
-    "post": "<the post content>",
+    "text": "<the post content>",
     "url": "<the URL content>"
 }
 ```
 
-Note that you cannot change the post type. Only the corresponding field should be present.
+Exact one of the `text` and the `url` field should exist.
 
 ### Response
 
@@ -94,8 +95,9 @@ Note that you cannot change the post type. Only the corresponding field should b
 
 ### Errors
 
-- Invalid errors of Post content.
-- `ONLY_EXACT_ONE_OF_POST_URL`: `422 Unprocessable Entity`, only exact one of `url` and `post` should present.
+- Invalid errors of text post content.
+- Invalid errors of URL post content.
+- `TEXT_URL_EXACT_ONE`: `422 Unprocessable Entity`, exact one of `url` and `post` should present.
 - `POST_NOT_FOUND`: `404 Not Found`, the post does not exist.
 - `NOT_CREATOR`: `403 Forbidden`, the user is not the creator of the post.
 - `TYPE_DIFF`: `422 Unprocessable Entity`, the type of the post is different from the request.
@@ -112,9 +114,8 @@ Authorization: post creator or admin only.
 
 ### Errors
 
-- `FORBIDDEN`: `403 Forbidden`, the caller is neither the creator of the post nor admin.
+- `NOT_CREATOR_ADMIN`: `403 Forbidden`, the caller is neither the creator of the post nor admin.
 - `POST_NOT_FOUND`: `404 Not Found`, the post does not exist.
-
 
 ## List posts information
 

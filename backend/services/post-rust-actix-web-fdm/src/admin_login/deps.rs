@@ -1,7 +1,7 @@
-use super::*;
 use super::Query;
-use crate::common::*;
+use super::*;
 use crate::common::api::*;
+use crate::common::*;
 
 pub async fn workflow(deps: &utils::Deps, input: Query) -> Result<AdminId> {
     let (encrypted_password,): (String,) =

@@ -1,6 +1,6 @@
 use super::*;
-use crate::common::utils::Deps;
 use crate::common::api::handle_internal_error;
+use crate::common::utils::Deps;
 
 pub async fn get_user_id_encrypted_password(
     deps: &Deps,

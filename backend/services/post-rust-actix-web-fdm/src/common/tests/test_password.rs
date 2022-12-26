@@ -26,7 +26,5 @@ fn test_long_password() {
 
 #[test]
 fn test_proper_password() {
-    assert!(
-        Password::try_from_plain("iF@35p".to_string()).is_ok()
-    );
+    assert!(Password::try_from_plain("iF@35p".to_string()).is_ok());
 }

@@ -4,7 +4,7 @@ import { assert, UserToken } from "./common";
 type Post = {
     postId: string,
     title: string,
-    post?: string,
+    text?: string,
     url?: string,
     creatorId: string,
     creatorName: string,
@@ -69,7 +69,7 @@ async function testListPosts(base: string, user1Posts: Post[], user2Posts: Post[
 async function testEditPost(base: string, postId: string, user1Token: UserToken, user2Token: UserToken) {
     const editUser1PostByUser2 = await axios.post(
         base + "/post/" + postId, 
-        { post: "New Post Content" },
+        { text: "New Post Content" },
         { headers: { "Authorization": "Bearer " + user2Token.token }, validateStatus: () => true }
     );
     assert(editUser1PostByUser2.status === 403);
@@ -85,18 +85,18 @@ async function testEditPost(base: string, postId: string, user1Token: UserToken,
 
     const editUser1Post = await axios.post(
         base + "/post/" + postId, 
-        { post: "New Post Content" },
+        { text: "New Post Content" },
         { headers: { "Authorization": "Bearer " + user1Token.token } }
     );
     assert(editUser1Post.status === 204);
 
     const checkEdit = await axios.get(base + "/post/" + postId);
     assert(checkEdit.status === 200);
-    assert(checkEdit.data.post === "New Post Content");
+    assert(checkEdit.data.text === "New Post Content");
 }
 
-async function testCreateGetAPost(base: string, counter: number, postType: "post" | "url", headers: Partial<unknown>, creatorId: string, creatorName: string, userPosts: Post[], allPosts: Post[]) {
-    const body = postType == "post" ? { title: "Title " + counter, post: "Post " + counter } : { title: "Title " + counter, url: "https://url.test/" + counter};
+async function testCreateGetAPost(base: string, counter: number, postType: "text" | "url", headers: Partial<unknown>, creatorId: string, creatorName: string, userPosts: Post[], allPosts: Post[]) {
+    const body = postType == "text" ? { title: "Title " + counter, text: "Post " + counter } : { title: "Title " + counter, url: "https://url.test/" + counter};
     const post = await axios.put(base + "/post", body, { headers: headers });
     assert(post.status === 201);
     const postId = post.data.postId;
@@ -107,7 +107,7 @@ async function testCreateGetAPost(base: string, counter: number, postType: "post
     assert(getPost.data.creatorId === creatorId);
     assert(getPost.data.creatorName === creatorName);
     assert(getPost.data.title === body.title);
-    assert(getPost.data.post === body.post);
+    assert(getPost.data.text === body.text);
     assert(getPost.data.url === body.url);
     assert(getPost.data.lastModified === undefined);
     const creationTime = getPost.data.creationTime;
@@ -116,7 +116,7 @@ async function testCreateGetAPost(base: string, counter: number, postType: "post
     const postInfo = {
         postId: postId,
         title: body.title,
-        post: body.post,
+        text: body.text,
         url: body.url,
         creatorId: creatorId,
         creatorName: creatorName,
@@ -129,7 +129,7 @@ async function testCreateGetAPost(base: string, counter: number, postType: "post
 async function testDeletePostByCreator(base: string, user1PostId: string, users: [UserToken, UserToken]): Promise<void> {
     const deleteByUser2 = await axios.delete(base + "/post/" + user1PostId, { headers: { "Authorization": "Bearer " + users[1].token }, validateStatus: () => true });
     assert(deleteByUser2.status === 403);
-    assert(deleteByUser2.data.error.error == "FORBIDDEN");
+    assert(deleteByUser2.data.error.error == "NOT_CREATOR_ADMIN");
 
     const deleteByUser1 = await axios.delete(base + "/post/" + user1PostId, { headers: { "Authorization": "Bearer " + users[0].token } });
     assert(deleteByUser1.status === 204);
@@ -146,7 +146,7 @@ async function testDeletePostByAdmin(base: string, postId: string, admin_token: 
     assert(getDeletedPost.status === 404);
 }
 export async function testPost(base: string, users: [UserToken, UserToken], adminToken: string): Promise<void> {
-    const no_auth = await axios.put(base + "/post", { title: "title", post: "post" }, { validateStatus: () => true });
+    const no_auth = await axios.put(base + "/post", { title: "title", text: "text" }, { validateStatus: () => true });
     assert(no_auth.status === 403);
     assert(no_auth.data.error.error === "FORBIDDEN");
 
@@ -159,12 +159,12 @@ export async function testPost(base: string, users: [UserToken, UserToken], admi
     let counter = 0;
 
     for (let i = 0; i < 10; i++) {
-        await testCreateGetAPost(base, counter++, "post", user1Header, users[0].userId, "user1", user1Posts, allPosts);
+        await testCreateGetAPost(base, counter++, "text", user1Header, users[0].userId, "user1", user1Posts, allPosts);
         await testCreateGetAPost(base, counter++, "url", user1Header, users[0].userId, "user1", user1Posts, allPosts);
-        await testCreateGetAPost(base, counter++, "post", user2Header, users[1].userId, "user2", user2Posts, allPosts);
+        await testCreateGetAPost(base, counter++, "text", user2Header, users[1].userId, "user2", user2Posts, allPosts);
         await testCreateGetAPost(base, counter++, "url", user2Header, users[1].userId, "user2", user2Posts, allPosts);
     }
-    const duplicated = await axios.put(base + "/post", { title: allPosts[0].title, post: "post" }, { headers: user1Header, validateStatus: () => true });
+    const duplicated = await axios.put(base + "/post", { title: allPosts[0].title, text: "text" }, { headers: user1Header, validateStatus: () => true });
     assert(duplicated.status === 409);
     assert(duplicated.data.error.error === "DUPLICATE_TITLE");
 
@@ -173,7 +173,7 @@ export async function testPost(base: string, users: [UserToken, UserToken], admi
     let testPostIndex = 0;
     while (testPostIndex < user1Posts.length) {
         const user1Post = user1Posts[testPostIndex];
-        if (user1Post.post !== undefined) {
+        if (user1Post.text !== undefined) {
             await testEditPost(base, user1Post.postId, users[0], users[1]);
             break;
         }

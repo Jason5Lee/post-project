@@ -17,7 +17,7 @@ impl<'a> Steps<'a> {
         if auth {
             self.delete_post(input).await
         } else {
-            Err(forbidden())
+            Err(not_creator_admin())
         }
     }
 }
@@ -28,6 +28,6 @@ define_steps! {
 }
 
 define_error! {
-    forbidden();
+    not_creator_admin();
     post_not_found();
 }
