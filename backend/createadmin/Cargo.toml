@@ -11,3 +11,8 @@ bcrypt = "0.13"
 mysql = "23.0"
 getrandom = "0.2"
 base64 = "0.20"
+
+[dependencies.mongodb]
+version = "2.3"
+default-features = false
+features = ["sync"]

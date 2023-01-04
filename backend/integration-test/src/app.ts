@@ -1,6 +1,6 @@
-const adminId = "tXaLv4I3DbY";
+const adminId = "Y7T41GBAJbJL4ujO";
 const adminPassword = "adminpass";
-const service = "http://localhost:8432";
+const service = "http://localhost:8080";
 
 import { testAdmin } from "./test_admin";
 import { testIdentity } from "./test_identity";
@@ -11,7 +11,7 @@ import { testUserRegister, testGetUser, testUserLogin } from "./test_user";
     const userIds = await testUserRegister(service);
     await testGetUser(service, userIds);
     const userTokens = await testUserLogin(service, userIds);
-    
+
     const adminToken = await testAdmin(service, adminId, adminPassword);
     await testPost(service, userTokens, adminToken);
     await testIdentity(service, userTokens, adminId, adminToken);

@@ -24,7 +24,7 @@ async function testListPosts(base: string, user1Posts: Post[], user2Posts: Post[
         assert(postsBefore.length === expectSize);
         for (let j = 0; j < expectSize; j++) {
             const postBefore = postsBefore[j];
-            const expectPost = allPosts[i-j-1];
+            const expectPost = allPosts[i - j - 1];
             assert(postBefore.id === expectPost.postId);
             assert(postBefore.title === expectPost.title);
             assert(postBefore.creatorId === expectPost.creatorId);
@@ -39,7 +39,7 @@ async function testListPosts(base: string, user1Posts: Post[], user2Posts: Post[
         assert(postsAfter.length === expectSizeAfter);
         for (let j = 0; j < expectSizeAfter; j++) {
             const postAfter = postsAfter[j];
-            const expectPost = allPosts[i+j+1];
+            const expectPost = allPosts[i + expectSizeAfter - j];
             assert(postAfter.id === expectPost.postId);
             assert(postAfter.title === expectPost.title);
             assert(postAfter.creatorId === expectPost.creatorId);
@@ -56,7 +56,7 @@ async function testListPosts(base: string, user1Posts: Post[], user2Posts: Post[
         assert(postsBefore.length === expectSize);
         for (let j = 0; j < expectSize; j++) {
             const postBefore = postsBefore[j];
-            const expectPost = user1Posts[i-j-1];
+            const expectPost = user1Posts[i - j - 1];
             assert(postBefore.id === expectPost.postId);
             assert(postBefore.title === expectPost.title);
             assert(postBefore.creatorId === expectPost.creatorId);
@@ -68,7 +68,7 @@ async function testListPosts(base: string, user1Posts: Post[], user2Posts: Post[
 
 async function testEditPost(base: string, postId: string, user1Token: UserToken, user2Token: UserToken) {
     const editUser1PostByUser2 = await axios.post(
-        base + "/post/" + postId, 
+        base + "/post/" + postId,
         { text: "New Post Content" },
         { headers: { "Authorization": "Bearer " + user2Token.token }, validateStatus: () => true }
     );
@@ -76,15 +76,15 @@ async function testEditPost(base: string, postId: string, user1Token: UserToken,
     assert(editUser1PostByUser2.data.error.error === "NOT_CREATOR");
 
     const editUser1PostToUrl = await axios.post(
-        base + "/post/" + postId, 
+        base + "/post/" + postId,
         { url: "https://www.newurl.com/" },
         { headers: { "Authorization": "Bearer " + user1Token.token }, validateStatus: () => true }
     );
-    assert(editUser1PostToUrl.status === 422);
+    assert(editUser1PostToUrl.status === 400);
     assert(editUser1PostToUrl.data.error.error === "TYPE_DIFF");
 
     const editUser1Post = await axios.post(
-        base + "/post/" + postId, 
+        base + "/post/" + postId,
         { text: "New Post Content" },
         { headers: { "Authorization": "Bearer " + user1Token.token } }
     );
@@ -96,7 +96,7 @@ async function testEditPost(base: string, postId: string, user1Token: UserToken,
 }
 
 async function testCreateGetAPost(base: string, counter: number, postType: "text" | "url", headers: Partial<unknown>, creatorId: string, creatorName: string, userPosts: Post[], allPosts: Post[]) {
-    const body = postType == "text" ? { title: "Title " + counter, text: "Post " + counter } : { title: "Title " + counter, url: "https://url.test/" + counter};
+    const body = postType == "text" ? { title: "Title " + counter, text: "Post " + counter } : { title: "Title " + counter, url: "https://url.test/" + counter };
     const post = await axios.put(base + "/post", body, { headers: headers });
     assert(post.status === 201);
     const postId = post.data.postId;
@@ -148,11 +148,11 @@ async function testDeletePostByAdmin(base: string, postId: string, admin_token: 
 export async function testPost(base: string, users: [UserToken, UserToken], adminToken: string): Promise<void> {
     const no_auth = await axios.put(base + "/post", { title: "title", text: "text" }, { validateStatus: () => true });
     assert(no_auth.status === 403);
-    assert(no_auth.data.error.error === "FORBIDDEN");
+    assert(no_auth.data.error.error === "USER_ONLY");
 
     const user1Header = { "Authorization": "Bearer " + users[0].token };
     const user2Header = { "Authorization": "Bearer " + users[1].token };
-    
+
     const user1Posts: Post[] = [];
     const user2Posts: Post[] = [];
     const allPosts: Post[] = [];
@@ -185,4 +185,3 @@ export async function testPost(base: string, users: [UserToken, UserToken], admi
     await testDeletePostByCreator(base, user1Posts[0].postId, users);
     await testDeletePostByAdmin(base, user2Posts[0].postId, adminToken);
 }
-

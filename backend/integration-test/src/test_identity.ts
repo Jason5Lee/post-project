@@ -6,7 +6,7 @@ export async function testIdentity(base: string, users: [UserToken, UserToken], 
     assert(guestResp.status === 200);
     assert(guestResp.data.user === undefined);
     assert(guestResp.data.admin === undefined);
-    
+
     const user1Resp = await axios.get(`${base}/identity`, { headers: { Authorization: `Bearer ${users[0].token}` } });
     assert(user1Resp.status === 200);
     assert(user1Resp.data.user.id === users[0].userId);
