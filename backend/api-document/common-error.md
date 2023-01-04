@@ -7,9 +7,8 @@
 - `LOW_PROBABILITY_ERROR`: `500 Internal Server Error`, an error that should be low-probability occurs.
 - `BAD_REQUEST`: `400 Bad Request`, the request is invalid. The `reason` field contains the reason.
   - This error should indicate the bug of the client, instead of the user entering invalid value. For example, the client should not send a request with an invalid JSON format.
-- `INVALID_TOKEN`: `401 Unauthorized`, the token is invalid.
+- `INVALID_AUTH`: `401 Unauthorized`, the authorization header is invalid. It may be expired.
   - The client-side may remove the token and require the user to login again when receiving this error.
-- `FORBIDDEN`: `403 Forbidden`, the user is not allowed to perform this action.
 
 ## Invalid Errors
 
@@ -47,5 +46,12 @@ All errors cause by invalid value are `422 Unprocessable Entity`.
 
 ### Size
 
-- `SIZE_NON_POSITIVE`: The size is not a positive number.
-  - Note that in some implementations, when size is negative, it is considered as a deserialization error and responded as a Bad Request.
+- `SIZE_NON_POSITIVE_INTEGER`: The size is not a positive integer.
+  - Note that based on deserialization implementation, non-integer value may be considered as a Bad Request.
+
+### Programming-language-specific invalidation errors
+
+These errors will be returned in some programming languages. In other languages, they will be considered as a deserialization error and responded as a Bad Request.
+
+- `TIME_NEGATIVE`: The time is negative.
+- `TIME_NOT_SAFE_INTEGER`: The time is not a safe integer.

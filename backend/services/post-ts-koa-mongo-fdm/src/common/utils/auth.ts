@@ -1,6 +1,6 @@
 import { AdminId, Identity, Time, UserId } from "..";
 import jwt from "jsonwebtoken";
-import { invalidToken } from "../api/auth";
+import { invalidAuth } from "../api/auth";
 import { formatId, parseId } from ".";
 
 export interface AuthConfig {
@@ -17,22 +17,22 @@ export function getIdentity(token: string | undefined, secret: string): Identity
         decoded = jwt.verify(token, secret);
     } catch (e) {
         if (e instanceof jwt.JsonWebTokenError) {
-            throw invalidToken();
+            throw invalidAuth();
         } else {
             throw e;
         }
     }
     
     if (decoded === undefined || typeof decoded === "string") {
-        throw invalidToken();
+        throw invalidAuth();
     } else {
         const { userId, adminId } = decoded;
         if (typeof userId === "string") {
-            return { type: "User", id: parseId(userId, invalidToken) as UserId };
+            return { type: "User", id: parseId(userId, invalidAuth) as UserId };
         } else if (typeof adminId === "string") {
-            return { type: "Admin", id: parseId(adminId, invalidToken) as AdminId };
+            return { type: "Admin", id: parseId(adminId, invalidAuth) as AdminId };
         } else {
-            throw invalidToken();
+            throw invalidAuth();
         }
     }
 }

@@ -8,7 +8,10 @@ use serde::Deserialize;
 
 #[post("/post/{id}")]
 pub async fn api(mut ctx: utils::Context) -> Result<HttpResponse> {
-    let caller = ctx.auth_user_only()?;
+    let caller = match ctx.get_identity()? {
+        Some(Identity::User(user_id)) => user_id,
+        _ => return Err(not_creator()),
+    };
     #[derive(Deserialize)]
     #[allow(non_snake_case)]
     pub struct RequestDto {
@@ -39,20 +42,7 @@ pub async fn api(mut ctx: utils::Context) -> Result<HttpResponse> {
             (None, Some(url)) => {
                 PostContent::Url(UrlPostContent::try_new(url).map_err(as_unprocessable_entity)?)
             }
-            _ => {
-                return Err((
-                    StatusCode::UNPROCESSABLE_ENTITY,
-                    ErrorBody {
-                        error: ErrBody {
-                            error: "c".into(),
-                            reason: "exact one of the text and the url field should exist"
-                                .to_string(),
-                            message: CLIENT_BUG_MESSAGE.to_string(),
-                        },
-                    },
-                )
-                    .into())
-            }
+            _ => return Err(test_url_exact_one()),
         },
     };
     super::Steps::from_ctx(&ctx).workflow(caller, input).await?;
@@ -89,12 +79,26 @@ pub fn not_creator() -> ErrorResponse {
 
 pub fn type_diff() -> ErrorResponse {
     (
-        StatusCode::UNPROCESSABLE_ENTITY,
+        StatusCode::BAD_REQUEST,
         ErrorBody {
             error: ErrBody {
                 error: "TYPE_DIFF".into(),
                 reason: "the type of the post is different from the request".to_string(),
                 message: "you cannot change the post type".to_string(),
+            },
+        },
+    )
+        .into()
+}
+
+pub fn test_url_exact_one() -> ErrorResponse {
+    (
+        StatusCode::UNPROCESSABLE_ENTITY,
+        ErrorBody {
+            error: ErrBody {
+                error: "TEXT_URL_EXACT_ONE".into(),
+                reason: "exact one of the text and the url field should exist".to_string(),
+                message: CLIENT_BUG_MESSAGE.to_string(),
             },
         },
     )

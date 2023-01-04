@@ -47,7 +47,7 @@ pub async fn workflow(
         "` FROM `" db::POSTS "` " post_condition_sql
         " ORDER BY `" db::posts::CREATION_TIME "` " order " LIMIT ?"
     );
-    let posts_db_result: Vec<(u64, u64, u64, String)> = sqlx::query_as(&post_sql)
+    let mut posts_db_result: Vec<(u64, u64, u64, String)> = sqlx::query_as(&post_sql)
         .bind(size.to_u32())
         .fetch_all(&deps.pool)
         .await
@@ -55,6 +55,10 @@ pub async fn workflow(
 
     if posts_db_result.is_empty() {
         return Ok(Output { posts: Vec::new() });
+    }
+
+    if order == "ASC" {
+        posts_db_result.reverse();
     }
     // Because sqlx doesn't support binding a slice for MySQL.
     // I have to manually make the query.

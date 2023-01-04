@@ -10,7 +10,10 @@ use serde::{Deserialize, Serialize};
 
 #[put("/post")]
 pub async fn api(mut ctx: utils::Context) -> Result<HttpResponse> {
-    let caller = ctx.auth_user_only()?;
+    let caller = match ctx.get_identity()? {
+        Some(Identity::User(user_id)) => user_id,
+        _ => return Err(user_only()),
+    };
 
     #[derive(Deserialize)]
     pub struct RequestDto {
@@ -33,20 +36,7 @@ pub async fn api(mut ctx: utils::Context) -> Result<HttpResponse> {
             (None, Some(url)) => {
                 PostContent::Url(UrlPostContent::try_new(url).map_err(as_unprocessable_entity)?)
             }
-            _ => {
-                return Err((
-                    StatusCode::UNPROCESSABLE_ENTITY,
-                    ErrorBody {
-                        error: ErrBody {
-                            error: "TEXT_URL_EXACT_ONE".into(),
-                            reason: "exact one of the text and the url field should exist"
-                                .to_string(),
-                            message: CLIENT_BUG_MESSAGE.to_string(),
-                        },
-                    },
-                )
-                    .into())
-            }
+            _ => return Err(text_url_exact_one()),
         },
     };
     let output = super::Steps::from_ctx(&ctx).workflow(caller, input).await?;
@@ -71,6 +61,20 @@ pub fn duplicate_title() -> ErrorResponse {
                 error: "DUPLICATE_TITLE".into(),
                 reason: "the post with the same title already exists".to_string(),
                 message: "title already exists".to_string(),
+            },
+        },
+    )
+        .into()
+}
+
+pub fn text_url_exact_one() -> ErrorResponse {
+    (
+        StatusCode::UNPROCESSABLE_ENTITY,
+        ErrorBody {
+            error: ErrBody {
+                error: "TEXT_URL_EXACT_ONE".into(),
+                reason: "exact one of the text and the url field should exist".to_string(),
+                message: CLIENT_BUG_MESSAGE.to_string(),
             },
         },
     )

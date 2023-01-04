@@ -176,6 +176,7 @@ impl Password {
         } else if value.len() < 5 {
             Err((value, Self::password_too_short()))
         } else if value.len() > 72 {
+            // Limitation of the bcrypt algorithm.
             Err((value, Self::password_too_long()))
         } else {
             Ok(Self { plain: value })

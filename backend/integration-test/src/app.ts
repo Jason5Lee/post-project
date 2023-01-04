@@ -1,4 +1,4 @@
-const adminId = "Y7T41GBAJbJL4ujO";
+const adminId = "admin ID Here";
 const adminPassword = "adminpass";
 const service = "http://localhost:8080";
 

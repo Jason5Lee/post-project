@@ -9,7 +9,7 @@ use super::*;
 
 #[get("/identity")]
 pub async fn api(ctx: utils::Context) -> Result<HttpResponse> {
-    let caller = ctx.auth_optional()?;
+    let caller = ctx.get_identity()?;
     let output = super::Steps::from_ctx(&ctx).workflow(caller).await?;
     HttpResponse::Ok()
         .json({

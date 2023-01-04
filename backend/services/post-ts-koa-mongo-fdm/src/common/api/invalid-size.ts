@@ -1,9 +1,9 @@
 import { ErrorBody } from "../utils/error";
 
-export const nonPositive: ErrorBody = {
+export const nonPositiveInteger: ErrorBody = {
     error: {
-        error: "SIZE_NON_POSITIVE",
-        reason: "size should be a positive number",
-        message: "size should be a positive number",
+        error: "SIZE_NON_POSITIVE_INTEGER",
+        reason: "size should be a positive integer",
+        message: "size should be a positive integer",
     },
 };

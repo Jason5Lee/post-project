@@ -64,10 +64,11 @@ Body:
 
 ### Errors
 
+- `USER_ONLY`: `403 Forbidden`, only users are allowed to create post.
 - Invalid errors of Title.
 - Invalid errors of text post content.
 - Invalid errors of URL post content.
-- `TEXT_URL_EXACT_ONE`: `422 Unprocessable Entity`, exact one of `url` and `text` should present.
+- `TEXT_URL_EXACT_ONE`: `400 Bad Request`, exact one of `url` and `text` should present.
 - `DUPLICATE_TITLE`: `409 Conflict`, the post title duplicated.
 
 ## Edit a post
@@ -97,10 +98,10 @@ Exact one of the `text` and the `url` field should exist.
 
 - Invalid errors of text post content.
 - Invalid errors of URL post content.
-- `TEXT_URL_EXACT_ONE`: `422 Unprocessable Entity`, exact one of `url` and `post` should present.
+- `TEXT_URL_EXACT_ONE`: `400 Bad Request`, exact one of `url` and `post` should present.
 - `POST_NOT_FOUND`: `404 Not Found`, the post does not exist.
 - `NOT_CREATOR`: `403 Forbidden`, the user is not the creator of the post.
-- `TYPE_DIFF`: `422 Unprocessable Entity`, the type of the post is different from the request.
+- `TYPE_DIFF`: `400 Bad Request`, the type of the post is different from the request.
 
 ## Delete a post
 
@@ -124,8 +125,8 @@ Authorization: post creator or admin only.
 ### Request
 
 Query parameters:
-- `before`: the timestamp of the last post in the previous page. If not present, the latest posts will be returned.
-- `after`: the timestamp of the first post in the next page.
+- `before`: the timestamp of the last post in the previous page. The latest posts before the certain time will be return. If not present, the latest posts will be returned.
+- `after`: the timestamp of the first post in the next page. This parameter is exclusive with `before`. If this parameter is present, the oldest posts after the certain time will be return.
 - `size`: the maximum number of posts to return. If not present, the default value is 20. The maximum value is 500.
 - `creator`: the ID of the creator of the posts. If not present, all posts will be returned.
 
@@ -149,6 +150,8 @@ Body:
     ]
 }
 ```
+
+The posts are sorted by creation time in descending order.
 
 ### Errors
 

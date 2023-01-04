@@ -1,5 +1,4 @@
 import { checkTextPostContent, checkTitle, checkUrlPostContent, PostContent } from "../common";
-import { userOnly } from "../common/api/auth";
 import * as runtypes from "runtypes";
 import { Command, Workflow } from ".";
 import { Context, formatId, Method, Route, validateRequest } from "../common/utils";
@@ -17,7 +16,7 @@ const requestBody = runtypes.Record({
 export async function run(ctx: Context, workflow: Workflow) {
     const caller = ctx.getIdentity();
     if (caller?.type !== "User") {
-        throw userOnly();
+        throw errors.userOnly();
     }
 
     const req = validateRequest(requestBody, ctx.getRequestBody());
@@ -65,6 +64,16 @@ export const errors = {
                 error: "TEXT_URL_EXACT_ONE",
                 reason: "exact one of the text and the url field should exist",
                 message: CLIENT_BUG_MESSAGE,
+            }
+        }
+    ),
+    userOnly: () => new ResponseError(
+        403,
+        {
+            error: {
+                error: "USER_ONLY",
+                reason: "only user can call this API",
+                message: "Only users are allowed to perform this action",
             }
         }
     ),

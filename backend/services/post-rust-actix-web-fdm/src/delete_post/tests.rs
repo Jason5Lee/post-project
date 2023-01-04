@@ -18,7 +18,7 @@ async fn test_not_delete_by_not_creator() {
         super::Steps(&Mock)
             .workflow(Identity::User(UserId(2)), PostId(1))
             .await,
-        Err(super::forbidden())
+        Err(super::not_creator_admin())
     );
 }
 

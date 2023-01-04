@@ -20,19 +20,19 @@ pub struct Claim {
 
 impl super::Context {
     pub fn get_identity(&self) -> Result<Option<Identity>> {
-        match get_claim_optional(self)? {
+        match get_claim(self)? {
             None => Ok(None),
             Some(claim) => {
                 if let Some(user_id) = claim.userId {
                     utils::parse_id(&user_id)
                         .map(|id| Identity::User(UserId(id)).apply(Some))
-                        .map_err(|_| invalid_token())
+                        .map_err(|_| invalid_auth())
                 } else if let Some(admin_id) = claim.adminId {
                     utils::parse_id(&admin_id)
                         .map(|id| Identity::Admin(AdminId(id)).apply(Some))
-                        .map_err(|_| invalid_token())
+                        .map_err(|_| invalid_auth())
                 } else {
-                    Err(invalid_token())
+                    Err(invalid_auth())
                 }
             }
         }
@@ -70,51 +70,6 @@ impl super::Context {
         )
         .unwrap()
     }
-
-    pub fn auth_user_only(&self) -> Result<UserId> {
-        let claim = get_claim(self)?;
-        if let Some(user_id) = claim.userId {
-            utils::parse_id(&user_id)
-                .map(UserId)
-                .map_err(|_| invalid_token())
-        } else {
-            Err(forbidden())
-        }
-    }
-
-    pub fn auth(&self) -> Result<Identity> {
-        let claim = get_claim(self)?;
-        if let Some(user_id) = claim.userId {
-            utils::parse_id(&user_id)
-                .map(|id| Identity::User(UserId(id)))
-                .map_err(|_| invalid_token())
-        } else if let Some(admin_id) = claim.adminId {
-            utils::parse_id(&admin_id)
-                .map(|id| Identity::Admin(AdminId(id)))
-                .map_err(|_| invalid_token())
-        } else {
-            Err(invalid_token())
-        }
-    }
-
-    pub fn auth_optional(&self) -> Result<Option<Identity>> {
-        match get_claim_optional(self)? {
-            None => Ok(None),
-            Some(claim) => {
-                if let Some(user_id) = claim.userId {
-                    utils::parse_id(&user_id)
-                        .map(|id| Identity::User(UserId(id)).apply(Some))
-                        .map_err(|_| invalid_token())
-                } else if let Some(admin_id) = claim.adminId {
-                    utils::parse_id(&admin_id)
-                        .map(|id| Identity::Admin(AdminId(id)).apply(Some))
-                        .map_err(|_| invalid_token())
-                } else {
-                    Err(invalid_token())
-                }
-            }
-        }
-    }
 }
 
 fn decode_jwt(deps: &utils::Deps, token: &str) -> Result<Claim> {
@@ -126,21 +81,16 @@ fn decode_jwt(deps: &utils::Deps, token: &str) -> Result<Claim> {
     .map(|data| data.claims)
     .map_err(|e| {
         log::info!("error: {e}");
-        invalid_token()
+        invalid_auth()
     })
 }
 
 fn decode_jwt_from_auth_header(deps: &utils::Deps, token: &[u8]) -> Result<Claim> {
-    let token = std::str::from_utf8(token).map_err(|_| invalid_token())?;
+    let token = std::str::from_utf8(token).map_err(|_| invalid_auth())?;
     decode_jwt(deps, token)
 }
 
-fn get_claim(ctx: &utils::Context) -> Result<Claim> {
-    let token = api::get_auth_token(ctx)?.ok_or_else(forbidden)?;
-    decode_jwt_from_auth_header(&ctx.deps, token)
-}
-
-fn get_claim_optional(ctx: &utils::Context) -> Result<Option<Claim>> {
+fn get_claim(ctx: &utils::Context) -> Result<Option<Claim>> {
     match api::get_auth_token(ctx)? {
         None => Ok(None),
         Some(token) => decode_jwt_from_auth_header(&ctx.deps, token).map(Some),

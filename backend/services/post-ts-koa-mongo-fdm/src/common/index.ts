@@ -138,8 +138,8 @@ import * as invalidSize from "./api/invalid-size";
 export function checkSize(value: number | undefined): Size {
     if (value === undefined) {
         return DEFAULT_SIZE as Size;
-    } else if (!(value > 0)) {
-        throw invalidRequest(invalidSize.nonPositive);
+    } else if (!(value > 0) || !Number.isInteger(value)) {
+        throw invalidRequest(invalidSize.nonPositiveInteger);
     } else if (value > MAX_SIZE) {
         return MAX_SIZE as Size;
     }
