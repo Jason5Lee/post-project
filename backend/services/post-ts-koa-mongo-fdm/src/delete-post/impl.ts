@@ -11,15 +11,23 @@ export class WorkflowImpl extends Workflow {
         creator: runtypes.InstanceOf(ObjectId),
     });
     async getPostCreator(postId: PostId): Promise<UserId> {
-        const post: WithId<unknown> | null = await this.deps.mongoDb.collection(db.posts).findOne({ _id: postId });
+        const oid = db.tryParseId(postId);
+        if (oid === undefined) {
+            throw errors.postNotFound();
+        }
+        const post: WithId<unknown> | null = await this.deps.mongoDb.collection(db.posts).findOne({ _id: oid });
         if (post === null) {
             throw this.errors.postNotFound();
         }
         db.validate(WorkflowImpl.postHasCreator, db.posts, post);
-        return post.creator as UserId;
+        return db.formatId(post.creator) as UserId;
     }
-    async deletePost(post: PostId): Promise<void> {
-        await this.deps.mongoDb.collection(db.posts).deleteOne({ _id: post });
+    async deletePost(postId: PostId): Promise<void> {
+        const oid = db.tryParseId(postId);
+        if (oid === undefined) {
+            throw errors.postNotFound();
+        }
+        await this.deps.mongoDb.collection(db.posts).deleteOne({ _id: oid });
     }
 
     constructor(private deps: Deps) { super(); }

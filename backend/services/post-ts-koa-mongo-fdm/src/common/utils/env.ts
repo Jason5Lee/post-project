@@ -1,12 +1,11 @@
 import { MongoClient } from "mongodb";
 import { Deps } from ".";
-import { initDB } from "./db";
-import { Encryption } from "./encryption";
+import { BCryptEncryptor, initDB } from "./db";
 
 function getStringEnv(name: string): string {
     const value = process.env[name];
     if (value === undefined) {
-        throw new Error(`Environment variable ${name} is not set`);
+        throw new Error(`Environment variable \`${name}\` is not set`);
     }
     return value;
 }
@@ -16,11 +15,11 @@ function getIntEnv(name: string, options?: { default?: number }): number {
         if (options?.default !== undefined) {
             return options.default;
         }
-        throw new Error(`Environment variable ${name} is not set`);
+        throw new Error(`Environment variable \`${name}\` is not set`);
     }
     const numValue = +value;
     if (!Number.isSafeInteger(numValue)) {
-        throw new Error(`Environment variable ${name} is not an integer or too large`);
+        throw new Error(`Environment variable \`${name}\` is not an integer or too large`);
     }
     return numValue;
 }
@@ -47,7 +46,7 @@ export async function loadEnv(): Promise<Env> {
         listenHost,
         listenPort,
         deps: {
-            encryption: new Encryption(encryptionCost),
+            encryptor: new BCryptEncryptor(encryptionCost),
             mongoDb: mongoDbClient,
             authConfig: {
                 validSecs: tokenValidSecs,

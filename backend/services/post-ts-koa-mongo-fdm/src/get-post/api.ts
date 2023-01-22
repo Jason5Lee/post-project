@@ -1,15 +1,15 @@
 import { PostId } from "../common";
 import { Workflow } from ".";
-import { Context, formatId, Method, parseId, Route } from "../common/utils";
+import { Context, Method, Route } from "../common/utils";
 import { ResponseError } from "../common/utils/error";
 
 export const route: Route = [Method.GET, "/post/:id"];
 
 export async function run(ctx: Context, workflow: Workflow) {
-    const id = parseId(ctx.getRouteParam("id"), errors.postNotFound) as PostId;
+    const id = ctx.getRouteParam("id") as PostId;
     const result = await workflow.run(id);
     ctx.setResponse(200, {
-        creatorId: formatId(result.creator.id),
+        creatorId: result.creator.id,
         creatorName: result.creator.name,
         creationTime: result.creationTime.utc,
         title: result.title,
@@ -33,8 +33,8 @@ export const errors: Workflow["errors"] = {
         {
             error: {
                 error: "POST_NOT_FOUND",
-                reason: "the post does not exist",
-                message: "the post does not exist",
+                reason: "The post does not exist",
+                message: "The post does not exist",
             }
         }
     ),

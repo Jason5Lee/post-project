@@ -15,5 +15,5 @@ pub async fn get_user_id_encrypted_password(
                 sqlx::Error::RowNotFound => user_name_or_password_incorrect(),
                 _ => handle_internal_error(err),
             })?;
-    Ok((UserId(id), encrypted_password))
+    Ok((UserId(db::format_id(id)), encrypted_password))
 }

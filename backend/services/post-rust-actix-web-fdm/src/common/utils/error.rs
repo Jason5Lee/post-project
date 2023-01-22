@@ -59,7 +59,7 @@ pub fn handle_invalid_value_in_db<T: std::fmt::Debug>(
     move |(value, body)| {
         crate::common::api::handle_internal_error(
             format_args!(
-                "invalid value found in DB|table={table}|column={column}|value={:?}|primary_key_value={:?}|reason={} ({})| ",
+                "invalid value found in table `{table}`, column `{column}`, value `{:?}`, with primary-key-value `{:?}`, {}: {}",
                 value,
                 primary_key_value,
                 body.error.error,

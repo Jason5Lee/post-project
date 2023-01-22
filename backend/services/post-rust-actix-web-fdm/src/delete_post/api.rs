@@ -3,19 +3,16 @@ use crate::common::utils::error::*;
 use crate::common::*;
 use actix_web::http::StatusCode;
 use actix_web::{delete, web::Path as UrlPath, HttpResponse};
-use apply::Apply;
 
 #[delete("/post/{id}")]
 pub async fn api(mut ctx: utils::Context) -> Result<HttpResponse> {
-    let caller = ctx.get_identity()?.ok_or_else(not_creator_admin)?;
+    let caller = ctx.get_caller_identity()?.ok_or_else(not_creator_admin)?;
     let (id,): (String,) = ctx
         .to::<UrlPath<(String,)>>()
         .await
         .map_err(bad_request)?
         .to_owned();
-    let input = utils::parse_id(&id)
-        .map_err(|_| post_not_found())?
-        .apply(PostId);
+    let input = PostId(id);
     super::Steps::from_ctx(&ctx).workflow(caller, input).await?;
     Ok(HttpResponse::NoContent().finish())
 }

@@ -1,15 +1,9 @@
-use std::convert::{Infallible, TryInto};
+use std::convert::Infallible;
 
-use crate::common::api::invalid_id;
 use actix_web::{dev::Payload, FromRequest, HttpRequest};
 use futures_util::future::{ready, Ready};
 
-use self::error::ErrorBody;
 use super::{api::handle_internal_error, Result};
-use base64::{
-    alphabet,
-    engine::fast_portable::{self, FastPortable},
-};
 
 pub mod auth;
 pub mod error;
@@ -71,19 +65,6 @@ pub struct Deps {
 }
 
 type DataDeps = actix_web::web::Data<Deps>;
-
-const ID_ENGINE: FastPortable = FastPortable::from(&alphabet::URL_SAFE, fast_portable::NO_PAD);
-pub fn format_id(id: u64) -> String {
-    base64::encode_engine(id.to_le_bytes(), &ID_ENGINE)
-}
-pub fn parse_id(value: &str) -> Result<u64, (&str, ErrorBody)> {
-    let bytes = base64::decode_engine(value, &ID_ENGINE)
-        .map_err(|err| (value, invalid_id(err.to_string())))?;
-    let bytes = (&bytes as &[u8])
-        .try_into()
-        .map_err(|_| (value, invalid_id("wrong length".into())))?;
-    Ok(u64::from_le_bytes(bytes))
-}
 
 pub fn current_timestamp() -> u64 {
     std::time::SystemTime::now()

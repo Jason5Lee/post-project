@@ -14,20 +14,20 @@ pub struct Query {
     size: Size,
 }
 
-pub struct PostInfo {
+pub struct Post {
     pub id: PostId,
     pub title: Title,
-    pub creator: CreatorInfo,
+    pub creator: Creator,
     pub creation: Time,
 }
 
-pub struct CreatorInfo {
+pub struct Creator {
     pub id: UserId,
     pub name: UserName,
 }
 
 pub struct Output {
-    pub posts: Vec<PostInfo>,
+    pub posts: Vec<Post>,
 }
 
 define_steps! {

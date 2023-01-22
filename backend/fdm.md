@@ -4,6 +4,7 @@ Here is my development method based on [the Domain Modeling idea from Scott Wlas
 
 - [post-rust-actix-web-fdm](services/post-rust-actix-web-fdm)
 - [post-ts-koa-mongo-fdm](services/post-ts-koa-mongo-fdm)
+- [post-ktor-mongo-fdm](./services/post-ktor-mongo-fdm).
 
 ## Code Structure
 
@@ -26,7 +27,7 @@ This development method utilizes code-as-documentation. The information containe
 
       If you are the client side that need to call the API
       or you are writing the API document you can refer to these code.
-    * `impl.<ext>` file includes the implementation of the workflow or dependent workflows.
+    * `impl.<ext>` (or `deps.rs` in Rust since `impl` is a keyword) file includes the implementation of the workflow or the dependent workflows.
 * Under the `common` directory
     * `models.<ext>` (or `mod.rs` in Rust, `index.ts` in TypeScript) file includes the shared domain models.
       * It uses wrapper types (or [branded types](https://www.typescriptlang.org/play?q=370#example/nominal-typing) in TypeScript) over primitive types to represent business model. For example, a type `UserName` that wraps over a string.
@@ -52,7 +53,12 @@ The ideal way to represent an error is to use `Result<T, E>`, which represents e
 
 So, in order to make things simpler while still modeling the errors properly, a simplified error modeling is used in some service implementations. In these implementations, we only use a general exception or `Result<T, E>` with a general error type which contains the response of the error. In the domain modeling, the domain errors are modeled as the definition of the functions that return the general error. The implementation of these functions are in the `api` file.
 
+Validation errors are a bit special. There are different operations on them. We may want to respond the error, treat it as a 404 Not Found, 403 Forbidden (for login), or other operation. It should be enforced to explicitly handle the invalidation error.
+
+There are two ways. First, the validation function returns a `Result<T, Invalid>` or a specific `ValidationResult<T>`. The caller need to handle the error before getting the validated value. Second, the validation function accepts a parameter which determines the error when the value is invalid. The [post-ts-koa-mongo-fdm](./services/post-ts-koa-mongo-fdm) uses the second way while the others use the first way.
+
 The simplified error modeling is used in the following implementations.
 
 - [post-rust-actix-web-fdm](./services/post-rust-actix-web-fdm).
 - [post-ts-koa-mongo-fdm](./services/post-ts-koa-mongo-fdm).
+- [post-ktor-mongo-fdm](./services/post-ktor-mongo-fdm).

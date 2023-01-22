@@ -1,8 +1,8 @@
-import { Context, Method, parseId, Route, validateRequest } from "../common/utils";
+import { Context, Method, Route, validateRequest } from "../common/utils";
 import * as runtypes from "runtypes";
 import { AdminId, Password } from "../common";
 import { Query, Workflow } from ".";
-import { ResponseError } from "../common/utils/error";
+import { onInvalid, ResponseError } from "../common/utils/error";
 
 export const route: Route = [Method.POST, "/admin/login"];
 
@@ -14,8 +14,8 @@ const requestBody = runtypes.Record({
 export async function run(ctx: Context, workflow: Workflow) {
     const req = validateRequest(requestBody, ctx.getRequestBody());
     const query: Query = {
-        id: parseId(req.id, errors.idOrPasswordIncorrect) as AdminId,
-        password: new Password(req.password),
+        id: req.id as AdminId,
+        password: new Password(req.password, onInvalid(errors.idOrPasswordIncorrect)),
     };
     const result = await workflow.run(query);
     const expire = ctx.getTokenExpireTime();
@@ -31,7 +31,7 @@ export async function run(ctx: Context, workflow: Workflow) {
 
 export const errors: Workflow["errors"] = {
     idOrPasswordIncorrect: () => new ResponseError(
-        400,
+        403,
         {
             error: {
                 error: "ID_OR_PASSWORD_INCORRECT",

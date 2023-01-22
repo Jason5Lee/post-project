@@ -3,8 +3,8 @@ import { ErrorBody } from "../utils/error";
 export const empty: ErrorBody = {
     error: {
         error: "TEXT_POST_CONTENT_EMPTY",
-        reason: "text post content is empty",
-        message: "text post content is empty",
+        reason: "Text post content cannot be empty",
+        message: "Text post content cannot be empty",
     }
 };
 export const tooLong: ErrorBody = {

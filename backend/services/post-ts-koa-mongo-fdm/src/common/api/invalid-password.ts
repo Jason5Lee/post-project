@@ -2,9 +2,9 @@ import { ErrorBody } from "../utils/error";
 
 export const empty: ErrorBody = {
     error: {
-        error: "PASSWORD_TOO_SHORT",
-        reason: "password is too short",
-        message: "password is too short",
+        error: "PASSWORD_EMPTY",
+        reason: "Password cannot be empty",
+        message: "Password cannot be empty",
     }
 };
 

@@ -74,6 +74,9 @@ async fn main() {
             .service(post_rust_actix_web_fdm::admin_login::api::api)
             .service(post_rust_actix_web_fdm::get_identity::api::api)
             .service(post_rust_actix_web_fdm::get_user::api::api)
+            .default_service(
+                actix_web::web::route().to(post_rust_actix_web_fdm::common::api::api_not_found),
+            )
     })
     .bind(&config.listen_addr)
     .expect("unable to bind")

@@ -16,7 +16,7 @@ pub async fn insert_user(
         .bind(Time::now().utc)
         .execute(&deps.pool)
         .await
-        .map(|_| UserId(id))
+        .map(|_| UserId(db::format_id(id)))
         .map_err(|err|
             if db::is_unique_violation_in(&err, db::users::USER_NAME) {
                 super::user_name_already_exists()

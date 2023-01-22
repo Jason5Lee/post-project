@@ -13,7 +13,7 @@ pub async fn api(mut ctx: utils::Context) -> Result<HttpResponse> {
         .await
         .map_err(bad_request)?
         .to_owned();
-    let input = UserId(utils::parse_id(&id).map_err(|_| super::user_not_found())?);
+    let input = UserId(id);
     let output = super::Steps::from_ctx(&ctx).workflow(input).await?;
     Ok(HttpResponse::Ok().json({
         #[derive(Serialize)]

@@ -1,7 +1,7 @@
-import { Context, formatId, Method, parseId, Route } from "../common/utils";
+import { Context, Method, Route } from "../common/utils";
 import { Condition, Workflow } from ".";
-import { fromRequest, ResponseError } from "../common/utils/error";
-import { checkSize, Time, UserId } from "../common";
+import { onInvalidRespond, ResponseError } from "../common/utils/error";
+import { checkSize, newTime, UserId } from "../common";
 import { CLIENT_BUG_MESSAGE } from "../common/api";
 
 export const route: Route = [Method.GET, "/post"];
@@ -17,16 +17,16 @@ export async function run(ctx: Context, workflow: Workflow): Promise<void> {
         if (afterParam !== undefined) {
             throw errors.bothBeforeAfter();
         }
-        const time = new Time(+beforeParam, fromRequest({ prefix: "BEFORE_" }));
+        const time = newTime(+beforeParam, onInvalidRespond({ status: 422, prefix: "BEFORE_" }));
         condition = { type: "Before", time };
     } else {
         if (afterParam !== undefined) {
-            const time = new Time(+afterParam, fromRequest({ prefix: "AFTER_" }));
+            const time = newTime(+afterParam, onInvalidRespond({ status: 422, prefix: "AFTER_" }));
             condition = { type: "After", time };
         }
     }
-    const size = checkSize(sizeParam === undefined ? undefined : +sizeParam);
-    const creator = creatorParam === undefined ? undefined : parseId(creatorParam, errors.creatorNotFound) as UserId;
+    const size = checkSize(sizeParam === undefined ? undefined : +sizeParam, onInvalidRespond({ status: 422 }));
+    const creator = creatorParam === undefined ? undefined : creatorParam as UserId;
 
     const output = await workflow.run({
         condition,
@@ -37,9 +37,9 @@ export async function run(ctx: Context, workflow: Workflow): Promise<void> {
         200,
         {
             posts: output.posts.map(post => ({
-                id: formatId(post.id),
+                id: post.id,
                 title: post.title,
-                creatorId: formatId(post.creator.id),
+                creatorId: post.creator.id,
                 creatorName: post.creator.name,
                 creationTime: post.creationTime.utc,
             })),
@@ -61,8 +61,8 @@ export const errors = {
         {
             error: {
                 error: "CREATOR_NOT_FOUND",
-                reason: "creator not found",
-                message: "the creator does not exist",
+                reason: "The creator does not exist",
+                message: "The creator does not exist",
             },
         }
     ),

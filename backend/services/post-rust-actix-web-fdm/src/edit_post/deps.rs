@@ -3,17 +3,19 @@ use crate::common::{api::*, *};
 
 pub async fn checks_user_is_creator_and_content_has_the_same_post_type(
     deps: &utils::Deps,
-    post: PostId,
-    user: UserId,
+    post: &PostId,
+    user: &UserId,
     content: &PostContent,
 ) -> Result<()> {
+    let post_db_id = db::parse_id(&post.0).ok_or_else(post_not_found)?;
+
     let (creator, is_text): (u64, bool) = sqlx::query_as(&iformat!("SELECT `" db::posts::CREATOR "`, (`" db::posts::TEXT "` IS NOT NULL) FROM `" db::POSTS "` WHERE `" db::posts::POST_ID "`=?"))
-        .bind(post.0)
+        .bind(post_db_id)
         .fetch_optional(&deps.pool)
         .await
         .map_err(handle_internal_error)?
         .ok_or_else(post_not_found)?;
-    if creator != user.0 {
+    if Some(creator) != db::parse_id(&user.0) {
         return Err(not_creator());
     }
 
@@ -31,9 +33,11 @@ pub async fn checks_user_is_creator_and_content_has_the_same_post_type(
 
 pub async fn update_post(
     deps: &utils::Deps,
-    post_id: PostId,
+    post_id: &PostId,
     new_content: PostContent,
 ) -> Result<()> {
+    let post_db_id = db::parse_id(&post_id.0).ok_or_else(post_not_found)?;
+
     let (text, url) = match new_content {
         PostContent::Text(text) => (Some(text.into_string()), None),
         PostContent::Url(url) => (None, Some(url.into_string())),
@@ -43,7 +47,7 @@ pub async fn update_post(
         .bind(text)
         .bind(url)
         .bind(Time::now().utc)
-        .bind(post_id.0)
+        .bind(post_db_id)
         .execute(&deps.pool)
         .await
         .map_err(handle_internal_error)?;

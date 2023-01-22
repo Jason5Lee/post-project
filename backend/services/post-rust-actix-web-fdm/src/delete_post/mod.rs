@@ -11,11 +11,11 @@ impl<'a> Steps<'a> {
     pub async fn workflow(self, caller: Identity, input: Command) -> Result<()> {
         let auth: bool = match caller {
             Identity::Admin(_) => true,
-            Identity::User(id) => id == self.get_post_creator(input).await?,
+            Identity::User(id) => id == self.get_post_creator(&input).await?,
         };
 
         if auth {
-            self.delete_post(input).await
+            self.delete_post(&input).await
         } else {
             Err(not_creator_admin())
         }
@@ -23,8 +23,8 @@ impl<'a> Steps<'a> {
 }
 
 define_steps! {
-    async fn get_post_creator(post: PostId) -> Result<UserId>;
-    async fn delete_post(id: PostId) -> Result<()>;
+    async fn get_post_creator(post: &PostId) -> Result<UserId>;
+    async fn delete_post(id: &PostId) -> Result<()>;
 }
 
 define_error! {

@@ -1,12 +1,12 @@
 import { AdminId, PostId, UserId } from "../../src/common";
 import { Workflow } from "../../src/delete-post";
-import { ExpectedError, id1, id2 } from "../common";
+import { ExpectedError } from "../common";
 
 describe("Delete post workflow", () => {
     it("should fail if the caller is a user but not the creator", async () => {
         class MockWorkflow extends Workflow {
             getPostCreator(): Promise<UserId> {
-                return Promise.resolve(id1 as UserId);
+                return Promise.resolve("0" as UserId);
             }
             deletePost(): Promise<void> {
                 throw new Error("Post should not be deleted by the user who is not the creator");
@@ -18,7 +18,7 @@ describe("Delete post workflow", () => {
         }
         const workflow = new MockWorkflow();
         try {
-            await workflow.run({ type: "User", id: id2 as UserId }, id1 as PostId);
+            await workflow.run({ type: "User", id: "1" as UserId }, "0" as PostId);
             throw new Error("Expected error not thrown");
         } catch (e) {
             if (!(e instanceof ExpectedError)) {
@@ -30,7 +30,7 @@ describe("Delete post workflow", () => {
     it("should success if the caller is the creator", async () => {
         class MockWorkflow extends Workflow {
             getPostCreator(): Promise<UserId> {
-                return Promise.resolve(id1 as UserId);
+                return Promise.resolve("1" as UserId);
             }
             deletePost(): Promise<void> {
                 return Promise.resolve();
@@ -41,13 +41,13 @@ describe("Delete post workflow", () => {
             };
         }
         const workflow = new MockWorkflow();
-        await workflow.run({ type: "User", id: id1 as UserId }, id1 as PostId);
+        await workflow.run({ type: "User", id: "1" as UserId }, "2" as PostId);
     });
 
     it("should success if the caller is the admin", async () => {
         class MockWorkflow extends Workflow {
             getPostCreator(): Promise<UserId> {
-                return Promise.resolve(id1 as UserId);
+                return Promise.resolve("0" as UserId);
             }
             deletePost(): Promise<void> {
                 return Promise.resolve();
@@ -58,6 +58,6 @@ describe("Delete post workflow", () => {
             };
         }
         const workflow = new MockWorkflow();
-        await workflow.run({ type: "Admin", id: id2 as AdminId }, id1 as PostId);
+        await workflow.run({ type: "Admin", id: "1" as AdminId }, "2" as PostId);
     });
 });

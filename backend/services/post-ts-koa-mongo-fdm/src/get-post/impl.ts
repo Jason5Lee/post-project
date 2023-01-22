@@ -1,9 +1,9 @@
-import { checkTextPostContent, checkUrlPostContent, checkTitle, checkUserName, PostContent, PostId, UserId, Time } from "../common";
+import { checkTextPostContent, checkUrlPostContent, checkTitle, checkUserName, PostContent, PostId, UserId, newTime } from "../common";
 import { Deps } from "../common/utils";
-import { PostInfoForPage, Workflow } from ".";
+import { Post, Workflow } from ".";
 import * as db from "../common/utils/db";
 import { ObjectId, WithId } from "mongodb";
-import { fromDB } from "../common/utils/error";
+import { onInvalidHandleInDB } from "../common/utils/error";
 import { errors } from "./api";
 import * as runtypes from "runtypes";
 
@@ -19,28 +19,26 @@ export class WorkflowImpl implements Workflow {
     private static readonly userHasName = runtypes.Record({
         name: runtypes.String,
     });
-    async run(id: PostId): Promise<PostInfoForPage> {
-        const post: WithId<unknown> | null = await this.deps.mongoDb.collection(db.posts).findOne({ _id: id });
+    async run(id: PostId): Promise<Post> {
+        const oid = db.tryParseId(id);
+        if (oid === undefined) {
+            throw errors.postNotFound();
+        }
+        const post: WithId<unknown> | null = await this.deps.mongoDb.collection(db.posts).findOne({ _id: oid });
         if (post === null) {
             throw this.errors.postNotFound();
         }
         db.validate(WorkflowImpl.expectedPost, db.posts, post);
-        checkTitle(post.title, fromDB({ collection: db.posts, id, field: "title" }));
+        checkTitle(post.title, onInvalidHandleInDB({ collection: db.posts, id: oid, field: "title" }));
         let content: PostContent;
         if (post.text !== undefined && post.url === undefined) {
-            checkTextPostContent(post.text, fromDB({ collection: db.posts, id, field: "text" }));
+            checkTextPostContent(post.text, onInvalidHandleInDB({ collection: db.posts, id: oid, field: "text" }));
             content = { type: "Text", content: post.text };
         } else if (post.text === undefined && post.url !== undefined) {
-            checkUrlPostContent(post.url, fromDB({ collection: db.posts, id, field: "url" }));
+            checkUrlPostContent(post.url, onInvalidHandleInDB({ collection: db.posts, id: oid, field: "url" }));
             content = { type: "Url", content: post.url };
         } else {
-            throw fromDB({ collection: db.posts, id, field: "text,url" })({
-                error: {
-                    error: "TEXT_URL_EXACT_ONE",
-                    reason: "exact one of the text and the url field should exist",
-                    message: "",
-                }
-            });
+            throw new Error(`Invalid value in collection \`${db.posts}\`, ID \`${JSON.stringify(id)}\`, exactly only one of \`text\` and \`url\` must exist`);
         }
 
         const creator: WithId<unknown> | null = await this.deps.mongoDb.collection(db.users).findOne({ _id: post.creator });
@@ -48,16 +46,16 @@ export class WorkflowImpl implements Workflow {
             throw new Error(`The creator of post ${id}, ${post.creator}, not found`);
         }
         db.validate(WorkflowImpl.userHasName, db.users, creator);
-        checkUserName(creator.name, fromDB({ collection: db.users, id: creator._id, field: "name" }));
+        checkUserName(creator.name, onInvalidHandleInDB({ collection: db.users, id: creator._id, field: "name" }));
         return {
             creator: {
-                id: creator._id as UserId,
+                id: db.formatId(creator._id) as UserId,
                 name: creator.name,
             },
             title: post.title,
             content,
-            creationTime: new Time(post.creationTime, fromDB({ collection: db.posts, id, field: "creationTime" })),
-            lastModified: post.lastModified !== undefined ? new Time(post.lastModified, fromDB({ collection: db.posts, id, field: "lastModified" })) : undefined,
+            creationTime: newTime(post.creationTime, onInvalidHandleInDB({ collection: db.posts, id, field: "creationTime" })),
+            lastModified: post.lastModified !== undefined ? newTime(post.lastModified, onInvalidHandleInDB({ collection: db.posts, id, field: "lastModified" })) : undefined,
         };
     }
 

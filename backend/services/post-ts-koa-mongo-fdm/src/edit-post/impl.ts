@@ -15,12 +15,21 @@ export class WorkflowImpl extends Workflow {
     });
 
     async checkUserIsCreatorAndContentHasTheSameType(postId: PostId, userId: UserId, content: PostContent): Promise<void> {
-        const post: WithId<unknown> | null = await this.deps.mongoDb.collection(db.posts).findOne({ _id: postId });
+        const postOid = db.tryParseId(postId);
+        if (postOid === undefined) {
+            throw this.errors.postNotFound();
+        }
+        const post: WithId<unknown> | null = await this.deps.mongoDb.collection(db.posts).findOne({ _id: postOid });
         if (post === null) {
             throw this.errors.postNotFound();
         }
         db.validate(WorkflowImpl.postHasCreator_TextOrUrl, db.posts, post);
-        if (!post.creator.equals(userId)) {
+        
+        const userOid = db.tryParseId(userId);
+        if (userOid === undefined) {
+            throw this.errors.notCreator();
+        }
+        if (!post.creator.equals(userOid)) {
             throw this.errors.notCreator();
         }
         const sameType =
@@ -33,6 +42,11 @@ export class WorkflowImpl extends Workflow {
     }
 
     async updatePost(postId: PostId, newContent: PostContent): Promise<void> {
+        const postOid = db.tryParseId(postId);
+        if (postOid === undefined) {
+            throw this.errors.postNotFound();
+        }
+
         const lastModified = Long.fromNumber(now().utc);
         const updateSet: {
             lastModified: Long,
@@ -43,7 +57,7 @@ export class WorkflowImpl extends Workflow {
         }) = newContent.type === "Text" ? { lastModified, text: newContent.content } :
                 newContent.type === "Url" ? { lastModified, url: newContent.content } :
                     throwUnexpectedValue(newContent);
-        await this.deps.mongoDb.collection(db.posts).updateOne({ _id: postId }, { $set: updateSet });
+        await this.deps.mongoDb.collection(db.posts).updateOne({ _id: postOid }, { $set: updateSet });
     }
 
     readonly errors = errors;

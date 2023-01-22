@@ -1,7 +1,6 @@
 use crate::common::api::*;
 use crate::common::*;
 
-use apply::Apply;
 use jsonwebtoken::{DecodingKey, EncodingKey};
 use serde::{Deserialize, Serialize};
 
@@ -19,18 +18,14 @@ pub struct Claim {
 }
 
 impl super::Context {
-    pub fn get_identity(&self) -> Result<Option<Identity>> {
+    pub fn get_caller_identity(&self) -> Result<Option<Identity>> {
         match get_claim(self)? {
             None => Ok(None),
             Some(claim) => {
                 if let Some(user_id) = claim.userId {
-                    utils::parse_id(&user_id)
-                        .map(|id| Identity::User(UserId(id)).apply(Some))
-                        .map_err(|_| invalid_auth())
+                    Ok(Some(Identity::User(UserId(user_id))))
                 } else if let Some(admin_id) = claim.adminId {
-                    utils::parse_id(&admin_id)
-                        .map(|id| Identity::Admin(AdminId(id)).apply(Some))
-                        .map_err(|_| invalid_auth())
+                    Ok(Some(Identity::Admin(AdminId(admin_id))))
                 } else {
                     Err(invalid_auth())
                 }
@@ -54,13 +49,13 @@ impl super::Context {
         let claim = match identity {
             Identity::User(user_id) => Claim {
                 exp,
-                userId: Some(utils::format_id(user_id.0)),
+                userId: Some(user_id.0),
                 adminId: None,
             },
             Identity::Admin(admin_id) => Claim {
                 exp,
                 userId: None,
-                adminId: Some(utils::format_id(admin_id.0)),
+                adminId: Some(admin_id.0),
             },
         };
         jsonwebtoken::encode(

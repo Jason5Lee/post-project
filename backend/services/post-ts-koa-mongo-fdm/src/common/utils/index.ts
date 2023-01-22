@@ -1,17 +1,17 @@
-import { Id, Identity, Time } from "..";
+import { Identity, newTime, Time } from "..";
 import Koa from "koa";
 import { AuthConfig, getIdentity, generateToken } from "./auth";
 import { getToken } from "../api/auth";
 import * as runtypes from "runtypes";
 import { badRequest } from "../api";
 import Router from "@koa/router";
-import { Db as MongoDb, ObjectId } from "mongodb";
-import { Encryption } from "./encryption";
+import { Db as MongoDb } from "mongodb";
 import { RuntypeBase } from "runtypes/lib/runtype";
-import { throwUnexpectedValue } from "./error";
+import { assertValid, throwUnexpectedValue } from "./error";
+import { PasswordEncryptor } from "./password";
 
 export function now(): Time {
-    return { utc: Date.now() };
+    return newTime(Date.now(), assertValid);
 }
 
 export class Context {
@@ -20,12 +20,12 @@ export class Context {
         public deps: Deps,
     ) {}
 
-    getIdentity(): Identity | undefined {
+    getCallerIdentity(): Identity | undefined {
         return getIdentity(getToken(this.koaCtx.header), this.deps.authConfig.secret);
     }
 
     getTokenExpireTime(): Time {
-        return { utc: Date.now() + this.deps.authConfig.validSecs * 1000 };
+        return newTime(Date.now() + this.deps.authConfig.validSecs * 1000, assertValid);
     }
 
     generateToken(identity: Identity, expire: Time): string {
@@ -35,9 +35,12 @@ export class Context {
     getRequestBody(): unknown { return this.koaCtx.request.body; }
 
     setResponse(status: number, body: unknown): void {
-        console.log("set response to", status, body);
         this.koaCtx.status = status;
         this.koaCtx.body = body;
+    }
+
+    setResponseHeader(field: string, val: string | string[]) {
+        this.koaCtx.set(field, val);
     }
 
     getRouteParam(name: string): string {
@@ -56,11 +59,11 @@ export class Context {
             if (options?.optional) {
                 return undefined;
             } else {
-                throw badRequest(`Missing query parameter "${name}"`);
+                throw badRequest(`Missing query parameter \`${name}\``);
             }
         }
         if (typeof value === "object") {
-            throw badRequest(`Query parameter "${name}" should only appear once`);
+            throw badRequest(`Query parameter \`${name}\` should only appear once`);
         }
 
         return value;
@@ -70,7 +73,7 @@ export class Context {
 export interface Deps {
     readonly mongoDb: MongoDb,
     readonly authConfig: AuthConfig,
-    readonly encryption: Encryption,
+    readonly encryptor: PasswordEncryptor,
 
     close(): Promise<void>;
 }
@@ -100,15 +103,10 @@ interface ApiPackage<Workflow> {
     readonly route: Route,
     readonly run: (ctx: Context, workflow: Workflow) => Promise<void>;
 }
-interface ImplPackage<Workflow> {
-    readonly WorkflowImpl: {
-        new(deps: Deps): Workflow;
-    }
-}
 
-export function addRoute<Workflow>(router: Router, deps: Deps, api: ApiPackage<Workflow>, impl: ImplPackage<Workflow>) {
+export function addRoute<Workflow>(router: Router, deps: Deps, api: ApiPackage<Workflow>, workflowImpl: { new(deps: Deps): Workflow}) {
     const [method, path] = api.route;
-    const workflow= new impl.WorkflowImpl(deps);
+    const workflow= new workflowImpl(deps);
     const runApi = api.run;
     const apiFunc = async (koaCtx: Koa.Context, next: Koa.Next) => {
         const ctx = new Context(
@@ -134,16 +132,4 @@ export function addRoute<Workflow>(router: Router, deps: Deps, api: ApiPackage<W
         default:
             throwUnexpectedValue(method);
     }
-}
-
-export function parseId(id: string, error: () => Error): Id {
-    const idBuf = Buffer.from(id, "base64url");
-    if (idBuf.toString("base64url") !== id || !ObjectId.isValid(idBuf)) {
-        throw error();
-    }
-    return new ObjectId(idBuf);
-}
-
-export function formatId(id: Id): string {
-    return id.id.toString("base64url");
 }

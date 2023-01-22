@@ -5,8 +5,8 @@ impl super::super::UserName {
         ErrorBody {
             error: ErrBody {
                 error: "USER_NAME_EMPTY".into(),
-                reason: "user name is empty".to_string(),
-                message: "user name is empty".to_string(),
+                reason: "User name cannot be empty".to_string(),
+                message: "User name cannot be empty".to_string(),
             },
         }
     }
@@ -14,8 +14,8 @@ impl super::super::UserName {
         ErrorBody {
             error: ErrBody {
                 error: "USER_NAME_TOO_SHORT".into(),
-                reason: "user name is too short".to_string(),
-                message: "user name is too short".to_string(),
+                reason: "User name must be at least 3 characters".to_string(),
+                message: "User name must be at least 3 characters".to_string(),
             },
         }
     }
@@ -23,8 +23,8 @@ impl super::super::UserName {
         ErrorBody {
             error: ErrBody {
                 error: "USER_NAME_TOO_LONG".into(),
-                reason: "user name is too long".to_string(),
-                message: "user name is too long".to_string(),
+                reason: "User name must be at most 20 characters".to_string(),
+                message: "User name must be at most 20 characters".to_string(),
             },
         }
     }

@@ -4,6 +4,7 @@ import { PostId, UserId } from "../common";
 import * as db from "../common/utils/db";
 import { Long, MongoError, ObjectId } from "mongodb";
 import { errors } from "./api";
+import { invalidAuth } from "../common/api/auth";
 
 export class WorkflowImpl implements Workflow {
     async run(caller: UserId, input: Command): Promise<PostId> {
@@ -16,9 +17,13 @@ export class WorkflowImpl implements Workflow {
                 contentObj = { url: input.content.content };
                 break;
         }
+        const creator = db.tryParseId(caller);
+        if (creator === undefined) {
+            throw invalidAuth();
+        }
         try {
             const post = await this.deps.mongoDb.collection(db.posts).insertOne({
-                creator: caller,
+                creator: creator,
                 creationTime: Long.fromNumber(now().utc),
                 title: input.title,
                 ...contentObj,
@@ -29,7 +34,7 @@ export class WorkflowImpl implements Workflow {
                 text?: string,
                 url?: string,
             });
-            return post.insertedId as PostId;
+            return db.formatId(post.insertedId) as PostId;
         } catch (e) {
             if (e instanceof MongoError) {
                 if (e.code === 11000) {

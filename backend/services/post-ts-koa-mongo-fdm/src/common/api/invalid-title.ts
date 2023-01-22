@@ -3,8 +3,8 @@ import { ErrorBody } from "../utils/error";
 export const empty: ErrorBody = {
     error: {
         error: "TITLE_EMPTY",
-        reason: "title is empty",
-        message: "title is empty",
+        reason: "Title cannot be empty",
+        message: "Title cannot be empty",
     }
 };
 

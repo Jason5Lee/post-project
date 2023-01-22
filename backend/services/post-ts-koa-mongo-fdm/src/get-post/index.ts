@@ -1,6 +1,6 @@
 import { PostContent, PostId, Time, Title, UserId, UserName } from "../common";
 
-export interface PostInfoForPage {
+export interface Post {
     readonly creator: {
         readonly name: UserName,
         readonly id: UserId,
@@ -12,7 +12,7 @@ export interface PostInfoForPage {
 }
 
 export interface Workflow {
-    run(id: PostId): Promise<PostInfoForPage>;
+    run(id: PostId): Promise<Post>;
 
     readonly errors: {
         postNotFound(): Error;

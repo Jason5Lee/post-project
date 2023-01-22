@@ -1,6 +1,9 @@
-import { ObjectId } from "mongodb";
-import { ResponseError } from "../src/common/utils/error";
+import { ErrorBody } from "../src/common/utils/error";
 
-export class ExpectedError extends Error { }
-export const id1: ObjectId = ObjectId.createFromHexString("000000000000000000000001");
-export const id2: ObjectId = ObjectId.createFromHexString("000000000000000000000002");
+export class ExpectedError extends Error {
+    constructor(public readonly err?: ErrorBody) { super(); }
+}
+
+export function expectInvalid(err: ErrorBody): Error {
+    return new ExpectedError(err);
+}

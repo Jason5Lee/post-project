@@ -4,7 +4,7 @@ export type Command = PostId;
 
 export abstract class Workflow {
     async run(caller: Identity, input: Command): Promise<void> {
-        const auth = caller.type === "Admin" || (caller.id satisfies UserId).equals(await this.getPostCreator(input));
+        const auth = caller.type === "Admin" || (caller.id satisfies UserId) === (await this.getPostCreator(input));
         if (!auth) {
             throw this.errors.notCreatorAdmin();
         }

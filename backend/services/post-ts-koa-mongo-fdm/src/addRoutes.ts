@@ -32,14 +32,14 @@ import * as user_registerApi from "./user-register/api";
 import * as user_registerImpl from "./user-register/impl";
 
 export function addRoutes(router: Router, deps: Deps) {
-    addRoute(router, deps, admin_loginApi, admin_loginImpl);
-    addRoute(router, deps, create_postApi, create_postImpl);
-    addRoute(router, deps, delete_postApi, delete_postImpl);
-    addRoute(router, deps, edit_postApi, edit_postImpl);
-    addRoute(router, deps, get_identityApi, get_identityImpl);
-    addRoute(router, deps, get_postApi, get_postImpl);
-    addRoute(router, deps, get_userApi, get_userImpl);
-    addRoute(router, deps, list_postsApi, list_postsImpl);
-    addRoute(router, deps, user_loginApi, user_loginImpl);
-    addRoute(router, deps, user_registerApi, user_registerImpl);
+    addRoute(router, deps, admin_loginApi, admin_loginImpl.WorkflowImpl);
+    addRoute(router, deps, create_postApi, create_postImpl.WorkflowImpl);
+    addRoute(router, deps, delete_postApi, delete_postImpl.WorkflowImpl);
+    addRoute(router, deps, edit_postApi, edit_postImpl.WorkflowImpl);
+    addRoute(router, deps, get_identityApi, get_identityImpl.WorkflowImpl);
+    addRoute(router, deps, get_postApi, get_postImpl.WorkflowImpl);
+    addRoute(router, deps, get_userApi, get_userImpl.WorkflowImpl);
+    addRoute(router, deps, list_postsApi, list_postsImpl.WorkflowImpl);
+    addRoute(router, deps, user_loginApi, user_loginImpl.WorkflowImpl);
+    addRoute(router, deps, user_registerApi, user_registerImpl.WorkflowImpl);
 }

@@ -53,5 +53,11 @@ All errors cause by invalid value are `422 Unprocessable Entity`.
 
 These errors will be returned in some programming languages. In other languages, they will be considered as a deserialization error and responded as a Bad Request.
 
-- `TIME_NEGATIVE`: The time is negative.
-- `TIME_NOT_SAFE_INTEGER`: The time is not a safe integer.
+### Size
+
+- `INVALID_SIZE`: The size is not a positive integer.
+
+### Time
+
+- `INVALID_TIME`: The time is not a non-negative integer.
+  - In JavaScript-based implementation (e.g. TypeScript), this error will also be returned when the time is not a safe integer.

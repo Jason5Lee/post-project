@@ -5,6 +5,7 @@ export async function testUserRegister(base: string): Promise<[string, string]> 
     const user1 = await axios.post(`${base}/register`, { userName: "user1", password: "password1" });
     assert(user1.status === 201);
     assert(typeof user1.data.userId === "string");
+    assert(user1.headers["location"] === "/user/" + user1.data.userId);
 
     const existUser = await axios.post(`${base}/register`, { userName: "user1", password: "password1" }, { validateStatus: () => true });
     assert(existUser.status === 409);
@@ -13,6 +14,8 @@ export async function testUserRegister(base: string): Promise<[string, string]> 
     const user2 = await axios.post(`${base}/register`, { userName: "user2", password: "password2" });
     assert(user2.status === 201);
     assert(typeof user2.data.userId === "string");
+    assert(user2.headers["location"] === "/user/" + user2.data.userId);
+
     return [user1.data.userId, user2.data.userId];
 }
 
@@ -30,10 +33,12 @@ export async function testUserLogin(base: string, user_id: [string, string]): Pr
     const user1 = await axios.post(`${base}/login`, { userName: "user1", password: "password1" });
     assert(user1.status === 200);
     assert(typeof user1.data.token === "string");
+    assert(user1.data.id === user_id[0]);
 
     const user2 = await axios.post(`${base}/login`, { userName: "user2", password: "password2" });
     assert(user2.status === 200);
     assert(typeof user2.data.token === "string");
+    assert(user2.data.id === user_id[1]);
 
     const wrongPassword = await axios.post(`${base}/login`, { userName: "user1", password: "password2" }, { validateStatus: () => true });
     assert(wrongPassword.status === 403);

@@ -1,6 +1,6 @@
-import { Context, Method, parseId, Route, validateRequest } from "../common/utils";
+import { Context, Method, Route, validateRequest } from "../common/utils";
 import { Workflow } from ".";
-import { fromRequest, ResponseError } from "../common/utils/error";
+import { onInvalidRespond, ResponseError } from "../common/utils/error";
 import { checkTextPostContent, checkUrlPostContent, PostContent, PostId } from "../common";
 import * as runtypes from "runtypes";
 import { CLIENT_BUG_MESSAGE } from "../common/api";
@@ -13,18 +13,18 @@ const requestStructure = runtypes.Record({
 });
 
 export async function run(ctx: Context, workflow: Workflow) {
-    const postId = parseId(ctx.getRouteParam("id"), errors.postNotFound) as PostId;
-    const req = validateRequest(requestStructure, ctx.getRequestBody());
-    const caller = ctx.getIdentity();
+    const caller = ctx.getCallerIdentity();
     if (caller === undefined || caller.type !== "User") {
         throw errors.notCreator();
     }
+    const postId = ctx.getRouteParam("id") as PostId;
+    const req = validateRequest(requestStructure, ctx.getRequestBody());
     let newContent: PostContent;
     if (req.text !== undefined && req.url === undefined) {
-        checkTextPostContent(req.text, fromRequest());
+        checkTextPostContent(req.text, onInvalidRespond({ status: 422 }));
         newContent = { type: "Text", content: req.text };
     } else if (req.text === undefined && req.url !== undefined) {
-        checkUrlPostContent(req.url, fromRequest());
+        checkUrlPostContent(req.url, onInvalidRespond({ status: 422 }));
         newContent = { type: "Url", content: req.url };
     } else {
         throw errors.textUrlExactOne();
@@ -43,8 +43,8 @@ export const errors = {
             {
                 error: {
                     error: "POST_NOT_FOUND",
-                    reason: "post not found",
-                    message: "the post does not exist",
+                    reason: "The post does not exist",
+                    message: "The post does not exist",
                 }
             }
         );
@@ -55,8 +55,8 @@ export const errors = {
             {
                 error: {
                     error: "NOT_CREATOR",
-                    reason: "the user is not the creator of the post",
-                    message: "you are not allowed to perform this action",
+                    reason: "You are not the creator of the post",
+                    message: "You are not the creator of the post",
                 }
             }
         );
@@ -67,8 +67,8 @@ export const errors = {
             {
                 error: {
                     error: "TYPE_DIFF",
-                    reason: "the type of the post is different",
-                    message: "you cannot change the post type",
+                    reason: "The type of the post cannot be changed",
+                    message: "The type of the post cannot be changed",
                 }
             }
         );
@@ -78,7 +78,7 @@ export const errors = {
         {
             error: {
                 error: "TEXT_URL_EXACT_ONE",
-                reason: "exact one of the text and the url field should exist",
+                reason: "Exactly one of `text` and `url` must be provided",
                 message: CLIENT_BUG_MESSAGE,
             }
         }

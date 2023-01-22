@@ -1,7 +1,6 @@
 import { AdminId, Identity, Time, UserId } from "..";
 import jwt from "jsonwebtoken";
 import { invalidAuth } from "../api/auth";
-import { formatId, parseId } from ".";
 
 export interface AuthConfig {
     readonly validSecs: number,
@@ -28,9 +27,9 @@ export function getIdentity(token: string | undefined, secret: string): Identity
     } else {
         const { userId, adminId } = decoded;
         if (typeof userId === "string") {
-            return { type: "User", id: parseId(userId, invalidAuth) as UserId };
+            return { type: "User", id: userId as UserId };
         } else if (typeof adminId === "string") {
-            return { type: "Admin", id: parseId(adminId, invalidAuth) as AdminId };
+            return { type: "Admin", id: adminId as AdminId };
         } else {
             throw invalidAuth();
         }
@@ -38,7 +37,7 @@ export function getIdentity(token: string | undefined, secret: string): Identity
 }
 
 export function generateToken(identity: Identity, secret: string, expire: Time): string {
-    const payload = identity.type === "User" ? { userId: formatId(identity.id) } : { adminId: formatId(identity.id) };
+    const payload = identity.type === "User" ? { userId: identity.id } : { adminId: identity.id };
     return jwt.sign(
         { exp: Math.floor(expire.utc / 1000), ...payload },
         secret,

@@ -1,4 +1,4 @@
-import { Context, Method, parseId, Route } from "../common/utils";
+import { Context, Method, Route } from "../common/utils";
 import { Workflow } from ".";
 import { ResponseError } from "../common/utils/error";
 import { PostId } from "../common";
@@ -6,8 +6,8 @@ import { PostId } from "../common";
 export const route: Route = [Method.DELETE, "/post/:id"];
 
 export async function run(ctx: Context, workflow: Workflow) {
-    const id = parseId(ctx.getRouteParam("id"), errors.postNotFound) as PostId;
-    const caller = ctx.getIdentity();
+    const id = ctx.getRouteParam("id") as PostId;
+    const caller = ctx.getCallerIdentity();
     if (caller === undefined) {
         throw errors.notCreatorAdmin();
     }
@@ -21,8 +21,8 @@ export const errors: Workflow["errors"] = {
         {
             error: {
                 error: "NOT_CREATOR_ADMIN",
-                reason: "The user is not the creator of the post, nor an admin",
-                message: "You are not allowed to perform this action",
+                reason: "Only the creator or an admin can delete a post.",
+                message: "Only the creator or an admin can delete a post.",
             }
         }
     ),

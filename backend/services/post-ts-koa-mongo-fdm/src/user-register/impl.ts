@@ -10,14 +10,14 @@ export class WorkflowImpl extends Workflow {
         try {
             const rec = await this.deps.mongoDb.collection(db.users).insertOne({
                 name: userName,
-                encryptedPassword: await this.deps.encryption.encrypt(password.plain),
+                encryptedPassword: await password.encrypt(this.deps.encryptor),
                 creationTime: Long.fromNumber(now().utc),
             } satisfies {
                 name: string,
                 encryptedPassword: string,
                 creationTime: Long,
             });
-            return rec.insertedId as UserId;
+            return db.formatId(rec.insertedId) as UserId;
         } catch (e) {
             if (e instanceof MongoError) {
                 if (e.code === 11000) {

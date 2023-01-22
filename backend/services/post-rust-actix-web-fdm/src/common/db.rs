@@ -1,5 +1,9 @@
+use std::convert::TryInto;
 use std::fmt;
 use std::fmt::Formatter;
+
+use base64::alphabet;
+use base64::engine::fast_portable::{self, FastPortable};
 
 #[derive(Copy, Clone, Eq, PartialEq)]
 pub struct Table(pub &'static str);
@@ -96,4 +100,14 @@ pub fn is_unique_violation_in(err: &sqlx::Error, column: UniqueColumn) -> bool {
     } else {
         false
     }
+}
+
+const ID_ENGINE: FastPortable = FastPortable::from(&alphabet::URL_SAFE, fast_portable::NO_PAD);
+pub fn format_id(id: u64) -> String {
+    base64::encode_engine(id.to_le_bytes(), &ID_ENGINE)
+}
+pub fn parse_id(value: &str) -> Option<u64> {
+    let bytes = base64::decode_engine(value, &ID_ENGINE).ok()?;
+    let bytes = (&bytes as &[u8]).try_into().ok()?;
+    Some(u64::from_le_bytes(bytes))
 }

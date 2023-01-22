@@ -5,12 +5,12 @@ use crate::{common::*, define_error, define_steps};
 
 pub type Query = PostId;
 
-pub struct CreatorInfo {
+pub struct Creator {
     pub name: UserName,
     pub id: UserId,
 }
-pub struct PostInfoForPage {
-    pub creator: CreatorInfo,
+pub struct Post {
+    pub creator: Creator,
     pub creation: Time,
     pub last_modified: Option<Time>,
     pub title: Title,
@@ -18,7 +18,7 @@ pub struct PostInfoForPage {
 }
 
 define_steps! {
-    async fn workflow(id: Query) -> Result<PostInfoForPage>;
+    async fn workflow(id: Query) -> Result<Post>;
 }
 
 define_error! {

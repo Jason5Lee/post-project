@@ -10,7 +10,7 @@ use serde::{Deserialize, Serialize};
 
 #[put("/post")]
 pub async fn api(mut ctx: utils::Context) -> Result<HttpResponse> {
-    let caller = match ctx.get_identity()? {
+    let caller = match ctx.get_caller_identity()? {
         Some(Identity::User(user_id)) => user_id,
         _ => return Err(user_only()),
     };
@@ -40,7 +40,7 @@ pub async fn api(mut ctx: utils::Context) -> Result<HttpResponse> {
         },
     };
     let output = super::Steps::from_ctx(&ctx).workflow(caller, input).await?;
-    let post_id = utils::format_id(output.0);
+    let post_id = output.0;
     Ok(HttpResponse::Created()
         .append_header(("Location", format!("/post/{}", post_id)))
         .json({
@@ -59,8 +59,8 @@ pub fn duplicate_title() -> ErrorResponse {
         ErrorBody {
             error: ErrBody {
                 error: "DUPLICATE_TITLE".into(),
-                reason: "the post with the same title already exists".to_string(),
-                message: "title already exists".to_string(),
+                reason: "The title is already used".to_string(),
+                message: "The title is already used".to_string(),
             },
         },
     )
@@ -73,7 +73,7 @@ pub fn text_url_exact_one() -> ErrorResponse {
         ErrorBody {
             error: ErrBody {
                 error: "TEXT_URL_EXACT_ONE".into(),
-                reason: "exact one of the text and the url field should exist".to_string(),
+                reason: "The text and url fields must be exactly one".to_string(),
                 message: CLIENT_BUG_MESSAGE.to_string(),
             },
         },

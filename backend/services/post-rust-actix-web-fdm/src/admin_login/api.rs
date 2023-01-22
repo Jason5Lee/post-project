@@ -21,7 +21,7 @@ pub async fn api(mut ctx: utils::Context) -> Result<HttpResponse> {
         .map_err(bad_request)?
         .0;
     let input = Query {
-        id: AdminId(utils::parse_id(&req_body.id).map_err(|_| id_or_password_incorrect())?),
+        id: AdminId(req_body.id),
         password: Password::try_from_plain(req_body.password)
             .map_err(|_| id_or_password_incorrect())?,
     };
@@ -46,8 +46,8 @@ pub fn id_or_password_incorrect() -> ErrorResponse {
         ErrorBody {
             error: ErrBody {
                 error: "ID_OR_PASSWORD_INCORRECT".into(),
-                reason: "The admin ID does not exist, or the password is incorrect".to_string(),
-                message: "Admin ID or password incorrect".to_string(),
+                reason: "The Admin ID or password is incorrect".to_string(),
+                message: "The Admin ID or password is incorrect".to_string(),
             },
         },
     )

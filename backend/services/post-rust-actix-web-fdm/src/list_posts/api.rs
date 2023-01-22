@@ -26,9 +26,7 @@ pub async fn api(mut ctx: Context) -> Result<HttpResponse> {
     let input = Query {
         creator: match req.creator {
             None => None,
-            Some(id) => Some(UserId(
-                utils::parse_id(&id).map_err(|_| creator_not_found())?,
-            )),
+            Some(id) => Some(UserId(id)),
         },
         condition: match (req.before, req.after) {
             (None, None) => Condition::No,
@@ -74,9 +72,9 @@ pub async fn api(mut ctx: Context) -> Result<HttpResponse> {
                     .posts
                     .into_iter()
                     .map(|output| PostInfoDto {
-                        id: utils::format_id(output.id.0),
+                        id: output.id.0,
                         title: output.title.into_string(),
-                        creatorId: utils::format_id(output.creator.id.0),
+                        creatorId: output.creator.id.0,
                         creatorName: output.creator.name.into_rc_str(),
                         creationTime: output.creation.utc,
                     })

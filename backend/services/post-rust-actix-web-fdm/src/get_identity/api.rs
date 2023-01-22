@@ -9,7 +9,7 @@ use super::*;
 
 #[get("/identity")]
 pub async fn api(ctx: utils::Context) -> Result<HttpResponse> {
-    let caller = ctx.get_identity()?;
+    let caller = ctx.get_caller_identity()?;
     let output = super::Steps::from_ctx(&ctx).workflow(caller).await?;
     HttpResponse::Ok()
         .json({
@@ -36,14 +36,12 @@ pub async fn api(ctx: utils::Context) -> Result<HttpResponse> {
                 Some(IdentityInfo::User { id, name }) => ResponseDto {
                     user: Some(UserDto {
                         name: name.into_rc_str(),
-                        id: utils::format_id(id.0),
+                        id: id.0,
                     }),
                     ..Default::default()
                 },
                 Some(IdentityInfo::Admin { id }) => ResponseDto {
-                    admin: Some(AdminDto {
-                        id: utils::format_id(id.0),
-                    }),
+                    admin: Some(AdminDto { id: id.0 }),
                     ..Default::default()
                 },
                 None => Default::default(),

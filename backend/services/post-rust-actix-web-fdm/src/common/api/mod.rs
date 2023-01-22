@@ -83,16 +83,6 @@ pub fn user_only() -> ErrorResponse {
         .into()
 }
 
-pub fn invalid_id(reason: String) -> ErrorBody {
-    ErrorBody {
-        error: ErrBody {
-            error: "INVALID_ID".into(),
-            reason,
-            message: "invalid ID".to_string(),
-        },
-    }
-}
-
 pub fn low_probability_error() -> ErrorResponse {
     (
         StatusCode::INTERNAL_SERVER_ERROR,
@@ -105,4 +95,14 @@ pub fn low_probability_error() -> ErrorResponse {
         },
     )
         .into()
+}
+
+pub async fn api_not_found() -> actix_web::HttpResponse {
+    actix_web::HttpResponse::NotFound().json(ErrorBody {
+        error: ErrBody {
+            error: "API_NOT_FOUND".into(),
+            reason: "The API does not exist".into(),
+            message: CLIENT_BUG_MESSAGE.into(),
+        },
+    })
 }

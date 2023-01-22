@@ -1,3 +1,5 @@
+const customWorkflowImpl = {};
+
 const fs = require("fs/promises");
 (async () => {
     const files = await fs.readdir("./src");
@@ -11,11 +13,12 @@ const fs = require("fs/promises");
         if (stats.isDirectory()) {
             const apiName = file.replace("-", "_") + "Api";
             const implName = file.replace("-", "_") + "Impl";
+            const workflowImpl = customWorkflowImpl[file] ?? "WorkflowImpl";
             imports += `import * as ${apiName} from "./${file}/api";
 import * as ${implName} from "./${file}/impl";
 
 `;
-            addRoutes += `    addRoute(router, deps, ${apiName}, ${implName});\n`;
+            addRoutes += `    addRoute(router, deps, ${apiName}, ${implName}.${workflowImpl});\n`;
         }
         await fs.writeFile("./src/addRoutes.ts", `import Router from "@koa/router";
 import { addRoute, Deps } from "./common/utils";

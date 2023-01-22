@@ -31,10 +31,12 @@ pub async fn api(mut ctx: utils::Context) -> Result<HttpResponse> {
         #[derive(Serialize)]
         #[allow(non_snake_case)]
         pub struct ResponseDto {
-            expire: u64,
+            pub id: String,
+            pub expire: u64,
             pub token: String,
         }
         ResponseDto {
+            id: output.0.clone(),
             expire: expired_time.utc,
             token: ctx.generate_token(expired_time, Identity::User(output)),
         }

@@ -2,7 +2,8 @@ use super::*;
 use crate::common::api::*;
 use crate::common::utils::error::*;
 
-pub async fn workflow(deps: &utils::Deps, input: Query) -> Result<PostInfoForPage> {
+pub async fn workflow(deps: &utils::Deps, input: Query) -> Result<Post> {
+    let db_post_id = db::parse_id(&input.0).ok_or_else(post_not_found)?;
     let (creator, creation_time_utc, last_modified_utc, title, text, url): (
         u64,
         u64,
@@ -19,11 +20,12 @@ pub async fn workflow(deps: &utils::Deps, input: Query) -> Result<PostInfoForPag
         "`,`" db::posts::URL
         "` FROM `" db::POSTS "` WHERE `" db::posts::POST_ID "`=?"
     ))
-    .bind(input.0)
+    .bind(db_post_id)
     .fetch_optional(&deps.pool)
     .await
     .map_err(handle_internal_error)?
     .ok_or_else(post_not_found)?;
+
     let (creator_name,): (String,) = sqlx::query_as(&iformat!(
         "SELECT `" db::users::USER_NAME "` FROM `" db::USERS "` WHERE `" db::users::USER_ID "`=?"
     ))
@@ -33,19 +35,19 @@ pub async fn workflow(deps: &utils::Deps, input: Query) -> Result<PostInfoForPag
     .map_err(handle_internal_error)?
     .ok_or_else(|| {
         handle_internal_error(format_args!(
-            "post {} has creator {} which not exists",
+            "post `{}` has creator `{}` which not exists",
             input.0, creator
         ))
     })?;
 
-    Ok(PostInfoForPage {
-        creator: CreatorInfo {
+    Ok(Post {
+        creator: Creator {
             name: UserName::try_new(creator_name).map_err(handle_invalid_value_in_db(
                 db::USERS,
                 db::users::USER_NAME.into(),
                 creator,
             ))?,
-            id: UserId(creator),
+            id: UserId(db::format_id(creator)),
         },
         creation: Time {
             utc: creation_time_utc,
@@ -54,19 +56,19 @@ pub async fn workflow(deps: &utils::Deps, input: Query) -> Result<PostInfoForPag
         title: Title::try_new(title).map_err(handle_invalid_value_in_db(
             db::POSTS,
             db::posts::TITLE.into(),
-            input.0,
+            db_post_id,
         ))?,
         content: match (text, url) {
             (Some(text), None) => PostContent::Text(TextPostContent::try_new(text).map_err(
-                handle_invalid_value_in_db(db::POSTS, db::posts::TEXT, input.0),
+                handle_invalid_value_in_db(db::POSTS, db::posts::TEXT, db_post_id),
             )?),
             (None, Some(url)) => PostContent::Url(UrlPostContent::try_new(url).map_err(
-                handle_invalid_value_in_db(db::POSTS, db::posts::URL, input.0),
+                handle_invalid_value_in_db(db::POSTS, db::posts::URL, db_post_id),
             )?),
             _ => {
                 return Err(handle_internal_error(format_args!(
-                    "post {} has both or neither post and url",
-                    input.0
+                    "post with ID `{}` has both or neither post and url",
+                    db_post_id
                 )))
             }
         },

@@ -1,4 +1,4 @@
-import { Context, Method, parseId, Route } from "../common/utils";
+import { Context, Method, Route } from "../common/utils";
 import { Workflow } from ".";
 import { ResponseError } from "../common/utils/error";
 import { UserId } from "../common";
@@ -6,7 +6,7 @@ import { UserId } from "../common";
 export const route: Route = [Method.GET, "/user/:id"];
 
 export async function run(ctx: Context, workflow: Workflow): Promise<void> {
-    const id = parseId(ctx.getRouteParam("id"), errors.userNotFound) as UserId;
+    const id = ctx.getRouteParam("id") as UserId;
     const user = await workflow.run(id);
     ctx.setResponse(
         200,
@@ -26,8 +26,8 @@ export const errors: Workflow["errors"] = {
         {
             error: {
                 error: "USER_NOT_FOUND",
-                reason: "user not found",
-                message: "the user does not exist",
+                reason: "The user does not exist",
+                message: "The user does not exist",
             }
         }
     ),

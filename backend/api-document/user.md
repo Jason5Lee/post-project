@@ -23,7 +23,9 @@ Body:
 
 ```json
 {
-  "token": "<Auth token>"
+  "id": "<User ID>",
+  "token": "<Auth token>",
+  "expire": <token expire time stamp>
 }
 ```
 

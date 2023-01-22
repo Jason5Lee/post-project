@@ -17,9 +17,7 @@ pub async fn api(mut ctx: Context) -> Result<HttpResponse> {
         .await
         .map_err(bad_request)?
         .to_owned();
-    let input = utils::parse_id(&id)
-        .map(PostId)
-        .map_err(|_| super::post_not_found())?;
+    let input = PostId(id);
     let output = super::Steps::from_ctx(&ctx).workflow(input).await?;
 
     HttpResponse::Ok()
@@ -45,7 +43,7 @@ pub async fn api(mut ctx: Context) -> Result<HttpResponse> {
             };
 
             ResponseDto {
-                creatorId: utils::format_id(output.creator.id.0),
+                creatorId: output.creator.id.0,
                 creatorName: output.creator.name.into_rc_str(),
                 creationTime: output.creation.utc,
                 title: output.title.into_string(),

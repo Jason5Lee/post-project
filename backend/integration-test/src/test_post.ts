@@ -93,6 +93,7 @@ async function testEditPost(base: string, postId: string, user1Token: UserToken,
     const checkEdit = await axios.get(base + "/post/" + postId);
     assert(checkEdit.status === 200);
     assert(checkEdit.data.text === "New Post Content");
+    assert(checkEdit.data.lastModified !== undefined);
 }
 
 async function testCreateGetAPost(base: string, counter: number, postType: "text" | "url", headers: Partial<unknown>, creatorId: string, creatorName: string, userPosts: Post[], allPosts: Post[]) {
@@ -101,6 +102,7 @@ async function testCreateGetAPost(base: string, counter: number, postType: "text
     assert(post.status === 201);
     const postId = post.data.postId;
     assert(typeof postId === "string");
+    assert(post.headers["location"] === "/post/" + postId);
 
     const getPost = await axios.get(base + "/post/" + postId);
     assert(getPost.status === 200);

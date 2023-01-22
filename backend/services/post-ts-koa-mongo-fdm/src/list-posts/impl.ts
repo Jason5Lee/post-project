@@ -2,8 +2,8 @@ import { Deps } from "../common/utils";
 import { Output, Query, Workflow } from ".";
 import * as db from "../common/utils/db";
 import { Long, WithId, ObjectId } from "mongodb";
-import { fromDB, throwUnexpectedValue } from "../common/utils/error";
-import { checkTitle, checkUserName, PostId, Time, UserId } from "../common";
+import { onInvalidHandleInDB, throwUnexpectedValue } from "../common/utils/error";
+import { checkTitle, checkUserName, newTime, PostId, UserId } from "../common";
 import { errors } from "./api";
 import * as runtypes from "runtypes";
 
@@ -19,11 +19,15 @@ export class WorkflowImpl implements Workflow {
     async run(query: Query): Promise<Output> {
         let filter: object = {};
         if (query.creator !== undefined) {
-            const user = await this.deps.mongoDb.collection(db.users).findOne({ _id: query.creator });
+            const creatorOid = db.tryParseId(query.creator);
+            if (creatorOid === undefined) {
+                throw this.errors.creatorNotFound();
+            }
+            const user = await this.deps.mongoDb.collection(db.users).findOne({ _id: creatorOid });
             if (user === null) {
                 throw this.errors.creatorNotFound();
             }
-            filter = { creator: query.creator };
+            filter = { creator: creatorOid };
         }
         let timeSort: 1 | -1 = -1;
         if (query.condition !== undefined) {
@@ -45,8 +49,8 @@ export class WorkflowImpl implements Workflow {
         if (timeSort === 1) {
             posts.reverse();
         }
-        const creatorIds = new Set(posts.map(post => post.creator));
-        const creators: WithId<unknown>[] = await this.deps.mongoDb.collection(db.users).find({ _id: { $in: Array.from(creatorIds) } }).toArray();
+        const creatorIds = posts.map(post => post.creator);
+        const creators: WithId<unknown>[] = await this.deps.mongoDb.collection(db.users).find({ _id: { $in: creatorIds } }).toArray();
         db.validateArray(WorkflowImpl.userHasName, db.users, creators);
         const creatorMap = new Map(creators.map(creator => [creator._id.toHexString(), creator]));
         return {
@@ -55,16 +59,16 @@ export class WorkflowImpl implements Workflow {
                 if (creator === undefined) {
                     throw new Error(`The creator of post ${post._id}, ${post.creator}, not found`);
                 }
-                checkTitle(post.title, fromDB({ collection: db.posts, id: post._id, field: "title" }));
-                checkUserName(creator.name, fromDB({ collection: db.users, id: creator._id, field: "name" }));
+                checkTitle(post.title, onInvalidHandleInDB({ collection: db.posts, id: post._id, field: "title" }));
+                checkUserName(creator.name, onInvalidHandleInDB({ collection: db.users, id: creator._id, field: "name" }));
                 return {
-                    id: post._id as PostId,
+                    id: db.formatId(post._id) as PostId,
                     title: post.title,
                     creator: {
-                        id: post.creator as UserId,
+                        id: db.formatId(post.creator) as UserId,
                         name: creator.name,
                     },
-                    creationTime: new Time(post.creationTime, fromDB({ collection: db.posts, id: post._id, field: "creationTime" })),
+                    creationTime: newTime(post.creationTime, onInvalidHandleInDB({ collection: db.posts, id: post._id, field: "creationTime" })),
                 };
             })
         };

@@ -20,15 +20,13 @@ app.use(async (ctx, next) => {
         await next();
 
         // https://github.com/koajs/router/issues/158#issuecomment-1233886752
-        console.log(ctx);
         if (ctx.status === 404 && ctx.message === "Not Found") {
-            ctx.body = apiNotFound;
+            ctx.body = apiNotFound.body;
         }
     } catch (e) {
         if (e instanceof ResponseError) {
             ctx.status = e.status;
             ctx.body = e.body;
-            ctx.app.emit("error", e, ctx);
         } else if (e instanceof Error) {
             const id = uuid.v4();
             const resp = internalServerError(id.toString());

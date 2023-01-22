@@ -1,16 +1,9 @@
 import { ErrorBody } from "../utils/error";
 
-export const negative: ErrorBody = {
+export const invalid: ErrorBody = {
     error: {
-        error: "TIME_NEGATIVE",
-        reason: "time is negative",
-        message: "time is negative",
-    }
-};
-export const notSafeInteger: ErrorBody = {
-    error: {
-        error: "TIME_NOT_SAFE_INTEGER",
-        reason: "time is not a 64-bit-floating-point-safe integer",
-        message: "time is not an integer or too large",
+        error: "INVALID_TIME",
+        reason: "Time must be a safe non-negative integer",
+        message: "Time must be a safe non-negative integer",
     }
 };

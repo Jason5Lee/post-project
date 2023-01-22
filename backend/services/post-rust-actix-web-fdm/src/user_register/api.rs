@@ -25,7 +25,7 @@ pub async fn api(mut ctx: utils::Context) -> Result<HttpResponse> {
         password: Password::try_from_plain(req.password).map_err(as_unprocessable_entity)?,
     };
     let output = super::Steps::from_ctx(&ctx).workflow(input).await?;
-    let user_id = utils::format_id(output.0);
+    let user_id = output.0;
     Ok(HttpResponse::Created()
         .append_header(("Location", iformat!("/user/" user_id)))
         .json({

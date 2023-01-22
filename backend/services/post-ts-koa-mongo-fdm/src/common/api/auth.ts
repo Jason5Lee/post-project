@@ -18,7 +18,8 @@ export function invalidAuth(): ResponseError {
         {
             error: {
                 error: "INVALID_AUTH",
-                reason: "authorization is invalid",
+                reason: "The authorization is invalid",
+                // When this happens, the client should remove the token instead of showing this message.
                 message: CLIENT_BUG_MESSAGE,
             }
         }

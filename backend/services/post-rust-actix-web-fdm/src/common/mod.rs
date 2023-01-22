@@ -16,27 +16,20 @@ pub struct Time {
     pub utc: u64,
 }
 
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Identity {
     User(UserId),
     Admin(AdminId),
 }
 
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
-pub struct UserId(pub u64);
+#[derive(Debug, PartialEq, Eq, Clone)]
+pub struct UserId(pub String);
 
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
-pub struct AdminId(pub u64);
+#[derive(Debug, PartialEq, Eq, Clone)]
+pub struct AdminId(pub String);
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct UserName(Rc<str>);
-
-#[derive(Debug, PartialEq, Eq, Clone)]
-pub struct User {
-    pub id: UserId,
-    pub name: UserName,
-    pub creation: Time,
-}
 
 #[derive(PartialEq, Eq, Clone)]
 pub struct Password {
@@ -46,8 +39,8 @@ pub struct Password {
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub struct LengthLimit(u32);
 
-#[derive(Clone, Copy, PartialEq, Eq)]
-pub struct PostId(pub u64);
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct PostId(pub String);
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Title(String);

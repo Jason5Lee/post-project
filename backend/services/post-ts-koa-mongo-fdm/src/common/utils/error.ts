@@ -1,5 +1,3 @@
-import * as validationApi from "../api";
-
 export interface ErrorBody {
     readonly error: {
         readonly error: string,
@@ -14,22 +12,28 @@ export class ResponseError extends Error {
     }
 }
 
-export type Validation = (body: ErrorBody, value?: unknown) => Error;
+export type InvalidError = (body: ErrorBody, value: unknown) => Error;
 
-export function fromRequest(options?: { prefix?: string }) : Validation {
-    if (options) {
-        const { prefix } = options;
-        if (prefix) {
-            return (body) => validationApi.invalidRequest({ error: { ...body.error, error: prefix + body.error.error } });
-        }
+export function onInvalidRespond(options: { status: number, prefix?: string }) : InvalidError {
+    const { status, prefix } = options;
+    if (prefix) {
+        return (body) => new ResponseError(status, { error: { ...body.error, error: prefix + body.error.error } });
     }
-    return validationApi.invalidRequest;
+    return (body) => new ResponseError(status, body);
 }
 
-export function fromDB({ collection, id, field }: { collection: string, id: unknown, field: string }) : Validation {
-    return (body, value) => Error(`Invalid value ${JSON.stringify(value)} in collection "${collection}", ID ${JSON.stringify(id)}, field "${field}", error "${body.error.error}": ${body.error.reason}`);
+export function onInvalid(err: (body: ErrorBody, value: unknown) => Error) : InvalidError {
+    return err;
+}
+
+export function onInvalidHandleInDB({ collection, id, field }: { collection: string, id: unknown, field: string }) : InvalidError {
+    return (body, value) => Error(`Invalid value \`${JSON.stringify(value)}\` in collection \`${collection}\`, ID \`${JSON.stringify(id)}\`, field \`${field}\`, error ${body.error.error}: ${body.error.reason}`);
+}
+
+export function assertValid(body: ErrorBody, value: unknown): Error {
+    return new Error(`Assertion failed. Invalid value \`${JSON.stringify(value)}\`, ${body.error.error}: ${body.error.reason}`);
 }
 
 export function throwUnexpectedValue(value: never): never {
-    throw new Error(`Unexpected value ${JSON.stringify(value)}`);
+    throw new Error(`Unexpected value \`${JSON.stringify(value)}\``);
 }

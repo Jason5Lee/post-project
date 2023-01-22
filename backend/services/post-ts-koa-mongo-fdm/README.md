@@ -10,7 +10,8 @@ Here is [the API document](../../api-document).
 
 * Setup a MongoDB.
 * Run `yarn install`.
-* (Optional) run `yarn run generate` to generate `src/addRoutes.ts`.
+* If you change the workflows, run `yarn run generate` to generate `src/addRoutes.ts`.
+  * You can customize the implementation class by modifying the `customWorkflowImpl` object in [`generate.js`](./src/common/utils/generate.js) file.
 * (Optional) use [create admin tool](../../createadmin) to create admin.
 * Config by either setting up environment variables or using a `.env` file.
   * `LISTEN_HOST`: listening host.

@@ -8,7 +8,7 @@ use serde::Deserialize;
 
 #[post("/post/{id}")]
 pub async fn api(mut ctx: utils::Context) -> Result<HttpResponse> {
-    let caller = match ctx.get_identity()? {
+    let caller = match ctx.get_caller_identity()? {
         Some(Identity::User(user_id)) => user_id,
         _ => return Err(not_creator()),
     };
@@ -26,14 +26,11 @@ pub async fn api(mut ctx: utils::Context) -> Result<HttpResponse> {
         .0;
     let input = Command {
         id: PostId(
-            utils::parse_id(
-                &ctx.to::<UrlPath<(String,)>>()
-                    .await
-                    .map_err(bad_request)?
-                    .to_owned()
-                    .0,
-            )
-            .map_err(|_| post_not_found())?,
+            ctx.to::<UrlPath<(String,)>>()
+                .await
+                .map_err(bad_request)?
+                .to_owned()
+                .0,
         ),
         new_content: match (req.text, req.url) {
             (Some(text), None) => {
