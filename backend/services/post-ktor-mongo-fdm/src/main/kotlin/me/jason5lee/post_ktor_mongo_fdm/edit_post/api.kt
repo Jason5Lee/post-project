@@ -20,13 +20,14 @@ val api = Api.create(HttpMethod.Post, "/post/{id}") { ctx, workflow: Workflow ->
         val text: String? = null,
         val url: String? = null,
     )
+
     val req = ctx.getRequestBody<RequestBody>()
     val command = Command(
         id = PostId(id),
         newContent = if (req.text != null && req.url == null) {
-            PostContent.Text(TextPostContent.validate(req.text).onInvalidRespond(HttpStatusCode.UnprocessableEntity))
+            PostContent.Text(newTextPostContent(req.text).onInvalidRespond(HttpStatusCode.UnprocessableEntity))
         } else if (req.text == null && req.url != null) {
-            PostContent.Url(UrlPostContent.validate(req.url).onInvalidRespond(HttpStatusCode.UnprocessableEntity))
+            PostContent.Url(newUrlPostContent(req.url).onInvalidRespond(HttpStatusCode.UnprocessableEntity))
         } else {
             throw textUrlExactOne()
         }
@@ -38,7 +39,7 @@ val api = Api.create(HttpMethod.Post, "/post/{id}") { ctx, workflow: Workflow ->
     )
 }
 
-fun Errors.asException(): Exception = when(this) {
+fun Errors.asException(): Exception = when (this) {
     Errors.PostNotFound -> HttpException(
         HttpStatusCode.NotFound,
         FailureBody(
@@ -49,6 +50,7 @@ fun Errors.asException(): Exception = when(this) {
             )
         )
     )
+
     Errors.NotCreator -> HttpException(
         HttpStatusCode.Forbidden,
         FailureBody(
@@ -59,6 +61,7 @@ fun Errors.asException(): Exception = when(this) {
             )
         )
     )
+
     Errors.TypeDiff -> HttpException(
         HttpStatusCode.BadRequest,
         FailureBody(

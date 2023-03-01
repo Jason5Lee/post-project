@@ -11,7 +11,7 @@ sealed class IdentityInfo {
 }
 
 abstract class Workflow {
-    suspend fun run(caller: Identity?): IdentityInfo? = when(caller) {
+    suspend fun run(caller: Identity?): IdentityInfo? = when (caller) {
         is Identity.Admin -> IdentityInfo.Admin(caller.id)
         is Identity.User -> IdentityInfo.User(caller.id, getUserName(caller.id))
         null -> null

@@ -25,7 +25,7 @@ data class Creator(
     val name: UserName,
 )
 
-abstract class Workflow: Errors {
+abstract class Workflow : Errors {
     abstract suspend fun run(input: Query): List<Post>
 }
 

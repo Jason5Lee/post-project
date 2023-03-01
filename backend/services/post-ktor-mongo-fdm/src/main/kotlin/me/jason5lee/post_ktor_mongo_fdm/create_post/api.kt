@@ -2,11 +2,7 @@ package me.jason5lee.post_ktor_mongo_fdm.create_post
 
 import io.ktor.http.*
 import kotlinx.serialization.Serializable
-import me.jason5lee.post_ktor_mongo_fdm.common.Title
-import me.jason5lee.post_ktor_mongo_fdm.common.Identity
-import me.jason5lee.post_ktor_mongo_fdm.common.PostContent
-import me.jason5lee.post_ktor_mongo_fdm.common.TextPostContent
-import me.jason5lee.post_ktor_mongo_fdm.common.UrlPostContent
+import me.jason5lee.post_ktor_mongo_fdm.common.*
 import me.jason5lee.post_ktor_mongo_fdm.common.api.clientBugMessage
 import me.jason5lee.post_ktor_mongo_fdm.common.utils.*
 
@@ -19,17 +15,18 @@ val api = Api.create(HttpMethod.Put, "/post") { ctx, workflow: Workflow ->
         val text: String? = null,
         val url: String? = null,
     )
+
     val req = ctx.getRequestBody<RequestBody>()
     val command = Command(
-        title = Title.validate(req.title, OnInvalidRespond(HttpStatusCode.UnprocessableEntity)),
+        title = newTitle(req.title, OnInvalidRespond(HttpStatusCode.UnprocessableEntity)),
         content =
-            if (req.text != null && req.url == null) {
-                PostContent.Text(TextPostContent.validate(req.text).onInvalidRespond(HttpStatusCode.UnprocessableEntity))
-            } else if (req.text == null && req.url != null) {
-                PostContent.Url(UrlPostContent.validate(req.url).onInvalidRespond(HttpStatusCode.UnprocessableEntity))
-            } else {
-                throw textUrlExactOne()
-            }
+        if (req.text != null && req.url == null) {
+            PostContent.Text(newTextPostContent(req.text).onInvalidRespond(HttpStatusCode.UnprocessableEntity))
+        } else if (req.text == null && req.url != null) {
+            PostContent.Url(newUrlPostContent(req.url).onInvalidRespond(HttpStatusCode.UnprocessableEntity))
+        } else {
+            throw textUrlExactOne()
+        }
     )
     val postId = workflow.run(caller.id, command)
 

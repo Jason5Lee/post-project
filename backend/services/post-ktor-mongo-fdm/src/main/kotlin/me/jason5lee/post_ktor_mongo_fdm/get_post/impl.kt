@@ -18,10 +18,10 @@ class WorkflowImpl(private val deps: Deps) : Workflow() {
             projection = null,
         ) ?: return Result.failure(Errors.PostNotFound)
 
-        val title = doc.validate("title", Title::validate)
+        val title = Title(doc.get("title"))
         val content = run {
-            val text = doc.validateOptional("text", TextPostContent::validate)
-            val url = doc.validateOptional("url", UrlPostContent::validate)
+            val text = doc.getOptional<String>("text")?.let { TextPostContent(it) }
+            val url = doc.getOptional<String>("url")?.let { UrlPostContent(it) }
 
             if (text != null && url == null) {
                 PostContent.Text(text)
@@ -32,16 +32,17 @@ class WorkflowImpl(private val deps: Deps) : Workflow() {
             }
         }
         val creator = doc.get<ObjectId>("creator")
-        val creationTime = doc.validate("creationTime", Time::validate)
-        val lastModified = doc.validateOptional("lastModified", Time::validate)
+        val creationTime = Time(doc.get("creationTime"))
+        val lastModified = doc.getOptional<Long>("lastModified")?.let { Time(it) }
 
         val creatorDoc = Db.findById(
             db = deps.mongoDb,
             collection = Db.users,
             id = creator,
             projection = Projections.include("name"),
-        ) ?: throw Exception("Invalid query result from `${Db.posts}[_id = $objId].creator`, not found in `${Db.users}`")
-        val creatorName = creatorDoc.validate("name", UserName::validate)
+        )
+            ?: throw Exception("Invalid query result from `${Db.posts}[_id = $objId].creator`, not found in `${Db.users}`")
+        val creatorName = UserName(creatorDoc.get("name"))
 
         return Post(
             creator = Creator(

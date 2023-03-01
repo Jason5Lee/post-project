@@ -1,14 +1,17 @@
 package me.jason5lee.post_ktor_mongo_fdm.edit_post
 
 import kotlinx.coroutines.runBlocking
-import me.jason5lee.post_ktor_mongo_fdm.common.*
+import me.jason5lee.post_ktor_mongo_fdm.common.PostContent
+import me.jason5lee.post_ktor_mongo_fdm.common.PostId
+import me.jason5lee.post_ktor_mongo_fdm.common.TextPostContent
+import me.jason5lee.post_ktor_mongo_fdm.common.UserId
 import me.jason5lee.resukt.Result
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class EditPostTests {
     companion object {
-        private val testPostContent = PostContent.Text(TextPostContent.validate("ccc").assertValid())
+        private val testPostContent = PostContent.Text(TextPostContent("ccc"))
     }
 
     @Test
@@ -64,6 +67,7 @@ class EditPostTests {
         val result = runBlocking { mockWorkflow.run(UserId("0"), Command(PostId("0"), testPostContent)) }
         assertEquals(Result.failure(Errors.PostNotFound), result)
     }
+
     @Test
     fun `test if the post is deleted`() {
         val mockWorkflow = object : Workflow() {

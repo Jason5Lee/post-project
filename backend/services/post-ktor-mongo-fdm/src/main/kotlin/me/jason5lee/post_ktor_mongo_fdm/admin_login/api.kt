@@ -4,7 +4,7 @@ import io.ktor.http.*
 import kotlinx.serialization.Serializable
 import me.jason5lee.post_ktor_mongo_fdm.common.AdminId
 import me.jason5lee.post_ktor_mongo_fdm.common.Identity
-import me.jason5lee.post_ktor_mongo_fdm.common.Password
+import me.jason5lee.post_ktor_mongo_fdm.common.newPassword
 import me.jason5lee.post_ktor_mongo_fdm.common.utils.*
 
 val api = Api.create(HttpMethod.Post, "/admin/login") { ctx, workflow: Workflow ->
@@ -13,10 +13,11 @@ val api = Api.create(HttpMethod.Post, "/admin/login") { ctx, workflow: Workflow 
         val id: String,
         val password: String,
     )
+
     val req = ctx.getRequestBody<RequestBody>()
     val query = Query(
         id = AdminId(req.id),
-        password = Password.validate(req.password).onInvalidThrow { workflow.idOrPasswordIncorrect() },
+        password = newPassword(req.password).onInvalidThrow { workflow.idOrPasswordIncorrect() },
     )
     val adminId = workflow.run(query)
 

@@ -32,12 +32,13 @@ class Context(
     fun responseHeaders(): ResponseHeaders =
         pipelineContext.context.response.headers
 
-    suspend inline fun <reified T: Any> getRequestBody(): T = try {
+    suspend inline fun <reified T : Any> getRequestBody(): T = try {
         pipelineContext.call.receive()
     } catch (e: BadRequestException) {
         throw badRequest("Invalid request body")
     }
-    suspend inline fun <reified T: Any> respond(status: HttpStatusCode, body: T) {
+
+    suspend inline fun <reified T : Any> respond(status: HttpStatusCode, body: T) {
         pipelineContext.call.respond(status, body)
     }
 

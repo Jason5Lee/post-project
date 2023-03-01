@@ -1,6 +1,5 @@
 package me.jason5lee.post_ktor_mongo_fdm.create_post
 
-import com.mongodb.DuplicateKeyException
 import com.mongodb.MongoWriteException
 import kotlinx.coroutines.reactive.awaitSingle
 import me.jason5lee.post_ktor_mongo_fdm.common.PostContent

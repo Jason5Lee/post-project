@@ -17,7 +17,12 @@ abstract class Workflow {
             updatePost(input.id, input.newContent)
         }
 
-    abstract suspend fun checkUserIsCreatorAndContentHasTheSameType(post: PostId, user: UserId, content: PostContent): Result<Unit, Errors>
+    abstract suspend fun checkUserIsCreatorAndContentHasTheSameType(
+        post: PostId,
+        user: UserId,
+        content: PostContent
+    ): Result<Unit, Errors>
+
     abstract suspend fun updatePost(post: PostId, newContent: PostContent): Result<Unit, Errors>
 }
 

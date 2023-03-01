@@ -1,7 +1,7 @@
 package me.jason5lee.post_ktor_mongo_fdm.common.utils
 
 import io.github.cdimascio.dotenv.Dotenv
-import io.ktor.server.application.*
+
 class Env(
     val listenHost: String,
     val listenPort: Int,
@@ -30,6 +30,7 @@ class Env(
 private fun Dotenv.getString(name: String): String {
     return this[name] ?: throw IllegalStateException("Missing env var: '$name'")
 }
+
 private fun Dotenv.getInt(name: String): Int {
     val strValue = getString(name)
     return try {

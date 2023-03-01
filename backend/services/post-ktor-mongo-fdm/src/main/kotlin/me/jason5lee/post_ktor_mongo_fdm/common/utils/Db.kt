@@ -13,8 +13,7 @@ import org.bson.Document
 import org.bson.conversions.Bson
 import org.bson.types.ObjectId
 import org.reactivestreams.Publisher
-import java.util.Base64
-import kotlin.IllegalArgumentException
+import java.util.*
 
 object Db {
     val users = "users"
@@ -28,9 +27,9 @@ object Db {
         db.getCollection(posts).createIndex(Indexes.ascending("lastModified")).awaitFirstOrNull()
     }
 
-    class QueryDoc<Id: Any>(val collection: String, val id: Id, val doc: Document) {
-        inline fun <reified T: Any> get(field: String): T {
-            val value =  doc[field] ?: throw fieldNotFoundException(collection, id, field)
+    class QueryDoc<Id : Any>(val collection: String, val id: Id, val doc: Document) {
+        inline fun <reified T : Any> get(field: String): T {
+            val value = doc[field] ?: throw fieldNotFoundException(collection, id, field)
             if (value is T) {
                 return value
             } else {
@@ -38,41 +37,25 @@ object Db {
             }
         }
 
-        inline fun <reified T: Any> getOptional(field: String): T? {
-            val value =  doc[field] ?: return null
+        inline fun <reified T : Any> getOptional(field: String): T? {
+            val value = doc[field] ?: return null
             if (value is T) {
                 return value
             } else {
                 throw fieldTypeMismatchException(collection, id, field, value, T::class.java)
             }
-        }
-
-        inline fun <reified T: Any, R> validate(field: String, validation: (T) -> ValidationResult<R>): R =
-            validation(get(field)).onInvalidThrow { invalidException(collection, id, field, it.value, it.body) }
-
-        inline fun <reified T: Any, R> validateOptional(field: String, validation: (T) -> ValidationResult<R>): R? {
-            val value = getOptional<T>(field) ?: return null
-            return validation(value).onInvalidThrow { invalidException(collection, id, field, it.value, it.body) }
-        }
-
-        class OnInvalidHandleInDB(private val collection: String, private val id: Any, private val field: String) : InvalidException {
-            override fun invoke(body: FailureBody, value: Any): Exception =
-                invalidException(collection, id, field, value, body)
-        }
-
-        inline fun <reified T: Any, R> validate(field: String, validation: (T, InvalidException) -> R): R =
-            validation(get(field), OnInvalidHandleInDB(collection, id, field))
-
-        inline fun <reified T: Any, R> validateOptional(field: String, validation: (T, InvalidException) -> R): R? {
-            val value = getOptional<T>(field) ?: return null
-            return validation(value, OnInvalidHandleInDB(collection, id, field))
         }
     }
 
-    suspend fun <Id: Any> findById(db: MongoDatabase, collection: String, id: Id, projection: Bson?): QueryDoc<Id>? =
-        db.getCollection(collection).find(Filters.eq("_id", id)).projection(projection).first().awaitFirstOrNull()?.let { QueryDoc(collection, id, it) }
+    suspend fun <Id : Any> findById(db: MongoDatabase, collection: String, id: Id, projection: Bson?): QueryDoc<Id>? =
+        db.getCollection(collection).find(Filters.eq("_id", id)).projection(projection).first().awaitFirstOrNull()
+            ?.let { QueryDoc(collection, id, it) }
 
-    inline fun <reified Id: Any> find(db: MongoDatabase, collection: String, configCollection: com.mongodb.reactivestreams.client.MongoCollection<Document>.() -> Publisher<Document>): Flow<QueryDoc<Id>> =
+    inline fun <reified Id : Any> find(
+        db: MongoDatabase,
+        collection: String,
+        configCollection: com.mongodb.reactivestreams.client.MongoCollection<Document>.() -> Publisher<Document>
+    ): Flow<QueryDoc<Id>> =
         db.getCollection(collection).configCollection()
             .asFlow()
             .map {
@@ -84,7 +67,11 @@ object Db {
                 }
             }
 
-    suspend inline fun <reified Id: Any> findOne(db: MongoDatabase, collection: String, configCollection: com.mongodb.reactivestreams.client.MongoCollection<Document>.() -> FindPublisher<Document>): QueryDoc<Id>? =
+    suspend inline fun <reified Id : Any> findOne(
+        db: MongoDatabase,
+        collection: String,
+        configCollection: com.mongodb.reactivestreams.client.MongoCollection<Document>.() -> FindPublisher<Document>
+    ): QueryDoc<Id>? =
         db.getCollection(collection).configCollection()
             .first()
             .awaitFirstOrNull()
@@ -130,12 +117,22 @@ object Db {
     @PublishedApi
     internal fun fieldNotFoundException(collection: String, id: Any, field: String): Exception =
         Exception("Invalid query result from `$collection[_id = $id]`, field `$field` not found")
-    fun fieldTypeMismatchException(collection: String, id: Any, field: String, value: Any, expectedClass: Class<*>): Exception =
+
+    fun fieldTypeMismatchException(
+        collection: String,
+        id: Any,
+        field: String,
+        value: Any,
+        expectedClass: Class<*>
+    ): Exception =
         Exception("Invalid query result from `$collection[_id = $id].$field`, value `$value` is of type `${value.javaClass.simpleName}`, expected `${expectedClass.simpleName}`")
+
     fun invalidException(collection: String, id: Any, field: String, value: Any, invalidBody: FailureBody): Exception =
         Exception("Invalid query result from `$collection[_id = $id].$field`, value `$value` is invalid, ${invalidBody.error.error}: ${invalidBody.error.reason}")
+
     fun noIdException(collection: String): Exception =
         Exception("Invalid query result from `$collection`, document has no `_id` field")
+
     fun invalidIdException(collection: String, id: Any, clazz: Class<*>): Exception =
         Exception("Invalid query result from `$collection`, _id `$id` is of type `${id.javaClass.simpleName}`, expected `${clazz}`")
 }

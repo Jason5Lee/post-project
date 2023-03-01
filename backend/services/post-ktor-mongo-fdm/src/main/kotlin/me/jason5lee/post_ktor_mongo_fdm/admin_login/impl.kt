@@ -13,7 +13,7 @@ class WorkflowImpl(private val deps: Deps) : Workflow(), ErrorsImpl {
             collection = Db.admins,
             id = Db.toObjectIdOrNull(id.value) ?: throw idOrPasswordIncorrect(),
             projection = Projections.include("encryptedPassword")
-        )  ?: throw idOrPasswordIncorrect()
+        ) ?: throw idOrPasswordIncorrect()
         val encryptedPassword = admin.get<String>("encryptedPassword")
         if (!password.verify(Db.BCrypt.Verifier(encryptedPassword))) {
             throw idOrPasswordIncorrect()
