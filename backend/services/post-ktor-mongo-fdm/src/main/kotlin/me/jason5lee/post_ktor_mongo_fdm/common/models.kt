@@ -9,6 +9,8 @@ import me.jason5lee.post_ktor_mongo_fdm.common.utils.ValidationResult.Invalid
 import me.jason5lee.post_ktor_mongo_fdm.common.utils.ValidationResult.Valid
 import java.net.MalformedURLException
 
+// Public constructor for newtypes without validation for ease of construction from database data.
+
 data class Time(val utc: Long)
 
 sealed class Identity {
