@@ -7,11 +7,11 @@ import { badRequest } from "../api";
 import Router from "@koa/router";
 import { Db as MongoDb } from "mongodb";
 import { RuntypeBase } from "runtypes/lib/runtype";
-import { assertValid, throwUnexpectedValue } from "./error";
+import { throwUnexpectedValue } from "./error";
 import { PasswordEncryptor } from "./password";
 
 export function now(): Time {
-    return newTime(Date.now(), assertValid);
+    return { utc: Date.now() } as Time;
 }
 
 export class Context {
@@ -25,7 +25,10 @@ export class Context {
     }
 
     getTokenExpireTime(): Time {
-        return newTime(Date.now() + this.deps.authConfig.validSecs * 1000, assertValid);
+        return newTime(
+            Date.now() + this.deps.authConfig.validSecs * 1000,
+            () => new Error("The expiration time for the token is invalid, which is likely due to an overly prolonged validity period.")
+        );
     }
 
     generateToken(identity: Identity, expire: Time): string {

@@ -1,9 +1,8 @@
-import { UserId, UserName, Time, checkUserName, newTime } from "../common";
+import { UserId, UserName, Time } from "../common";
 import { Deps } from "../common/utils";
 import { Workflow } from ".";
 import { WithId } from "mongodb";
 import * as db from "../common/utils/db";
-import { onInvalidHandleInDB } from "../common/utils/error";
 import { errors } from "./api";
 import * as runtypes from "runtypes";
 
@@ -22,10 +21,9 @@ export class WorkflowImpl implements Workflow {
             throw this.errors.userNotFound();
         }
         db.validate(WorkflowImpl.expectedUser, db.users, user);
-        checkUserName(user.name, onInvalidHandleInDB({ collection: db.users, id: oid, field: "name" }));
         return {
-            userName: user.name,
-            creationTime: newTime(user.creationTime, onInvalidHandleInDB({ collection: db.users, id: oid, field: "creationTime" })),
+            userName: user.name as UserName,
+            creationTime: { utc: user.creationTime } as Time,
         };
     }
 
