@@ -8,7 +8,7 @@ use actix_web::{delete, web::Path as UrlPath, HttpResponse};
 pub async fn api(mut ctx: utils::Context) -> Result<HttpResponse> {
     let caller = ctx.get_caller_identity()?.ok_or_else(not_creator_admin)?;
     let (id,): (String,) = ctx
-        .to::<UrlPath<(String,)>>()
+        .get::<UrlPath<(String,)>>()
         .await
         .map_err(bad_request)?
         .to_owned();

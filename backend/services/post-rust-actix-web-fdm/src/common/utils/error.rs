@@ -1,4 +1,3 @@
-use crate::common::db;
 use actix_web::http::StatusCode;
 use actix_web::HttpResponse;
 use serde::Serialize;
@@ -47,24 +46,6 @@ impl actix_web::ResponseError for ErrorResponse {
     }
 }
 
-pub fn as_unprocessable_entity<T>((_, body): (T, ErrorBody)) -> ErrorResponse {
+pub fn as_unprocessable_entity(body: ErrorBody) -> ErrorResponse {
     (StatusCode::UNPROCESSABLE_ENTITY, body).into()
-}
-
-pub fn handle_invalid_value_in_db<T: std::fmt::Debug>(
-    table: db::Table,
-    column: db::Column,
-    primary_key_value: impl std::fmt::Debug,
-) -> impl FnOnce((T, ErrorBody)) -> ErrorResponse {
-    move |(value, body)| {
-        crate::common::api::handle_internal_error(
-            format_args!(
-                "invalid value found in table `{table}`, column `{column}`, value `{:?}`, with primary-key-value `{:?}`, {}: {}",
-                value,
-                primary_key_value,
-                body.error.error,
-                body.error.reason
-            )
-        )
-    }
 }

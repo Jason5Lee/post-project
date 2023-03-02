@@ -16,7 +16,7 @@ pub async fn api(mut ctx: utils::Context) -> Result<HttpResponse> {
     }
 
     let req = ctx
-        .to::<BodyJson<RequestDto>>()
+        .get::<BodyJson<RequestDto>>()
         .await
         .map_err(bad_request)?
         .0;

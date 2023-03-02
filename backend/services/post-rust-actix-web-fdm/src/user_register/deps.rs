@@ -11,7 +11,7 @@ pub async fn insert_user(
         "INSERT INTO `" db::USERS "` (`" db::users::USER_ID "`,`" db::users::USER_NAME "`,`" db::users::ENCRYPTED_PASSWORD "`,`" db::users::CREATION_TIME "`) VALUES (?,?,?,?)"
     ))
         .bind(id)
-        .bind(user_name.as_str())
+        .bind(&user_name.0 as &str)
         .bind(password.to_encrypted(&deps.encryptor)?)
         .bind(Time::now().utc)
         .execute(&deps.pool)

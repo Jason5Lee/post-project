@@ -29,7 +29,7 @@ pub struct UserId(pub String);
 pub struct AdminId(pub String);
 
 #[derive(Debug, PartialEq, Eq, Clone)]
-pub struct UserName(Rc<str>);
+pub struct UserName(pub Rc<str>);
 
 #[derive(PartialEq, Eq, Clone)]
 pub struct Password {
@@ -37,19 +37,19 @@ pub struct Password {
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
-pub struct LengthLimit(u32);
+pub struct LengthLimit(pub u32);
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PostId(pub String);
 
 #[derive(Debug, PartialEq, Eq, Clone)]
-pub struct Title(String);
+pub struct Title(pub String);
 
 #[derive(Debug, PartialEq, Eq, Clone)]
-pub struct TextPostContent(String);
+pub struct TextPostContent(pub String);
 
 #[derive(Debug, PartialEq, Eq, Clone)]
-pub struct UrlPostContent(String);
+pub struct UrlPostContent(pub String);
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum PostContent {
@@ -58,94 +58,66 @@ pub enum PostContent {
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
-pub struct Size(u32);
+pub struct Size(pub u32);
 
 impl UserName {
     fn is_legal_character(ch: char) -> bool {
         ch.is_ascii_alphanumeric() || ch == '_' || ch == '-'
     }
 
-    pub fn try_new(value: String) -> Result<Self, (String, ErrorBody)> {
+    pub fn try_new(value: String) -> Result<Self, ErrorBody> {
         if value.is_empty() {
-            Err((value, Self::user_name_empty()))
+            Err(Self::user_name_empty())
         } else if value.len() < 3 {
-            Err((value, Self::user_name_too_short()))
+            Err(Self::user_name_too_short())
         } else if value.len() > 20 {
-            Err((value, Self::user_name_too_long()))
+            Err(Self::user_name_too_long())
         } else if !value.chars().all(Self::is_legal_character) {
-            Err((value, Self::user_name_contains_illegal_character()))
+            Err(Self::user_name_contains_illegal_character())
         } else {
             Ok(Self(value.into()))
         }
     }
-
-    pub fn as_str(&self) -> &str {
-        &self.0
-    }
-    pub fn into_rc_str(self) -> Rc<str> {
-        self.0
-    }
 }
 
 impl Title {
-    pub fn try_new(value: String) -> Result<Self, (String, ErrorBody)> {
+    pub fn try_new(value: String) -> Result<Self, ErrorBody> {
         if value.is_empty() {
-            Err((value, Self::title_empty()))
+            Err(Self::title_empty())
         } else if value.len() < 3 {
-            Err((value, Self::title_too_short()))
+            Err(Self::title_too_short())
         } else if value.len() > 171 {
-            Err((value, Self::title_too_long()))
+            Err(Self::title_too_long())
         } else {
             Ok(Self(value))
         }
-    }
-
-    pub fn as_str(&self) -> &str {
-        &self.0
-    }
-    pub fn into_string(self) -> String {
-        self.0
     }
 }
 
 impl TextPostContent {
-    pub fn try_new(value: String) -> Result<Self, (String, ErrorBody)> {
+    pub fn try_new(value: String) -> Result<Self, ErrorBody> {
         if value.is_empty() {
-            Err((value, Self::text_post_content_empty()))
+            Err(Self::text_post_content_empty())
         } else if value.len() > 65535 {
-            Err((value, Self::text_post_content_too_long()))
+            Err(Self::text_post_content_too_long())
         } else {
             Ok(Self(value))
         }
     }
-
-    pub fn as_str(&self) -> &str {
-        &self.0
-    }
-    pub fn into_string(self) -> String {
-        self.0
-    }
 }
 
 impl UrlPostContent {
-    pub fn try_new(value: String) -> Result<Self, (String, ErrorBody)> {
+    pub fn try_new(value: String) -> Result<Self, ErrorBody> {
         if value.is_empty() {
-            Err((value, Self::url_post_content_empty()))
+            Err(Self::url_post_content_empty())
         } else if value.len() > 65535 {
-            Err((value, Self::url_post_content_too_long()))
+            Err(Self::url_post_content_too_long())
         } else {
             match Url::parse(&value) {
                 Ok(_) => Ok(Self(value)),
-                Err(err) => Err((value, Self::url_post_content_invalid(err))),
+                Err(err) => Err(Self::url_post_content_invalid(err)),
             }
         }
-    }
-
-    pub fn as_str(&self) -> &str {
-        &self.0
-    }
-    pub fn into_string(self) -> String {
-        self.0
     }
 }
 
@@ -163,14 +135,14 @@ impl Debug for Password {
     }
 }
 impl Password {
-    pub fn try_from_plain(value: String) -> Result<Self, (String, ErrorBody)> {
+    pub fn try_from_plain(value: String) -> Result<Self, ErrorBody> {
         if value.is_empty() {
-            Err((value, Self::password_empty()))
+            Err(Self::password_empty())
         } else if value.len() < 5 {
-            Err((value, Self::password_too_short()))
+            Err(Self::password_too_short())
         } else if value.len() > 72 {
             // Limitation of the bcrypt algorithm.
-            Err((value, Self::password_too_long()))
+            Err(Self::password_too_long())
         } else {
             Ok(Self { plain: value })
         }
@@ -189,12 +161,12 @@ const DEFAULT_SIZE: u32 = 20;
 const MAX_SIZE: u32 = 500;
 
 impl Size {
-    pub fn try_new(s: Option<u32>) -> Result<Self, (u32, ErrorBody)> {
+    pub fn try_new(s: Option<u32>) -> Result<Self, ErrorBody> {
         match s {
             None => Ok(Self(DEFAULT_SIZE)),
             Some(size) => {
                 if size == 0 {
-                    Err((size, Self::size_non_positive()))
+                    Err(Self::size_non_positive())
                 } else if size > MAX_SIZE {
                     Ok(Self(MAX_SIZE))
                 } else {
@@ -202,9 +174,5 @@ impl Size {
                 }
             }
         }
-    }
-
-    pub fn to_u32(self) -> u32 {
-        self.0
     }
 }

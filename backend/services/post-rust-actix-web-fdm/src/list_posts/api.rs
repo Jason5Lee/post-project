@@ -19,7 +19,7 @@ pub async fn api(mut ctx: Context) -> Result<HttpResponse> {
         pub creator: Option<String>,
     }
     let req = ctx
-        .to::<QueryString<RequestDto>>()
+        .get::<QueryString<RequestDto>>()
         .await
         .map_err(bad_request)?
         .0;
@@ -73,9 +73,9 @@ pub async fn api(mut ctx: Context) -> Result<HttpResponse> {
                     .into_iter()
                     .map(|output| PostInfoDto {
                         id: output.id.0,
-                        title: output.title.into_string(),
+                        title: output.title.0,
                         creatorId: output.creator.id.0,
-                        creatorName: output.creator.name.into_rc_str(),
+                        creatorName: output.creator.name.0,
                         creationTime: output.creation.utc,
                     })
                     .collect::<Vec<_>>(),

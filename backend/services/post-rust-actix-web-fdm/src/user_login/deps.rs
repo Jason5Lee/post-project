@@ -8,7 +8,7 @@ pub async fn get_user_id_encrypted_password(
 ) -> Result<(UserId, String)> {
     let (id, encrypted_password): (u64, String) =
         sqlx::query_as(&iformat!("SELECT `" db::users::USER_ID "`,`" db::users::ENCRYPTED_PASSWORD "` FROM `" db::USERS "` WHERE `" db::users::USER_NAME "`=?"))
-            .bind(user_name.as_str())
+            .bind(&user_name.0 as &str)
             .fetch_one(&deps.pool)
             .await
             .map_err(|err| match err {

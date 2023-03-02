@@ -1,6 +1,5 @@
 use super::*;
 use crate::common::api::handle_internal_error;
-use crate::common::utils::error::*;
 use crate::common::utils::Deps;
 use futures_util::{StreamExt, TryStreamExt};
 use std::iter::FromIterator;
@@ -38,9 +37,7 @@ pub async fn workflow(
         .map_err(handle_internal_error)?
         .ok_or_else(creator_not_found)?;
 
-        let creator_name = UserName::try_new(creator_name.0).map_err(
-            handle_invalid_value_in_db(db::USERS, db::users::USER_NAME.into(), db_creator_id),
-        )?;
+        let creator_name = UserName(creator_name.0.into());
         iwrite!(&mut post_condition_sql, " AND `" db::posts::CREATOR "` = " db_creator_id).unwrap();
         creator_map = Some(HashMap::from_iter([(db_creator_id, creator_name)]))
     }
@@ -53,7 +50,7 @@ pub async fn workflow(
         " ORDER BY `" db::posts::CREATION_TIME "` " order " LIMIT ?"
     );
     let mut posts_db_result: Vec<(u64, u64, u64, String)> = sqlx::query_as(&post_sql)
-        .bind(size.to_u32())
+        .bind(size.0)
         .fetch_all(&deps.pool)
         .await
         .map_err(handle_internal_error)?;
@@ -82,14 +79,7 @@ pub async fn workflow(
             .fetch(&deps.pool)
             .map(|r| -> Result<(u64, UserName)> {
                 let (id, username): (u64, String) = r.map_err(handle_internal_error)?;
-                Ok((
-                    id,
-                    UserName::try_new(username).map_err(handle_invalid_value_in_db(
-                        db::USERS,
-                        db::users::USER_NAME.into(),
-                        id,
-                    ))?,
-                ))
+                Ok((id, UserName(username.into())))
             })
             .try_collect()
             .await
@@ -101,11 +91,7 @@ pub async fn workflow(
         .map(|(id, creator, creation_time_utc, title)| {
             Ok(Post {
                 id: PostId(db::format_id(id)),
-                title: Title::try_new(title).map_err(handle_invalid_value_in_db(
-                    db::POSTS,
-                    db::posts::TITLE.into(),
-                    id,
-                ))?,
+                title: Title(title),
                 creator: creator_map
                     .get(&creator)
                     .map(|user_name| Creator {

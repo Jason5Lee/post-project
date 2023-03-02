@@ -6,14 +6,14 @@ pub async fn workflow(deps: &Deps, creator: UserId, input: Command) -> Result<Po
     let db_creator = db::parse_id(&creator.0).ok_or_else(invalid_auth)?;
     let db_id = deps.id_gen.lock().real_time_generate() as u64;
     let (text, url) = match input.content {
-        PostContent::Text(text) => (Some(text.into_string()), None),
-        PostContent::Url(url) => (None, Some(url.into_string())),
+        PostContent::Text(text) => (Some(text.0), None),
+        PostContent::Url(url) => (None, Some(url.0)),
     };
     sqlx::query(&iformat!("INSERT INTO `" db::POSTS "` (`" db::posts::POST_ID "`,`" db::posts::CREATOR "`,`" db::posts::CREATION_TIME "`,`" db::posts::TITLE "`,`" db::posts::TEXT "`,`" db::posts::URL "`) VALUES (?,?,?,?,?,?)"))
         .bind(db_id)
         .bind(db_creator)
         .bind(Time::now().utc)
-        .bind(input.title.as_str())
+        .bind(&input.title.0)
         .bind(text)
         .bind(url)
         .execute(&deps.pool)

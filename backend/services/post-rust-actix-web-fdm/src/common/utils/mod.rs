@@ -16,16 +16,12 @@ pub struct Context {
 }
 
 impl Context {
-    pub fn to<T: FromRequest>(&mut self) -> T::Future {
+    pub fn get<T: FromRequest>(&mut self) -> T::Future {
         T::from_request(&self.request, &mut self.payload)
     }
 
     pub fn discard_body(&mut self) {
         drop(self.payload.take())
-    }
-
-    pub fn extract<T: FromRequest>(&self) -> T::Future {
-        T::extract(&self.request)
     }
 }
 impl<'a> FromRequest for Context {
