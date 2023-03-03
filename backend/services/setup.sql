@@ -7,7 +7,7 @@ CREATE TABLE users (
 CREATE UNIQUE INDEX idx_user_name
 ON users (user_name);
 
-CREATE TABLE posts (
+CREATE TABLE post (
     post_id BIGINT UNSIGNED NOT NULL PRIMARY KEY,
     creator BIGINT UNSIGNED NOT NULL,
     creation_time BIGINT UNSIGNED NOT NULL,
@@ -18,9 +18,9 @@ CREATE TABLE posts (
     CONSTRAINT UC_title UNIQUE (title)
 );
 CREATE INDEX idx_creator
-ON posts (creator);
+ON post (creator);
 CREATE INDEX idx_last_modified
-ON posts (last_modified);
+ON post (last_modified);
 
 CREATE TABLE admins (
     admin_id BIGINT UNSIGNED NOT NULL PRIMARY KEY,

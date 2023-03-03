@@ -1,5 +1,5 @@
 use super::*;
-use crate::common::api::*;
+use crate::common::{api::*, db::*};
 
 pub async fn workflow(deps: &utils::Deps, input: Query) -> Result<Post> {
     let db_post_id = db::parse_id(&input.0).ok_or_else(post_not_found)?;
@@ -10,14 +10,14 @@ pub async fn workflow(deps: &utils::Deps, input: Query) -> Result<Post> {
         String,
         Option<String>,
         Option<String>,
-    ) = sqlx::query_as(&iformat!(
-        "SELECT `" db::posts::CREATOR
-        "`,`" db::posts::CREATION_TIME
-        "`,`" db::posts::LAST_MODIFIED
-        "`,`" db::posts::TITLE
-        "`,`" db::posts::TEXT
-        "`,`" db::posts::URL
-        "` FROM `" db::POSTS "` WHERE `" db::posts::POST_ID "`=?"
+    ) = sqlx::query_as(&format!(
+        "SELECT `{POST_CREATOR}`,\
+        `{POST_CREATION_TIME}`,\
+        `{POST_LAST_MODIFIED}`,\
+        `{POST_TITLE}`,\
+        `{POST_TEXT}`,\
+        `{POST_URL}` \
+        FROM `{POST}` WHERE `{POST_POST_ID}`=?"
     ))
     .bind(db_post_id)
     .fetch_optional(&deps.pool)
@@ -25,8 +25,8 @@ pub async fn workflow(deps: &utils::Deps, input: Query) -> Result<Post> {
     .map_err(handle_internal_error)?
     .ok_or_else(post_not_found)?;
 
-    let (creator_name,): (String,) = sqlx::query_as(&iformat!(
-        "SELECT `" db::users::USER_NAME "` FROM `" db::USERS "` WHERE `" db::users::USER_ID "`=?"
+    let (creator_name,): (String,) = sqlx::query_as(&format!(
+        "SELECT `{USER_USER_NAME}` FROM `{USER}` WHERE `{USER_USER_ID}`=?"
     ))
     .bind(creator)
     .fetch_optional(&deps.pool)

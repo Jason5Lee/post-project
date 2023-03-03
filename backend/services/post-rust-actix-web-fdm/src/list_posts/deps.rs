@@ -1,5 +1,6 @@
 use super::*;
 use crate::common::api::handle_internal_error;
+use crate::common::db::*;
 use crate::common::utils::Deps;
 use futures_util::{StreamExt, TryStreamExt};
 use std::iter::FromIterator;
@@ -17,19 +18,19 @@ pub async fn workflow(
     let (mut post_condition_sql, order) = match condition {
         Condition::No => ("WHERE true".to_string(), "DESC"),
         Condition::Before(before) => (
-            iformat!("WHERE `" db::posts::CREATION_TIME "` < " before.utc),
+            format!("WHERE `{POST_CREATION_TIME}` < {}", before.utc),
             "DESC",
         ),
         Condition::After(after) => (
-            iformat!("WHERE `" db::posts::CREATION_TIME "` > " after.utc),
+            format!("WHERE `{POST_CREATION_TIME}` > {}", after.utc),
             "ASC",
         ),
     };
     let mut creator_map: Option<HashMap<u64, UserName>> = None;
     if let Some(creator) = creator {
         let db_creator_id = db::parse_id(&creator.0).ok_or_else(creator_not_found)?;
-        let creator_name: (String,) = sqlx::query_as(&iformat!(
-            "SELECT `" db::users::USER_NAME "` FROM `" db::USERS"` WHERE `" db::users::USER_ID "`=?"
+        let creator_name: (String,) = sqlx::query_as(&format!(
+            "SELECT `{USER_USER_NAME}` FROM `{USER}` WHERE `{USER_USER_ID}`=?"
         ))
         .bind(db_creator_id)
         .fetch_optional(&deps.pool)
@@ -38,16 +39,21 @@ pub async fn workflow(
         .ok_or_else(creator_not_found)?;
 
         let creator_name = UserName(creator_name.0.into());
-        iwrite!(&mut post_condition_sql, " AND `" db::posts::CREATOR "` = " db_creator_id).unwrap();
+        write!(
+            &mut post_condition_sql,
+            " AND `{POST_CREATOR}` = {}",
+            db_creator_id
+        )
+        .unwrap();
         creator_map = Some(HashMap::from_iter([(db_creator_id, creator_name)]))
     }
-    let post_sql = iformat!(
-        "SELECT `" db::posts::POST_ID
-        "`,`" db::posts::CREATOR
-        "`,`" db::posts::CREATION_TIME
-        "`,`" db::posts::TITLE
-        "` FROM `" db::POSTS "` " post_condition_sql
-        " ORDER BY `" db::posts::CREATION_TIME "` " order " LIMIT ?"
+    let post_sql = format!(
+        "SELECT `{POST_POST_ID}`,\
+        `{POST_CREATOR}`,\
+        `{POST_CREATION_TIME}`,\
+        `{POST_TITLE}` \
+        FROM `{POST}` {post_condition_sql} \
+        ORDER BY `{POST_CREATION_TIME}` {order} LIMIT ?"
     );
     let mut posts_db_result: Vec<(u64, u64, u64, String)> = sqlx::query_as(&post_sql)
         .bind(size.0)
@@ -68,7 +74,10 @@ pub async fn workflow(
     } else {
         // Because sqlx doesn't support binding a slice for MySQL.
         // I have to manually make the query.
-        let mut users_query: Vec<u8> = iformat!("SELECT `" db::users::USER_ID "`,`" db::users::USER_NAME "` FROM `" db::USERS "` WHERE `" db::users::USER_ID "` IN (").into();
+        let mut users_query: Vec<u8> = format!(
+            "SELECT `{USER_USER_ID}`,`{USER_USER_NAME}` FROM `{USER}` WHERE `{USER_USER_ID}` IN ("
+        )
+        .into();
         for (_, creator, _, _) in posts_db_result.iter() {
             write!(&mut users_query, "{},", *creator).unwrap();
         }

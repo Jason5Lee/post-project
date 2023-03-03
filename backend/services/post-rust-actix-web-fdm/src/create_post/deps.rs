@@ -1,6 +1,6 @@
 use super::*;
 use crate::common::api::{handle_internal_error, invalid_auth, low_probability_error};
-use crate::common::{utils::Deps, *};
+use crate::common::{db::*, utils::Deps, *};
 
 pub async fn workflow(deps: &Deps, creator: UserId, input: Command) -> Result<PostId> {
     let db_creator = db::parse_id(&creator.0).ok_or_else(invalid_auth)?;
@@ -9,7 +9,7 @@ pub async fn workflow(deps: &Deps, creator: UserId, input: Command) -> Result<Po
         PostContent::Text(text) => (Some(text.0), None),
         PostContent::Url(url) => (None, Some(url.0)),
     };
-    sqlx::query(&iformat!("INSERT INTO `" db::POSTS "` (`" db::posts::POST_ID "`,`" db::posts::CREATOR "`,`" db::posts::CREATION_TIME "`,`" db::posts::TITLE "`,`" db::posts::TEXT "`,`" db::posts::URL "`) VALUES (?,?,?,?,?,?)"))
+    sqlx::query(&format!("INSERT INTO `{POST}` (`{POST_POST_ID}`,`{POST_CREATOR}`,`{POST_CREATION_TIME}`,`{POST_TITLE}`,`{POST_TEXT}`,`{POST_URL}`) VALUES (?,?,?,?,?,?)"))
         .bind(db_id)
         .bind(db_creator)
         .bind(Time::now().utc)
@@ -19,12 +19,10 @@ pub async fn workflow(deps: &Deps, creator: UserId, input: Command) -> Result<Po
         .execute(&deps.pool)
         .await
         .map_err(|err|
-            if db::is_unique_violation_in(&err, db::posts::TITLE) {
-                duplicate_title()
-            } else if db::is_unique_violation_in(&err, db::posts::POST_ID) {
-                low_probability_error()
-            } else {
-                handle_internal_error(err)
+            match analysis_unique_violation_error(&err) {
+                Some(UniqueViolationError::PrimaryKey) => low_probability_error(),
+                Some(UniqueViolationError::OtherColumn) => duplicate_title(),
+                None => handle_internal_error(err)
             }
         )
         .map(|_| PostId(db::format_id(db_id)))
