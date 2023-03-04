@@ -2,12 +2,13 @@ package me.jason5lee.post_ktor_mongo_fdm.list_posts
 
 import io.ktor.http.*
 import kotlinx.serialization.Serializable
-import me.jason5lee.post_ktor_mongo_fdm.common.Size
 import me.jason5lee.post_ktor_mongo_fdm.common.Time
 import me.jason5lee.post_ktor_mongo_fdm.common.UserId
 import me.jason5lee.post_ktor_mongo_fdm.common.api.InvalidSize
 import me.jason5lee.post_ktor_mongo_fdm.common.api.InvalidTime
 import me.jason5lee.post_ktor_mongo_fdm.common.api.clientBugMessage
+import me.jason5lee.post_ktor_mongo_fdm.common.newSize
+import me.jason5lee.post_ktor_mongo_fdm.common.newTime
 import me.jason5lee.post_ktor_mongo_fdm.common.utils.*
 
 val api = Api.create(HttpMethod.Get, "/post") { ctx, workflow: Workflow ->
@@ -27,10 +28,10 @@ val api = Api.create(HttpMethod.Get, "/post") { ctx, workflow: Workflow ->
     }
     val size = (
             ctx.pathParameters()["size"]?.let { sizeParam ->
-                sizeParam.toIntOrNull()?.let { Size.from(it) }
-                    ?: ValidationResult.Invalid(InvalidSize.nonPositiveInteger, sizeParam)
-            } ?: Size.from(null)
-    ).onInvalidRespond(HttpStatusCode.UnprocessableEntity)
+                sizeParam.toIntOrNull()?.let { newSize(it) }
+                    ?: ValidationResult.Invalid(InvalidSize.nonPositiveInteger)
+            } ?: newSize(null)
+            ).onInvalidRespond(HttpStatusCode.UnprocessableEntity)
     val creator = ctx.pathParameters()["creator"]?.let { UserId(it) }
 
     val output = workflow.run(Query(creator, condition, size))
@@ -45,6 +46,7 @@ val api = Api.create(HttpMethod.Get, "/post") { ctx, workflow: Workflow ->
                 val creatorName: String,
                 val creationTime: Long,
             )
+
             @Serializable
             class ResponseBody(
                 val posts: List<PostBody>,
@@ -67,9 +69,9 @@ val api = Api.create(HttpMethod.Get, "/post") { ctx, workflow: Workflow ->
 private fun validateTimeParam(param: String, errorPrefix: String): Time =
     (param
         .toLongOrNull()
-        ?.let { Time.validate(it) }
-        ?: ValidationResult.Invalid(InvalidTime.invalid, param))
-    .onInvalidRespond(HttpStatusCode.UnprocessableEntity, errorPrefix)
+        ?.let { newTime(it) }
+        ?: ValidationResult.Invalid(InvalidTime.invalid))
+        .onInvalidRespond(HttpStatusCode.UnprocessableEntity, errorPrefix)
 
 interface ErrorsImpl : Errors {
     override fun creatorNotFound(): Exception = HttpException(

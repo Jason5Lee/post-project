@@ -13,7 +13,11 @@ import org.bson.Document
 import org.bson.types.ObjectId
 
 class WorkflowImpl(private val deps: Deps) : Workflow() {
-    override suspend fun checkUserIsCreatorAndContentHasTheSameType(post: PostId, user: UserId, content: PostContent): Result<Unit, Errors> {
+    override suspend fun checkUserIsCreatorAndContentHasTheSameType(
+        post: PostId,
+        user: UserId,
+        content: PostContent
+    ): Result<Unit, Errors> {
         val postDoc = Db.findById(
             db = deps.mongoDb,
             collection = Db.posts,

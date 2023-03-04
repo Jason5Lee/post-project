@@ -9,7 +9,7 @@ import me.jason5lee.post_ktor_mongo_fdm.common.utils.Db
 import me.jason5lee.post_ktor_mongo_fdm.common.utils.Deps
 import org.bson.types.ObjectId
 
-class WorkflowImpl(private val deps: Deps): Workflow(), ErrorsImpl {
+class WorkflowImpl(private val deps: Deps) : Workflow(), ErrorsImpl {
     override suspend fun verifyPasswordAndGetUserId(userName: UserName, password: Password): UserId {
         val userDoc = Db.findOne<ObjectId>(
             db = deps.mongoDb,

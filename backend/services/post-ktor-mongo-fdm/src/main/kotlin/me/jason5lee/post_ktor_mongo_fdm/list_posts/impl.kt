@@ -20,7 +20,7 @@ class WorkflowImpl(private val deps: Deps) : Workflow(), ErrorsImpl {
                 id = creatorOid,
                 projection = Projections.include("name"),
             ) ?: throw creatorNotFound()
-            creatorMap[creatorOid] = creatorUserDoc.validate("name", UserName::validate)
+            creatorMap[creatorOid] = UserName(creatorUserDoc.get("name"))
             filter["creator"] = creatorOid
         }
         var timeSort = -1
@@ -29,6 +29,7 @@ class WorkflowImpl(private val deps: Deps) : Workflow(), ErrorsImpl {
                 filter["creationTime"] = Document("\$gt", condition.time.utc)
                 timeSort = 1
             }
+
             is Condition.Before -> filter["creationTime"] = Document("\$lt", condition.time.utc)
             null -> {}
         }
@@ -39,7 +40,7 @@ class WorkflowImpl(private val deps: Deps) : Workflow(), ErrorsImpl {
                 this.find(filter)
                     .sort(Document("creationTime", timeSort))
                     .limit(input.size.value)
-           }
+            }
         ).toList()
             .apply { if (this.isEmpty()) return emptyList() }
             .let { if (timeSort == 1) it.asReversed() else it }
@@ -56,22 +57,23 @@ class WorkflowImpl(private val deps: Deps) : Workflow(), ErrorsImpl {
             ).toList()
             for (creatorDoc in creatorDocs) {
                 val creatorId = creatorDoc.get<ObjectId>("_id")
-                creatorMap[creatorId] = creatorDoc.validate("name", UserName::validate)
+                creatorMap[creatorId] = UserName(creatorDoc.get("name"))
             }
         }
 
         return posts.map { postDoc ->
             val creatorId = postDoc.get<ObjectId>("creator")
-            val creatorName = creatorMap[creatorId] ?: throw Exception("Invalid query result from `${Db.posts}[_id = ${postDoc.id}].creator`, not found in `${Db.users}`")
+            val creatorName = creatorMap[creatorId]
+                ?: throw Exception("Invalid query result from `${Db.posts}[_id = ${postDoc.id}].creator`, not found in `${Db.users}`")
 
             Post(
                 id = PostId(Db.formatId(postDoc.id)),
-                title = postDoc.validate("title", Title::validate),
+                title = Title(postDoc.get("title")),
                 creator = Creator(
                     id = UserId(Db.formatId(creatorId)),
                     name = creatorName,
                 ),
-                creationTime = postDoc.validate("creationTime", Time::validate),
+                creationTime = Time(postDoc.get("creationTime")),
             )
         }
     }

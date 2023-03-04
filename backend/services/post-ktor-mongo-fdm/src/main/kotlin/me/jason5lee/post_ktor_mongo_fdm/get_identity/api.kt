@@ -13,23 +13,27 @@ val api = Api.create(HttpMethod.Get, "/identity") { ctx, workflow: Workflow ->
         run {
             @Serializable
             class UserResponse(val id: String, val name: String)
+
             @Serializable
             class AdminResponse(val id: String)
+
             @Serializable
             class ResponseBody(val user: UserResponse? = null, val admin: AdminResponse? = null)
 
-            when(identityInfo) {
+            when (identityInfo) {
                 is IdentityInfo.User -> ResponseBody(
                     user = UserResponse(
                         id = identityInfo.id.value,
                         name = identityInfo.name.value,
                     ),
                 )
+
                 is IdentityInfo.Admin -> ResponseBody(
                     admin = AdminResponse(
                         id = identityInfo.id.value,
                     ),
                 )
+
                 null -> ResponseBody()
             }
         }

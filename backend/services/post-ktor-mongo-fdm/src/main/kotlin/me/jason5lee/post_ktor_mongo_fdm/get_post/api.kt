@@ -22,6 +22,7 @@ val api = Api.create(HttpMethod.Get, "/post/{id}") { ctx, workflow: Workflow ->
             text = post.content.value.value
             url = null
         }
+
         is PostContent.Url -> {
             text = null
             url = post.content.value.value

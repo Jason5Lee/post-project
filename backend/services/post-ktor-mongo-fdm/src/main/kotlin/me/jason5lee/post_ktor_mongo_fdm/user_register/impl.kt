@@ -1,8 +1,6 @@
 package me.jason5lee.post_ktor_mongo_fdm.user_register
 
-import com.mongodb.DuplicateKeyException
 import com.mongodb.MongoWriteException
-import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactive.awaitSingle
 import me.jason5lee.post_ktor_mongo_fdm.common.Password
 import me.jason5lee.post_ktor_mongo_fdm.common.UserId

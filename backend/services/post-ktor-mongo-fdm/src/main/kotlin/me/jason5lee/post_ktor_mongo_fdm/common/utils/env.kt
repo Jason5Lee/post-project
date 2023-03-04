@@ -1,7 +1,7 @@
 package me.jason5lee.post_ktor_mongo_fdm.common.utils
 
 import io.github.cdimascio.dotenv.Dotenv
-import io.ktor.server.application.*
+
 class Env(
     val listenHost: String,
     val listenPort: Int,
@@ -21,7 +21,7 @@ class Env(
                 mongoDatabase = dotenv.getString("MONGO_DATABASE"),
                 tokenValidSecs = dotenv.getInt("TOKEN_VALID_SECS"),
                 tokenSecret = dotenv.getString("TOKEN_SECRET"),
-                encryptionCost = dotenv.getInt("ENCRYPTION_COST"),
+                encryptionCost = dotenv.getIntOptional("ENCRYPTION_COST") ?: 10,
             )
         }
     }
@@ -30,6 +30,7 @@ class Env(
 private fun Dotenv.getString(name: String): String {
     return this[name] ?: throw IllegalStateException("Missing env var: '$name'")
 }
+
 private fun Dotenv.getInt(name: String): Int {
     val strValue = getString(name)
     return try {
@@ -38,3 +39,12 @@ private fun Dotenv.getInt(name: String): Int {
         throw IllegalStateException("Invalid env var: '$name'", e)
     }
 }
+
+private fun Dotenv.getIntOptional(name: String): Int? =
+    this[name]?.let { strValue ->
+        try {
+            strValue.toInt()
+        } catch (e: NumberFormatException) {
+            throw IllegalStateException("Invalid env var: '$name'", e)
+        }
+    }

@@ -2,8 +2,8 @@ package me.jason5lee.post_ktor_mongo_fdm.user_register
 
 import io.ktor.http.*
 import kotlinx.serialization.Serializable
-import me.jason5lee.post_ktor_mongo_fdm.common.Password
-import me.jason5lee.post_ktor_mongo_fdm.common.UserName
+import me.jason5lee.post_ktor_mongo_fdm.common.newPassword
+import me.jason5lee.post_ktor_mongo_fdm.common.newUserName
 import me.jason5lee.post_ktor_mongo_fdm.common.utils.Api
 import me.jason5lee.post_ktor_mongo_fdm.common.utils.Err
 import me.jason5lee.post_ktor_mongo_fdm.common.utils.FailureBody
@@ -17,10 +17,12 @@ val api = Api.create(HttpMethod.Post, "/register") { ctx, workflow: Workflow ->
     )
 
     val req = ctx.getRequestBody<RequestBody>()
-    val output = workflow.run(Command(
-        userName = UserName.validate(req.userName).onInvalidRespond(HttpStatusCode.UnprocessableEntity),
-        password = Password.validate(req.password).onInvalidRespond(HttpStatusCode.UnprocessableEntity),
-    ))
+    val output = workflow.run(
+        Command(
+            userName = newUserName(req.userName).onInvalidRespond(HttpStatusCode.UnprocessableEntity),
+            password = newPassword(req.password).onInvalidRespond(HttpStatusCode.UnprocessableEntity),
+        )
+    )
 
     ctx.respond(
         HttpStatusCode.Created,

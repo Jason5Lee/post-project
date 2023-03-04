@@ -21,20 +21,21 @@ interface Api<W> {
         }
 
         // cannot be inline because of https://youtrack.jetbrains.com/issue/KT-55939/
-        fun <W> create(method: HttpMethod, path: String, handler: suspend (Context, W) -> Unit): Api<W> = object : Api<W> {
-            override fun addToRouter(routing: Routing, deps: Deps, workflow: W) {
-                routing.route(path, method) {
-                    handle {
-                        val context = Context(this, deps)
-                        try {
-                            handler(context, workflow)
-                        } catch (e: Throwable) {
-                            handleException(context, e)
+        fun <W> create(method: HttpMethod, path: String, handler: suspend (Context, W) -> Unit): Api<W> =
+            object : Api<W> {
+                override fun addToRouter(routing: Routing, deps: Deps, workflow: W) {
+                    routing.route(path, method) {
+                        handle {
+                            val context = Context(this, deps)
+                            try {
+                                handler(context, workflow)
+                            } catch (e: Throwable) {
+                                handleException(context, e)
+                            }
                         }
                     }
                 }
             }
-        }
     }
 }
 

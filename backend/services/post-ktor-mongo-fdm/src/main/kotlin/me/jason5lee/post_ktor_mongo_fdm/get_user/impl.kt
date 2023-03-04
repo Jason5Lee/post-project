@@ -14,8 +14,8 @@ class WorkflowImpl(private val deps: Deps) : Workflow(), ErrorsImpl {
             projection = null,
         ) ?: throw userNotFound()
         return User(
-            name = doc.validate("name", UserName::validate),
-            creationTime = doc.validate("creationTime", Time::validate)
+            name = UserName(doc.get("name")),
+            creationTime = Time(doc.get("creationTime"))
         )
     }
 }

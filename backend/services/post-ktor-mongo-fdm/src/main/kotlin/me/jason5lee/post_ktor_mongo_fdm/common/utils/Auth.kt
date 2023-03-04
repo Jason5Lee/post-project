@@ -9,7 +9,6 @@ import me.jason5lee.post_ktor_mongo_fdm.common.Identity
 import me.jason5lee.post_ktor_mongo_fdm.common.Time
 import me.jason5lee.post_ktor_mongo_fdm.common.UserId
 import me.jason5lee.post_ktor_mongo_fdm.common.api.invalidAuth
-import java.time.Instant
 import java.util.*
 
 class Auth(

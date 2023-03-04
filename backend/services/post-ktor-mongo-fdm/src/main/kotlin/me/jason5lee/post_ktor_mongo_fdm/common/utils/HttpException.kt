@@ -12,6 +12,7 @@ class HttpException(
 data class FailureBody(
     val error: Err,
 )
+
 @Serializable
 data class Err(
     val error: String,

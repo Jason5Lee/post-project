@@ -3,8 +3,8 @@ package me.jason5lee.post_ktor_mongo_fdm.user_login
 import io.ktor.http.*
 import kotlinx.serialization.Serializable
 import me.jason5lee.post_ktor_mongo_fdm.common.Identity
-import me.jason5lee.post_ktor_mongo_fdm.common.Password
-import me.jason5lee.post_ktor_mongo_fdm.common.UserName
+import me.jason5lee.post_ktor_mongo_fdm.common.newPassword
+import me.jason5lee.post_ktor_mongo_fdm.common.newUserName
 import me.jason5lee.post_ktor_mongo_fdm.common.utils.*
 
 val api = Api.create(HttpMethod.Post, "/login") { ctx, workflow: Workflow ->
@@ -16,8 +16,8 @@ val api = Api.create(HttpMethod.Post, "/login") { ctx, workflow: Workflow ->
 
     val req = ctx.getRequestBody<RequestBody>()
     val query = Query(
-        userName = UserName.validate(req.userName).onInvalidThrow { workflow.userNameOrPasswordIncorrect() },
-        password = Password.validate(req.password).onInvalidThrow { workflow.userNameOrPasswordIncorrect() },
+        userName = newUserName(req.userName).onInvalidThrow { workflow.userNameOrPasswordIncorrect() },
+        password = newPassword(req.password).onInvalidThrow { workflow.userNameOrPasswordIncorrect() },
     )
     val userId = workflow.run(query)
 

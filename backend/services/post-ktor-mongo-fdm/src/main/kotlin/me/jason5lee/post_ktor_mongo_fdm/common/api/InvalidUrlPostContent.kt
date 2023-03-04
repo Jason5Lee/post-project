@@ -18,6 +18,7 @@ internal object InvalidUrlPostContent {
             message = "URL post content must be at most 65535 characters",
         )
     )
+
     fun invalid(reason: String?): FailureBody = FailureBody(
         error = Err(
             error = "URL_POST_CONTENT_INVALID",
