@@ -1,3 +1,3 @@
 DROP TABLE users;
-DROP TABLE posts;
+DROP TABLE post;
 DROP TABLE admins;
