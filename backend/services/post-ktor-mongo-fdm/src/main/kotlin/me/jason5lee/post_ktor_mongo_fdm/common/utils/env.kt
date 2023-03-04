@@ -21,7 +21,7 @@ class Env(
                 mongoDatabase = dotenv.getString("MONGO_DATABASE"),
                 tokenValidSecs = dotenv.getInt("TOKEN_VALID_SECS"),
                 tokenSecret = dotenv.getString("TOKEN_SECRET"),
-                encryptionCost = dotenv.getInt("ENCRYPTION_COST"),
+                encryptionCost = dotenv.getIntOptional("ENCRYPTION_COST") ?: 10,
             )
         }
     }
@@ -39,3 +39,12 @@ private fun Dotenv.getInt(name: String): Int {
         throw IllegalStateException("Invalid env var: '$name'", e)
     }
 }
+
+private fun Dotenv.getIntOptional(name: String): Int? =
+    this[name]?.let { strValue ->
+        try {
+            strValue.toInt()
+        } catch (e: NumberFormatException) {
+            throw IllegalStateException("Invalid env var: '$name'", e)
+        }
+    }
