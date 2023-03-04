@@ -2,8 +2,8 @@ import { Deps } from "../common/utils";
 import { Output, Query, Workflow } from ".";
 import * as db from "../common/utils/db";
 import { Long, WithId, ObjectId } from "mongodb";
-import { onInvalidHandleInDB, throwUnexpectedValue } from "../common/utils/error";
-import { checkTitle, checkUserName, newTime, PostId, UserId } from "../common";
+import { throwUnexpectedValue } from "../common/utils/error";
+import { PostId, Time, Title, UserId, UserName } from "../common";
 import { errors } from "./api";
 import * as runtypes from "runtypes";
 
@@ -59,16 +59,15 @@ export class WorkflowImpl implements Workflow {
                 if (creator === undefined) {
                     throw new Error(`The creator of post ${post._id}, ${post.creator}, not found`);
                 }
-                checkTitle(post.title, onInvalidHandleInDB({ collection: db.posts, id: post._id, field: "title" }));
-                checkUserName(creator.name, onInvalidHandleInDB({ collection: db.users, id: creator._id, field: "name" }));
+
                 return {
                     id: db.formatId(post._id) as PostId,
-                    title: post.title,
+                    title: post.title as Title,
                     creator: {
                         id: db.formatId(post.creator) as UserId,
-                        name: creator.name,
+                        name: creator.name as UserName,
                     },
-                    creationTime: newTime(post.creationTime, onInvalidHandleInDB({ collection: db.posts, id: post._id, field: "creationTime" })),
+                    creationTime: { utc: post.creationTime } as Time,
                 };
             })
         };

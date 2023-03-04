@@ -1,9 +1,8 @@
 import { Deps } from "../common/utils";
 import { Workflow } from ".";
-import { checkUserName, UserId, UserName } from "../common";
+import { UserId, UserName } from "../common";
 import * as db from "../common/utils/db";
 import { WithId } from "mongodb";
-import { onInvalidHandleInDB } from "../common/utils/error";
 import * as runtypes from "runtypes";
 import { invalidAuth } from "../common/api/auth";
 
@@ -21,8 +20,7 @@ export class WorkflowImpl extends Workflow {
             throw invalidAuth();
         }
         db.validate(WorkflowImpl.userHasName, db.users, user);
-        checkUserName(user.name, onInvalidHandleInDB({ collection: db.users, id: oid, field: "name" }));
-        return user.name;
+        return user.name as UserName;
     }
 
     constructor(private deps: Deps) { super(); }

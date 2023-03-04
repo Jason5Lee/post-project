@@ -45,7 +45,7 @@ export type Size = number & { [__brand]: "Size" };
 import * as invalidTime from "./api/invalid-time";
 export function newTime(utc: number, invalidErr: InvalidError): Time {
     if (!Number.isSafeInteger(utc) || utc < 0) {
-        throw invalidErr(invalidTime.invalid, utc);
+        throw invalidErr(invalidTime.invalid);
     }
     return { utc } as Time;
 }
@@ -53,55 +53,55 @@ export function newTime(utc: number, invalidErr: InvalidError): Time {
 import * as invalidUserName from "./api/invalid-user-name";
 export function checkUserName(value: string, invalidErr: InvalidError): asserts value is UserName{
     if (value.length == 0) {
-        throw invalidErr(invalidUserName.empty, value);
+        throw invalidErr(invalidUserName.empty);
     }
     if (value.length < 3) {
-        throw invalidErr(invalidUserName.tooShort, value);
+        throw invalidErr(invalidUserName.tooShort);
     }
     if (value.length > 20) {
-        throw invalidErr(invalidUserName.tooLong, value);
+        throw invalidErr(invalidUserName.tooLong);
     }
     if (!/^[a-zA-Z0-9_-]*$/.test(value)) {
-        throw invalidErr(invalidUserName.containsIllegalCharacter, value);
+        throw invalidErr(invalidUserName.containsIllegalCharacter);
     }
 }
 
 import * as invalidTitle from "./api/invalid-title";
 export function checkTitle(value: string, invalidErr: InvalidError): asserts value is Title {
     if (value.length == 0) {
-        throw invalidErr(invalidTitle.empty, value);
+        throw invalidErr(invalidTitle.empty);
     }
     if (value.length < 3) {
-        throw invalidErr(invalidTitle.tooShort, value);
+        throw invalidErr(invalidTitle.tooShort);
     }
     if (value.length > 171) {
-        throw invalidErr(invalidTitle.tooLong, value);
+        throw invalidErr(invalidTitle.tooLong);
     }
 }
 
 import * as invalidTextPostContent from "./api/invalid-text-post-content";
 export function checkTextPostContent(value: string, invalidErr: InvalidError): asserts value is TextPostContent {
     if (value.length == 0) {
-        throw invalidErr(invalidTextPostContent.empty, value);
+        throw invalidErr(invalidTextPostContent.empty);
     }
     if (value.length > 65535) {
-        throw invalidErr(invalidTextPostContent.tooLong, value);
+        throw invalidErr(invalidTextPostContent.tooLong);
     }
 }
 
 import * as invalidUrlPostContent from "./api/invalid-url-post-content";
 export function checkUrlPostContent(value: string, invalidErr: InvalidError): asserts value is UrlPostContent {
     if (value.length == 0) {
-        throw invalidErr(invalidUrlPostContent.empty, value);
+        throw invalidErr(invalidUrlPostContent.empty);
     }
     if (value.length > 65535) {
-        throw invalidErr(invalidUrlPostContent.tooLong, value);
+        throw invalidErr(invalidUrlPostContent.tooLong);
     }
     try {
         new URL(value);
     } catch (e) {
         if (e instanceof TypeError) {
-            throw invalidErr(invalidUrlPostContent.invalid, value);
+            throw invalidErr(invalidUrlPostContent.invalid);
         }
         throw e;
     }
@@ -109,16 +109,15 @@ export function checkUrlPostContent(value: string, invalidErr: InvalidError): as
 
 import * as invalidPassword from "./api/invalid-password";
 
-const hidden = "<hidden>";
 export function checkPassword(plain: string, invalidErr: InvalidError) {
     if (plain.length == 0) {
-        throw invalidErr(invalidPassword.empty, hidden);
+        throw invalidErr(invalidPassword.empty);
     }
     if (plain.length < 5) {
-        throw invalidErr(invalidPassword.tooShort, hidden);
+        throw invalidErr(invalidPassword.tooShort);
     }
     if (plain.length > 72) { // Limitation of bcrypt
-        throw invalidErr(invalidPassword.tooLong, hidden);
+        throw invalidErr(invalidPassword.tooLong);
     }
 }
 
@@ -131,7 +130,7 @@ export function checkSize(value: number | undefined, invalidErr: InvalidError): 
     if (value === undefined) {
         return DEFAULT_SIZE as Size;
     } else if (!(value > 0) || !Number.isInteger(value)) {
-        throw invalidErr(invalidSize.invalid, value);
+        throw invalidErr(invalidSize.invalid);
     } else if (value > MAX_SIZE) {
         return MAX_SIZE as Size;
     }
