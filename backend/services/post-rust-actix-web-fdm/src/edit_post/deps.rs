@@ -46,7 +46,7 @@ pub async fn update_post(
     let done = sqlx::query(&format!("UPDATE `{POST}` SET `{POST_TEXT}`=?,`{POST_URL}`=?,`{POST_LAST_MODIFIED}`=? WHERE `{POST_POST_ID}`=?"))
         .bind(text)
         .bind(url)
-        .bind(Time::now().utc)
+        .bind(utils::current_timestamp_utc())
         .bind(post_db_id)
         .execute(&deps.pool)
         .await

@@ -7,6 +7,7 @@ use super::{api::handle_internal_error, Result};
 
 pub mod auth;
 pub mod error;
+pub mod id_generation;
 pub mod macros;
 
 pub struct Context {
@@ -56,13 +57,16 @@ impl Encryptor {
 pub struct Deps {
     pub pool: sqlx::MySqlPool,
     pub encryptor: Encryptor,
-    pub id_gen: parking_lot::Mutex<snowflake::SnowflakeIdGenerator>,
+    // The recent Mutex implementation in Rust standard library
+    // performs better than parking_lot's.
+    pub post_id_gen: std::sync::Mutex<id_generation::Snowflake>,
+    pub user_id_gen: std::sync::Mutex<id_generation::Snowflake>,
     pub auth: auth::AuthConfig,
 }
 
 type DataDeps = actix_web::web::Data<Deps>;
 
-pub fn current_timestamp() -> u64 {
+pub fn current_timestamp_utc() -> u64 {
     std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
         .unwrap()

@@ -121,14 +121,6 @@ impl UrlPostContent {
     }
 }
 
-impl Time {
-    pub fn now() -> Time {
-        Time {
-            utc: utils::current_timestamp(),
-        }
-    }
-}
-
 impl Debug for Password {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "Password {{ plain: <hidden> }}")

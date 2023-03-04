@@ -1,5 +1,6 @@
 use actix_web::{middleware::Logger, App, HttpServer};
 use post_rust_actix_web_fdm::common::utils::auth::AuthConfig;
+use post_rust_actix_web_fdm::common::utils::id_generation::Snowflake;
 use post_rust_actix_web_fdm::common::utils::Encryptor;
 use serde::Deserialize;
 use sqlx::mysql::MySqlPoolOptions;
@@ -11,8 +12,7 @@ async fn main() {
     #[derive(Deserialize)]
     struct Config {
         listen_addr: String,
-        machine_id: i32,
-        node_id: i32,
+        machine_id: u16,
         mysql_max_connections: Option<u32>,
         mysql_uri: String,
         secret_key: String,
@@ -22,16 +22,8 @@ async fn main() {
 
     let config: Config = envy::from_env().expect("unable to read config");
 
-    if config.machine_id < 0 || config.machine_id >= 32 {
-        panic!("machine_id must be between 0 and 31");
-    }
-    if config.node_id < 0 || config.node_id >= 32 {
-        panic!("node_id must be between 0 and 31");
-    }
-    let id_gen = parking_lot::Mutex::new(snowflake::SnowflakeIdGenerator::new(
-        config.machine_id,
-        config.node_id,
-    ));
+    let user_id_gen = std::sync::Mutex::new(Snowflake::new(config.machine_id));
+    let post_id_gen = std::sync::Mutex::new(Snowflake::new(config.machine_id));
     let mut pool = MySqlPoolOptions::new();
 
     if let Some(mc) = config.mysql_max_connections {
@@ -53,7 +45,8 @@ async fn main() {
     let cost = config.cost.unwrap_or(bcrypt::DEFAULT_COST);
 
     let deps = actix_web::web::Data::new(post_rust_actix_web_fdm::common::utils::Deps {
-        id_gen,
+        user_id_gen,
+        post_id_gen,
         pool,
         encryptor: Encryptor { cost },
         auth: AuthConfig { valid_secs, secret },

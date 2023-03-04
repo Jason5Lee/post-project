@@ -12,7 +12,7 @@ Here is [the API document](../../api-document).
 * Execute [setup.sql](../setup.sql) in the database.
 * (Optional) use [create admin tool](../../createadmin) to create admin.
 * Config by either setting up environment variables or using a `.env` file.
-  * `MACHINE_ID`, `NODE_ID`: both should be integers between 0 and 31. If there are several services running as a cluster, each two services should have either different `MACHINE_ID` or different `NODE_ID`.
+  * `MACHINE_ID`: integer between 0 and 1023. If there are several services running as a cluster, each two services should have different `MACHINE_ID`.
   * `MYSQL_URI`: MySQL URI, e.g. `mysql://username:password@localhost/database`.
   * `SECRET_KEY`: the base64 of the secret key to encrypt authorization token, e.g. `hPRYyVRiMyxpw5sBB1XeCMN1kFsDCqKvBi2QJxBVHQk=`
   * `TOKEN_VALID`: the duration the token validity, e.g. `30min`.

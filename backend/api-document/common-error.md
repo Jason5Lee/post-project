@@ -4,7 +4,7 @@
 
 - `INTERNAL_SERVER_ERROR`: `500 Internal Server Error`, the server encountered an internal error. Please report this to the developer.
   - The `reason` field contains a trace ID that will help the developer to locate the error.
-- `LOW_PROBABILITY_ERROR`: `500 Internal Server Error`, an error that should be low-probability occurs.
+- `OVERLOADED`: `503 Service Unavailable`, the operation cannot be completed due to an excessive number of requests.
 - `BAD_REQUEST`: `400 Bad Request`, the request is invalid. The `reason` field contains the reason.
   - This error should indicate the bug of the client, instead of the user entering invalid value. For example, the client should not send a request with an invalid JSON format.
 - `INVALID_AUTH`: `401 Unauthorized`, the authorization header is invalid. It may be expired.
