@@ -30,9 +30,9 @@ This development method utilizes code-as-documentation. The information containe
     * `impl.<ext>` (or `deps.rs` in Rust since `impl` is a keyword) file includes the implementation of the workflow or the dependent workflows.
 * Under the `common` directory
     * `models.<ext>` (or `mod.rs` in Rust, `index.ts` in TypeScript) file includes the shared domain models.
-      * It uses wrapper types (or [branded types](https://www.typescriptlang.org/play?q=370#example/nominal-typing) in TypeScript) over primitive types to represent business model. For example, a type `UserName` that wraps over a string.
-        * The wrapper types are the boundary of validated values. You cannot implicitly use an unvalidated `string` as a `UserName`, for example.
-        * Ideally, it should be impossible to construct the wrapper type with an invalid value. Unfortunately in some languages this is not possible or not convenient.
+      * It uses newtypes (which can be wrapper types or [branded types](https://www.typescriptlang.org/play?q=370#example/nominal-typing) in TypeScript) over primitive types to represent business model. For example, a type `UserName` that wraps over a string.
+        * The newtypes are the boundary of validated values. You cannot implicitly use an unvalidated `string` as a `UserName`, for example.
+        * The values from the requests should be converted into the newtypes by the validation function. The values from the database may be trusted in which case the newtypes can be created without validation.
     * `api` directory includes the shared information of the API.
       * It contains the response of the invalid value errors of each domain model.
     * Some other common utilities.

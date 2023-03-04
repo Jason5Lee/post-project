@@ -9,7 +9,7 @@ use std::rc::Rc;
 #[get("/user/{id}")]
 pub async fn api(mut ctx: utils::Context) -> Result<HttpResponse> {
     let (id,) = ctx
-        .to::<UrlPath<(String,)>>()
+        .get::<UrlPath<(String,)>>()
         .await
         .map_err(bad_request)?
         .to_owned();
@@ -24,7 +24,7 @@ pub async fn api(mut ctx: utils::Context) -> Result<HttpResponse> {
         }
 
         ResponseDto {
-            userName: output.user_name.into_rc_str(),
+            userName: output.user_name.0,
             creationTime: output.creation.utc,
         }
     }))

@@ -15,7 +15,7 @@ pub async fn api(mut ctx: utils::Context) -> Result<HttpResponse> {
         pub password: String,
     }
     let req_body = ctx
-        .to::<BodyJson<RequestDto>>()
+        .get::<BodyJson<RequestDto>>()
         .await
         .map_err(bad_request)?
         .0;

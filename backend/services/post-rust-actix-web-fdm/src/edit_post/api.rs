@@ -20,13 +20,13 @@ pub async fn api(mut ctx: utils::Context) -> Result<HttpResponse> {
     }
 
     let req = ctx
-        .to::<BodyJson<RequestDto>>()
+        .get::<BodyJson<RequestDto>>()
         .await
         .map_err(bad_request)?
         .0;
     let input = Command {
         id: PostId(
-            ctx.to::<UrlPath<(String,)>>()
+            ctx.get::<UrlPath<(String,)>>()
                 .await
                 .map_err(bad_request)?
                 .to_owned()

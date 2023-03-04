@@ -809,30 +809,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "ifmt"
-version = "0.3.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7dd0f8e1404f15475d8a2ca84c2942aa00ac17804ce555294a96f6b5cdf80750"
-dependencies = [
- "ifmt-impl",
- "proc-macro-hack",
-]
-
-[[package]]
-name = "ifmt-impl"
-version = "0.3.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e50385662f423431a619ab28ba2beeab3063b581a0d1a943765e23911c502904"
-dependencies = [
- "lazy_static",
- "proc-macro-hack",
- "proc-macro2",
- "quote",
- "regex",
- "syn",
-]
-
-[[package]]
 name = "indexmap"
 version = "1.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1250,13 +1226,10 @@ dependencies = [
  "envy",
  "futures-util",
  "humantime",
- "ifmt",
  "jsonwebtoken",
  "log",
  "once_cell",
- "parking_lot 0.12.1",
  "rand",
- "rs-snowflake",
  "serde",
  "serde_json",
  "sqlx",
@@ -1269,12 +1242,6 @@ name = "ppv-lite86"
 version = "0.2.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "eb9f9e6e233e5c4a35559a617bf40a4ec447db2e84c20b55a6f83167b7e57872"
-
-[[package]]
-name = "proc-macro-hack"
-version = "0.5.19"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dbf0c48bc1d91375ae5c3cd81e3722dff1abcf81a30960240640d223f59fe0e5"
 
 [[package]]
 name = "proc-macro2"
@@ -1364,12 +1331,6 @@ dependencies = [
  "web-sys",
  "winapi",
 ]
-
-[[package]]
-name = "rs-snowflake"
-version = "0.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e60ef3b82994702bbe4e134d98aadca4b49ed04440148985678d415c68127666"
 
 [[package]]
 name = "rsa"

@@ -64,42 +64,42 @@ impl Column {
     }
 }
 
-pub const POSTS: Table = Table("posts");
-pub mod posts {
-    use super::*;
+pub const POST: Table = Table("post");
+pub const POST_POST_ID: UniqueColumn = Column::primary("post_id");
+pub const POST_CREATOR: Column = Column::name("creator");
+pub const POST_CREATION_TIME: Column = Column::name("creation_time");
+pub const POST_LAST_MODIFIED: Column = Column::name("last_modified");
+pub const POST_TITLE: UniqueColumn = Column::unique("title", "UC_title");
+pub const POST_TEXT: Column = Column::name("text_content");
+pub const POST_URL: Column = Column::name("url_link");
 
-    pub const POST_ID: UniqueColumn = Column::primary("post_id");
-    pub const CREATOR: Column = Column::name("creator");
-    pub const CREATION_TIME: Column = Column::name("creation_time");
-    pub const LAST_MODIFIED: Column = Column::name("last_modified");
-    pub const TITLE: UniqueColumn = Column::unique("title", "UC_title");
-    pub const TEXT: Column = Column::name("text_content");
-    pub const URL: Column = Column::name("url_link");
-}
-pub const USERS: Table = Table("users");
-pub mod users {
-    use super::*;
-    pub const USER_ID: UniqueColumn = Column::primary("user_id");
-    pub const USER_NAME: UniqueColumn = Column::unique("user_name", "idx_user_name");
-    pub const ENCRYPTED_PASSWORD: Column = Column::name("encrypted_password");
-    pub const CREATION_TIME: Column = Column::name("creation_time");
-}
-pub const ADMIN: Table = Table("admins");
-pub mod admin {
-    use super::*;
-    pub const ADMIN_ID: UniqueColumn = Column::primary("admin_id");
-    pub const ENCRYPTED_PASSWORD: Column = Column::name("encrypted_password");
-}
+pub const USER: Table = Table("users"); // `user` is MySQL reserved word
+pub const USER_USER_ID: UniqueColumn = Column::primary("user_id");
+pub const USER_USER_NAME: UniqueColumn = Column::unique("user_name", "idx_user_name");
+pub const USER_ENCRYPTED_PASSWORD: Column = Column::name("encrypted_password");
+pub const USER_CREATION_TIME: Column = Column::name("creation_time");
 
-pub fn is_unique_violation_in(err: &sqlx::Error, column: UniqueColumn) -> bool {
+pub const ADMIN: Table = Table("admins"); // `admin` is MySQL reserved word
+pub const ADMIN_ADMIN_ID: UniqueColumn = Column::primary("admin_id");
+pub const ADMIN_ENCRYPTED_PASSWORD: Column = Column::name("encrypted_password");
+
+pub enum UniqueViolationError {
+    PrimaryKey,
+    OtherColumn,
+}
+pub fn analysis_unique_violation_error(err: &sqlx::Error) -> Option<UniqueViolationError> {
     if let Some(err) = err.as_database_error() {
-        err.code().map_or(false, |code| code == "23000")
-            && (err.message().ends_with(&iformat!("'" column.unique_constraint "'")) || // MariaDB
-                err.message().ends_with(&iformat!("." column.unique_constraint "'")))
-    // MySQL
-    } else {
-        false
+        if err.code().map_or(false, |code| code == "23000") {
+            return if err.message().ends_with("'PRIMARY'") || // MariaDB
+                /* MySQL */ err.message().ends_with(".PRIMARY'")
+            {
+                Some(UniqueViolationError::PrimaryKey)
+            } else {
+                Some(UniqueViolationError::OtherColumn)
+            };
+        }
     }
+    None
 }
 
 const ID_ENGINE: FastPortable = FastPortable::from(&alphabet::URL_SAFE, fast_portable::NO_PAD);

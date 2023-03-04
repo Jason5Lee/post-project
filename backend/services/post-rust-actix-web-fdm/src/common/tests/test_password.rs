@@ -4,7 +4,7 @@ use crate::common::Password;
 fn test_empty_password() {
     assert_eq!(
         Password::try_from_plain("".to_string()),
-        Err(("".to_string(), Password::password_empty()))
+        Err(Password::password_empty())
     );
 }
 
@@ -12,7 +12,7 @@ fn test_empty_password() {
 fn test_short_password() {
     assert_eq!(
         Password::try_from_plain("a".to_string()),
-        Err(("a".to_string(), Password::password_too_short()))
+        Err(Password::password_too_short())
     );
 }
 
@@ -20,7 +20,7 @@ fn test_short_password() {
 fn test_long_password() {
     assert_eq!(
         Password::try_from_plain("a".repeat(73)),
-        Err(("a".repeat(73), Password::password_too_long()))
+        Err(Password::password_too_long())
     );
 }
 

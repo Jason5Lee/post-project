@@ -16,7 +16,7 @@ pub async fn api(mut ctx: utils::Context) -> Result<HttpResponse> {
     }
 
     let req = ctx
-        .to::<BodyJson<RequestDto>>()
+        .get::<BodyJson<RequestDto>>()
         .await
         .map_err(bad_request)?
         .0;
@@ -27,7 +27,7 @@ pub async fn api(mut ctx: utils::Context) -> Result<HttpResponse> {
     let output = super::Steps::from_ctx(&ctx).workflow(input).await?;
     let user_id = output.0;
     Ok(HttpResponse::Created()
-        .append_header(("Location", iformat!("/user/" user_id)))
+        .append_header(("Location", format!("/user/{user_id}")))
         .json({
             #[derive(Serialize)]
             #[allow(non_snake_case)]

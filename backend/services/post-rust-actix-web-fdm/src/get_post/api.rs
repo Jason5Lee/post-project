@@ -13,7 +13,7 @@ use super::*;
 #[get("/post/{id}")]
 pub async fn api(mut ctx: Context) -> Result<HttpResponse> {
     let (id,) = ctx
-        .to::<UrlPath<(String,)>>()
+        .get::<UrlPath<(String,)>>()
         .await
         .map_err(bad_request)?
         .to_owned();
@@ -38,15 +38,15 @@ pub async fn api(mut ctx: Context) -> Result<HttpResponse> {
             }
 
             let (text, url) = match output.content {
-                PostContent::Text(text) => (Some(text.into_string()), None),
-                PostContent::Url(url) => (None, Some(url.into_string())),
+                PostContent::Text(text) => (Some(text.0), None),
+                PostContent::Url(url) => (None, Some(url.0)),
             };
 
             ResponseDto {
                 creatorId: output.creator.id.0,
-                creatorName: output.creator.name.into_rc_str(),
+                creatorName: output.creator.name.0,
                 creationTime: output.creation.utc,
-                title: output.title.into_string(),
+                title: output.title.0,
                 text,
                 url,
                 lastModified: output.last_modified.map(|t| t.utc),

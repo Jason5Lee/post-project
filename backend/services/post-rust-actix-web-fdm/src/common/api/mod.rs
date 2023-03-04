@@ -83,13 +83,14 @@ pub fn user_only() -> ErrorResponse {
         .into()
 }
 
-pub fn low_probability_error() -> ErrorResponse {
+pub fn overloaded() -> ErrorResponse {
     (
-        StatusCode::INTERNAL_SERVER_ERROR,
+        StatusCode::SERVICE_UNAVAILABLE,
         ErrorBody {
             error: ErrBody {
-                error: "LOW_PROBABILITY_ERROR".into(),
-                reason: "an error that should be low-probability occurs".to_string(),
+                error: "OVERLOADED".into(),
+                reason: "The operation cannot be completed due to an excessive number of requests"
+                    .to_string(),
                 message: "Something went wrong, please try again later".to_string(),
             },
         },

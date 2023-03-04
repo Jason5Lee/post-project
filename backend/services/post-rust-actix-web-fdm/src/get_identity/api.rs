@@ -35,7 +35,7 @@ pub async fn api(ctx: utils::Context) -> Result<HttpResponse> {
             match output {
                 Some(IdentityInfo::User { id, name }) => ResponseDto {
                     user: Some(UserDto {
-                        name: name.into_rc_str(),
+                        name: name.0,
                         id: id.0,
                     }),
                     ..Default::default()
