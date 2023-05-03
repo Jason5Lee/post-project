@@ -5,7 +5,7 @@ import { checkTextPostContent, checkUrlPostContent, PostContent, PostId } from "
 import * as runtypes from "runtypes";
 import { CLIENT_BUG_MESSAGE } from "../common/api";
 
-export const route: Route = [Method.POST, "/post/:id"];
+export const route: Route = [Method.PATCH, "/post/:id"];
 
 const requestStructure = runtypes.Record({
     text: runtypes.String.optional(),

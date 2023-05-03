@@ -3,10 +3,10 @@ use crate::common::api::*;
 use crate::common::utils::error::*;
 use crate::common::*;
 use actix_web::http::StatusCode;
-use actix_web::{post, web::Json as BodyJson, web::Path as UrlPath, HttpResponse};
+use actix_web::{patch, web::Json as BodyJson, web::Path as UrlPath, HttpResponse};
 use serde::Deserialize;
 
-#[post("/post/{id}")]
+#[patch("/post/{id}")]
 pub async fn api(mut ctx: utils::Context) -> Result<HttpResponse> {
     let caller = match ctx.get_caller_identity()? {
         Some(Identity::User(user_id)) => user_id,

@@ -67,7 +67,7 @@ async function testListPosts(base: string, user1Posts: Post[], user2Posts: Post[
 }
 
 async function testEditPost(base: string, postId: string, user1Token: UserToken, user2Token: UserToken) {
-    const editUser1PostByUser2 = await axios.post(
+    const editUser1PostByUser2 = await axios.patch(
         base + "/post/" + postId,
         { text: "New Post Content" },
         { headers: { "Authorization": "Bearer " + user2Token.token }, validateStatus: () => true }
@@ -75,7 +75,7 @@ async function testEditPost(base: string, postId: string, user1Token: UserToken,
     assert(editUser1PostByUser2.status === 403);
     assert(editUser1PostByUser2.data.error.error === "NOT_CREATOR");
 
-    const editUser1PostToUrl = await axios.post(
+    const editUser1PostToUrl = await axios.patch(
         base + "/post/" + postId,
         { url: "https://www.newurl.com/" },
         { headers: { "Authorization": "Bearer " + user1Token.token }, validateStatus: () => true }
@@ -83,7 +83,7 @@ async function testEditPost(base: string, postId: string, user1Token: UserToken,
     assert(editUser1PostToUrl.status === 400);
     assert(editUser1PostToUrl.data.error.error === "TYPE_DIFF");
 
-    const editUser1Post = await axios.post(
+    const editUser1Post = await axios.patch(
         base + "/post/" + postId,
         { text: "New Post Content" },
         { headers: { "Authorization": "Bearer " + user1Token.token } }
@@ -98,7 +98,7 @@ async function testEditPost(base: string, postId: string, user1Token: UserToken,
 
 async function testCreateGetAPost(base: string, counter: number, postType: "text" | "url", headers: Partial<unknown>, creatorId: string, creatorName: string, userPosts: Post[], allPosts: Post[]) {
     const body = postType == "text" ? { title: "Title " + counter, text: "Post " + counter } : { title: "Title " + counter, url: "https://url.test/" + counter };
-    const post = await axios.put(base + "/post", body, { headers: headers });
+    const post = await axios.post(base + "/post", body, { headers: headers });
     assert(post.status === 201);
     const postId = post.data.postId;
     assert(typeof postId === "string");
@@ -148,7 +148,7 @@ async function testDeletePostByAdmin(base: string, postId: string, admin_token: 
     assert(getDeletedPost.status === 404);
 }
 export async function testPost(base: string, users: [UserToken, UserToken], adminToken: string): Promise<void> {
-    const no_auth = await axios.put(base + "/post", { title: "title", text: "text" }, { validateStatus: () => true });
+    const no_auth = await axios.post(base + "/post", { title: "title", text: "text" }, { validateStatus: () => true });
     assert(no_auth.status === 403);
     assert(no_auth.data.error.error === "USER_ONLY");
 
@@ -166,7 +166,7 @@ export async function testPost(base: string, users: [UserToken, UserToken], admi
         await testCreateGetAPost(base, counter++, "text", user2Header, users[1].userId, "user2", user2Posts, allPosts);
         await testCreateGetAPost(base, counter++, "url", user2Header, users[1].userId, "user2", user2Posts, allPosts);
     }
-    const duplicated = await axios.put(base + "/post", { title: allPosts[0].title, text: "text" }, { headers: user1Header, validateStatus: () => true });
+    const duplicated = await axios.post(base + "/post", { title: allPosts[0].title, text: "text" }, { headers: user1Header, validateStatus: () => true });
     assert(duplicated.status === 409);
     assert(duplicated.data.error.error === "DUPLICATE_TITLE");
 

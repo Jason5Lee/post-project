@@ -6,7 +6,7 @@ import me.jason5lee.post_ktor_mongo_fdm.common.*
 import me.jason5lee.post_ktor_mongo_fdm.common.api.clientBugMessage
 import me.jason5lee.post_ktor_mongo_fdm.common.utils.*
 
-val api = Api.create(HttpMethod.Put, "/post") { ctx, workflow: Workflow ->
+val api = Api.create(HttpMethod.Post, "/post") { ctx, workflow: Workflow ->
     val caller = ctx.getCallerIdentity() as? Identity.User ?: throw userOnly()
 
     @Serializable

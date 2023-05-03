@@ -5,7 +5,7 @@ import { Context, Method, Route, validateRequest } from "../common/utils";
 import { onInvalidRespond, ResponseError } from "../common/utils/error";
 import { CLIENT_BUG_MESSAGE } from "../common/api";
 
-export const route: Route = [Method.PUT, "/post"];
+export const route: Route = [Method.POST, "/post"];
 
 const requestBody = runtypes.Record({
     title: runtypes.String,

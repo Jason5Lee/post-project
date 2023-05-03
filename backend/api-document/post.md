@@ -4,7 +4,7 @@
 
 `GET /post/<post ID>`
 
-Get a post by ID.
+Retrieve a post by its ID.
 
 ### Response
 
@@ -18,19 +18,19 @@ Body:
     "creatorName": "<creator name>",
     "creationTime": <creation timestamp>,
     "title": "<post title>",
-    "text": "<text post content, exists only for text type>",
-    "url": "<URL post content, exists only for URL type>",
-    "lastModified": <last modified timestamp, exists only if it has been modified>
+    "text": "<post content for text type, if applicable>",
+    "url": "<post content for URL type, if applicable>",
+    "lastModified": <last modified timestamp, if the post has been modified>
 }
 ```
 
 ### Errors
 
-- `POST_NOT_FOUND`: `404 Not Found`, post not found.
+- `POST_NOT_FOUND`: `404 Not Found`, the post was not found.
 
 ## Create a post
 
-`PUT /post`
+`POST /post`
 
 Authorization: user only.
 
@@ -41,12 +41,12 @@ Body:
 ```json
 {
     "title": "<post title>",
-    "text": "<the text post content>",
-    "url": "<the URL post content>"
+    "text": "<post content for text type>",
+    "url": "<post content for URL type>"
 }
 ```
 
-Exact one of the `text` and the `url` field should exist.
+Either the `text` or the `url` field should exist, but not both.
 
 ### Response
 
@@ -64,18 +64,18 @@ Body:
 
 ### Errors
 
-- `USER_ONLY`: `403 Forbidden`, only users are allowed to create post.
-- Invalid errors of Title.
-- Invalid errors of text post content.
-- Invalid errors of URL post content.
-- `TEXT_URL_EXACT_ONE`: `400 Bad Request`, exact one of `url` and `text` should present.
-- `DUPLICATE_TITLE`: `409 Conflict`, the post title duplicated.
+- `USER_ONLY`: `403 Forbidden`, only users are permitted to create posts.
+- Errors related to invalid title.
+- Errors related to invalid text post content.
+- Errors related to invalid URL post content.
+- `TEXT_URL_EXACT_ONE`: `400 Bad Request`, exactly one of `url` and `text` should be present.
+- `DUPLICATE_TITLE`: `409 Conflict`, the post title already exists.
 
 ## Edit a post
 
-`POST /post/<post ID>`
+`PATCH /post/<post ID>`
 
-Authorization: the post creator only.
+Authorization: post creator only.
 
 ### Request
 
@@ -83,12 +83,12 @@ Body:
 
 ```json
 {
-    "text": "<the post content>",
-    "url": "<the URL content>"
+    "text": "<post content for text type>",
+    "url": "<post content for URL type>"
 }
 ```
 
-Exact one of the `text` and the `url` field should exist.
+Either the `text` or the `url` field should exist, but not both.
 
 ### Response
 
@@ -96,12 +96,12 @@ Exact one of the `text` and the `url` field should exist.
 
 ### Errors
 
-- Invalid errors of text post content.
-- Invalid errors of URL post content.
-- `TEXT_URL_EXACT_ONE`: `400 Bad Request`, exact one of `url` and `post` should present.
+- Errors related to invalid text post content.
+- Errors related to invalid URL post content.
+- `TEXT_URL_EXACT_ONE`: `400 Bad Request`, exactly one of `url` and `text` should be present.
 - `POST_NOT_FOUND`: `404 Not Found`, the post does not exist.
-- `NOT_CREATOR`: `403 Forbidden`, the user is not the creator of the post.
-- `TYPE_DIFF`: `400 Bad Request`, the type of the post is different from the request.
+- `NOT_CREATOR`: `403 Forbidden`, the user is not the post's creator.
+- `TYPE_DIFF`: `400 Bad Request`, the post type does not match the request.
 
 ## Delete a post
 
@@ -115,7 +115,7 @@ Authorization: post creator or admin only.
 
 ### Errors
 
-- `NOT_CREATOR_ADMIN`: `403 Forbidden`, the caller is neither the creator of the post nor admin.
+- `NOT_CREATOR_ADMIN`: `403 Forbidden`, the requester is neither the post's creator nor an admin.
 - `POST_NOT_FOUND`: `404 Not Found`, the post does not exist.
 
 ## List posts information
@@ -125,10 +125,10 @@ Authorization: post creator or admin only.
 ### Request
 
 Query parameters:
-- `before`: the timestamp of the last post in the previous page. The latest posts before the certain time will be return. If not present, the latest posts will be returned.
-- `after`: the timestamp of the first post in the next page. This parameter is exclusive with `before`. If this parameter is present, the oldest posts after the certain time will be return.
+- `before`: timestamp of the last post on the previous page. This will return the most recent posts prior to the specified time. If not present, the most recent posts will be returned.
+- `after`: timestamp of the first post on the next page. This parameter is mutually exclusive with `before`. If this parameter is present, it will return the oldest posts after the specified time.
 - `size`: the maximum number of posts to return. If not present, the default value is 20. The maximum value is 500.
-- `creator`: the ID of the creator of the posts. If not present, all posts will be returned.
+- `creator`: the ID of the post's creator. If not present, all posts will be returned.
 
 ### Response
 
@@ -149,12 +149,11 @@ Body:
         ...
     ]
 }
-```
 
-The posts are sorted by creation time in descending order.
+The posts are sorted by their creation time in descending order.
 
 ### Errors
 
-- `BOTH_BEFORE_AFTER`: `422 Unprocessable Entity`, both `before` and `after` are present.
-- `CREATOR_NOT_FOUND`: `404 Not Found`, the creator does not exist.
-- Invalid errors of Size.
+- `BOTH_BEFORE_AFTER`: `422 Unprocessable Entity`, both `before` and `after` parameters are present.
+- `CREATOR_NOT_FOUND`: `404 Not Found`, the specified creator does not exist.
+- Errors related to invalid size, prefixed with `BEFORE_` or `AFTER_` to indicate whether the `before` parameter or the `after` parameter is invalid.

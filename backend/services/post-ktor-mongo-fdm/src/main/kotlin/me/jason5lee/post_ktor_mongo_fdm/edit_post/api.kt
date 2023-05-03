@@ -11,7 +11,7 @@ import me.jason5lee.post_ktor_mongo_fdm.common.utils.FailureBody
 import me.jason5lee.post_ktor_mongo_fdm.common.utils.HttpException
 import me.jason5lee.resukt.fold
 
-val api = Api.create(HttpMethod.Post, "/post/{id}") { ctx, workflow: Workflow ->
+val api = Api.create(HttpMethod.Patch, "/post/{id}") { ctx, workflow: Workflow ->
     val caller = ctx.getCallerIdentity() as? Identity.User ?: throw Errors.NotCreator.asException()
     val id = ctx.pathParameters()["id"] ?: throw badRequest("Missing path parameter `id`")
 

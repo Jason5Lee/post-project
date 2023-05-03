@@ -84,8 +84,8 @@ export interface Deps {
 export enum Method {
     GET = "GET",
     POST = "POST",
-    PUT = "PUT",
     DELETE = "DELETE",
+    PATCH = "PATCH",
 }
 
 export type Route = [Method, string];
@@ -126,11 +126,11 @@ export function addRoute<Workflow>(router: Router, deps: Deps, api: ApiPackage<W
         case Method.POST:
             router.post(path, apiFunc);
             break;
-        case Method.PUT:
-            router.put(path, apiFunc);
-            break;
         case Method.DELETE:
             router.delete(path, apiFunc);
+            break;
+        case Method.PATCH:
+            router.patch(path, apiFunc);
             break;
         default:
             throwUnexpectedValue(method);

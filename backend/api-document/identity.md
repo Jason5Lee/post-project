@@ -4,7 +4,7 @@
 
 `GET /identity`
 
-Get the identity of the current user.
+Retrieves the identity of the current user.
 
 ### Response
 
@@ -24,4 +24,4 @@ Body:
 }
 ```
 
-At most one of `user` and `admin` field will present. Without authorization header, an empty object will be responded.
+Either the `user` or `admin` field will be present, but not both. If there is no authorization header, an empty object will be returned.
