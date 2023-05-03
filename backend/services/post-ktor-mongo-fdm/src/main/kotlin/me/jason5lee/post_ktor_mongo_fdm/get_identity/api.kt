@@ -2,9 +2,9 @@ package me.jason5lee.post_ktor_mongo_fdm.get_identity
 
 import io.ktor.http.*
 import kotlinx.serialization.Serializable
-import me.jason5lee.post_ktor_mongo_fdm.common.utils.Api
+import me.jason5lee.post_ktor_mongo_fdm.common.utils.HttpApi
 
-val api = Api.create(HttpMethod.Get, "/identity") { ctx, workflow: Workflow ->
+val api = HttpApi(HttpMethod.Get, "/identity") { ctx, workflow: Workflow ->
     val caller = ctx.getCallerIdentity()
     val identityInfo = workflow.run(caller)
 

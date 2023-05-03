@@ -11,7 +11,7 @@ import me.jason5lee.post_ktor_mongo_fdm.common.newSize
 import me.jason5lee.post_ktor_mongo_fdm.common.newTime
 import me.jason5lee.post_ktor_mongo_fdm.common.utils.*
 
-val api = Api.create(HttpMethod.Get, "/post") { ctx, workflow: Workflow ->
+val api = HttpApi(HttpMethod.Get, "/post") { ctx, workflow: Workflow ->
     val condition = run {
         val beforeParam = ctx.pathParameters()["before"]
         val afterParam = ctx.pathParameters()["after"]

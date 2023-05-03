@@ -5,13 +5,13 @@ import kotlinx.serialization.Serializable
 import me.jason5lee.post_ktor_mongo_fdm.common.PostContent
 import me.jason5lee.post_ktor_mongo_fdm.common.PostId
 import me.jason5lee.post_ktor_mongo_fdm.common.api.badRequest
-import me.jason5lee.post_ktor_mongo_fdm.common.utils.Api
+import me.jason5lee.post_ktor_mongo_fdm.common.utils.HttpApi
 import me.jason5lee.post_ktor_mongo_fdm.common.utils.Err
 import me.jason5lee.post_ktor_mongo_fdm.common.utils.FailureBody
 import me.jason5lee.post_ktor_mongo_fdm.common.utils.HttpException
 import me.jason5lee.resukt.getOrElse
 
-val api = Api.create(HttpMethod.Get, "/post/{id}") { ctx, workflow: Workflow ->
+val api = HttpApi(HttpMethod.Get, "/post/{id}") { ctx, workflow: Workflow ->
     val id = ctx.pathParameters()["id"] ?: throw badRequest("Missing path parameter `id`")
     val post = workflow.run(PostId(id)).getOrElse { throw it.asException() }
 

@@ -1,6 +1,7 @@
 package me.jason5lee.post_ktor_mongo_fdm.common.utils
 
 import io.github.cdimascio.dotenv.Dotenv
+import io.github.cdimascio.dotenv.DotenvBuilder
 
 class Env(
     val listenHost: String,
@@ -13,7 +14,10 @@ class Env(
 ) {
     companion object {
         fun load(): Env {
-            val dotenv = Dotenv.load()
+            val dotenv = DotenvBuilder()
+                .ignoreIfMissing()
+                .load()
+
             return Env(
                 listenHost = dotenv.getString("LISTEN_HOST"),
                 listenPort = dotenv.getInt("LISTEN_PORT"),

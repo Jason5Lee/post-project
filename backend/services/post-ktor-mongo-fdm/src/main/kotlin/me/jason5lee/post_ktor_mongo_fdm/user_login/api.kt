@@ -7,7 +7,7 @@ import me.jason5lee.post_ktor_mongo_fdm.common.newPassword
 import me.jason5lee.post_ktor_mongo_fdm.common.newUserName
 import me.jason5lee.post_ktor_mongo_fdm.common.utils.*
 
-val api = Api.create(HttpMethod.Post, "/login") { ctx, workflow: Workflow ->
+val api = HttpApi(HttpMethod.Post, "/login") { ctx, workflow: Workflow ->
     @Serializable
     class RequestBody(
         val userName: String,
