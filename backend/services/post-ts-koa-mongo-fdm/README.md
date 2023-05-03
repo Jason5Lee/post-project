@@ -2,7 +2,7 @@
 
 The backend service of post using NodeJS, TypeScript, Koa and MongoDB.
 
-This implementation uses [my development method](../../fdm.md).
+This implementation uses [my development method](../../mdm.md).
 
 Here is [the API document](../../api-document).
 
