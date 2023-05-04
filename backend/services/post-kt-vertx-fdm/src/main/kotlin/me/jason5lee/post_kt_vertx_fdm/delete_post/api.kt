@@ -1,24 +1,21 @@
 package me.jason5lee.post_kt_vertx_fdm.delete_post
 
-import io.ktor.http.*
+import io.vertx.core.http.HttpMethod
 import me.jason5lee.post_kt_vertx_fdm.common.PostId
 import me.jason5lee.post_kt_vertx_fdm.common.api.badRequest
-import me.jason5lee.post_ktor_mongo_fdm.common.utils.HttpApi
-import me.jason5lee.post_ktor_mongo_fdm.common.utils.Err
-import me.jason5lee.post_ktor_mongo_fdm.common.utils.FailureBody
-import me.jason5lee.post_ktor_mongo_fdm.common.utils.HttpException
+import me.jason5lee.post_kt_vertx_fdm.common.utils.*
 
-val api = HttpApi(HttpMethod.Delete, "/post/{id}") { ctx, workflow: Workflow ->
+val api = HttpApi(HttpMethod.DELETE, "/post/{id}") { ctx, workflow: Workflow ->
     val caller = ctx.getCallerIdentity() ?: throw workflow.notCreatorAdmin()
-    val id = ctx.pathParameters()["id"] ?: throw me.jason5lee.post_kt_vertx_fdm.common.api.badRequest("Missing path parameter `id`")
-    workflow.run(caller, me.jason5lee.post_kt_vertx_fdm.common.PostId(id))
+    val id = ctx.pathParameters()["id"] ?: throw badRequest("Missing path parameter `id`")
+    workflow.run(caller, PostId(id))
 
     ctx.respondNoContent()
 }
 
 interface ErrorsImpl : Errors {
     override fun notCreatorAdmin(): Exception = HttpException(
-        HttpStatusCode.Forbidden,
+        status = 403,
         FailureBody(
             error = Err(
                 error = "NOT_CREATOR_ADMIN",
@@ -29,7 +26,7 @@ interface ErrorsImpl : Errors {
     )
 
     override fun postNotFound(): Exception = HttpException(
-        HttpStatusCode.NotFound,
+        status = 404,
         FailureBody(
             error = Err(
                 error = "POST_NOT_FOUND",

@@ -1,13 +1,13 @@
 package me.jason5lee.post_kt_vertx_fdm.create_post
 
-import io.ktor.http.*
+import io.vertx.core.http.HttpMethod
 import kotlinx.serialization.Serializable
-import me.jason5lee.post_ktor_mongo_fdm.common.*
+import me.jason5lee.post_kt_vertx_fdm.common.*
 import me.jason5lee.post_kt_vertx_fdm.common.api.clientBugMessage
-import me.jason5lee.post_ktor_mongo_fdm.common.utils.*
+import me.jason5lee.post_kt_vertx_fdm.common.utils.*
 
-val api = HttpApi(HttpMethod.Post, "/post") { ctx, workflow: Workflow ->
-    val caller = ctx.getCallerIdentity() as? me.jason5lee.post_kt_vertx_fdm.common.Identity.User ?: throw userOnly()
+val api = HttpApi(HttpMethod.POST, "/post") { ctx, workflow: Workflow ->
+    val caller = ctx.getCallerIdentity() as? Identity.User ?: throw userOnly()
 
     @Serializable
     class RequestBody(
@@ -18,21 +18,21 @@ val api = HttpApi(HttpMethod.Post, "/post") { ctx, workflow: Workflow ->
 
     val req = ctx.getRequestBody<RequestBody>()
     val command = Command(
-        title = me.jason5lee.post_kt_vertx_fdm.common.newTitle(
+        title = newTitle(
             req.title,
-            OnInvalidRespond(HttpStatusCode.UnprocessableEntity)
+            OnInvalidRespond(statusCode = 422)
         ),
         content =
         if (req.text != null && req.url == null) {
-            me.jason5lee.post_kt_vertx_fdm.common.PostContent.Text(
-                me.jason5lee.post_kt_vertx_fdm.common.newTextPostContent(
+            PostContent.Text(
+                newTextPostContent(
                     req.text
-                ).onInvalidRespond(HttpStatusCode.UnprocessableEntity))
+                ).onInvalidRespond(statusCode = 422))
         } else if (req.text == null && req.url != null) {
-            me.jason5lee.post_kt_vertx_fdm.common.PostContent.Url(
-                me.jason5lee.post_kt_vertx_fdm.common.newUrlPostContent(
+            PostContent.Url(
+                newUrlPostContent(
                     req.url
-                ).onInvalidRespond(HttpStatusCode.UnprocessableEntity))
+                ).onInvalidRespond(statusCode = 422))
         } else {
             throw textUrlExactOne()
         }
@@ -40,9 +40,9 @@ val api = HttpApi(HttpMethod.Post, "/post") { ctx, workflow: Workflow ->
     val postId = workflow.run(caller.id, command)
 
     ctx.respond(
-        HttpStatusCode.Created,
+        statusCode = 201,
         run {
-            ctx.responseHeaders().append("Location", "/post/${postId.value}")
+            ctx.responseHeaders().add("Location", "/post/${postId.value}")
 
             @Serializable
             class ResponseBody(
@@ -57,7 +57,7 @@ val api = HttpApi(HttpMethod.Post, "/post") { ctx, workflow: Workflow ->
 
 interface ErrorsImpl : Errors {
     override fun duplicateTitle(): Exception = HttpException(
-        HttpStatusCode.Conflict,
+        status = 409,
         FailureBody(
             error = Err(
                 error = "DUPLICATE_TITLE",
@@ -69,18 +69,18 @@ interface ErrorsImpl : Errors {
 }
 
 fun textUrlExactOne(): Exception = HttpException(
-    HttpStatusCode.UnprocessableEntity,
+    status = 422,
     FailureBody(
         error = Err(
             error = "TEXT_URL_EXACT_ONE",
             reason = "Exactly one of `text` and `url` must be provided",
-            message = me.jason5lee.post_kt_vertx_fdm.common.api.clientBugMessage,
+            message = clientBugMessage,
         )
     )
 )
 
 fun userOnly(): Exception = HttpException(
-    HttpStatusCode.Forbidden,
+    status = 403,
     FailureBody(
         error = Err(
             error = "USER_ONLY",

@@ -1,20 +1,17 @@
 package me.jason5lee.post_kt_vertx_fdm.common.utils
 
-import io.ktor.http.*
-import io.ktor.server.application.*
-import io.ktor.server.routing.*
-import io.ktor.util.pipeline.*
+import io.vertx.core.Handler
+import io.vertx.core.http.HttpMethod
+import io.vertx.ext.web.Router
+import io.vertx.ext.web.RoutingContext
+import io.vertx.kotlin.coroutines.dispatcher
+import kotlinx.coroutines.CoroutineScope
 import me.jason5lee.post_kt_vertx_fdm.common.api.internalServerError
 import java.util.*
+import kotlinx.coroutines.launch
 
-abstract class HttpApi<W>(private val method: HttpMethod, private val path: String) {
-    abstract fun createHandler(deps: Deps, workflow: W): suspend PipelineContext<Unit, ApplicationCall>.(Unit) -> Unit
-
-    fun addToRouter(routing: Routing, deps: Deps, workflow: W) {
-        routing.route(path, method) {
-            handle(createHandler(deps, workflow))
-        }
-    }
+abstract class HttpApi<W>(val method: HttpMethod, val path: String) {
+    abstract fun createHandler(scope: CoroutineScope, deps: Deps, workflow: W): Handler<RoutingContext>
 
     companion object {
         suspend fun handleException(ctx: Context, e: Throwable) {
@@ -24,9 +21,7 @@ abstract class HttpApi<W>(private val method: HttpMethod, private val path: Stri
             } else {
                 val id = UUID.randomUUID().toString()
                 ctx.deps.logger.error("[$id]", e)
-                ctx.respond(HttpStatusCode.InternalServerError,
-                    me.jason5lee.post_kt_vertx_fdm.common.api.internalServerError(id)
-                )
+                ctx.respond(500, internalServerError(id))
             }
         }
 
@@ -37,21 +32,24 @@ abstract class HttpApi<W>(private val method: HttpMethod, private val path: Stri
         ): HttpApi<W> =
             object : HttpApi<W>(method, path) {
                 override fun createHandler(
+                    scope: CoroutineScope,
                     deps: Deps,
                     workflow: W
-                ): suspend PipelineContext<Unit, ApplicationCall>.(Unit) -> Unit =
-                    {
-                        val context = Context(this, deps)
+                ): Handler<RoutingContext> = Handler<RoutingContext> { routingContext ->
+                    val context = Context(routingContext, deps)
+
+                    scope.launch(routingContext.vertx().dispatcher()) {
                         try {
                             handler(context, workflow)
                         } catch (e: Throwable) {
                             handleException(context, e)
                         }
                     }
+                }
             }
     }
 }
 
-fun <W> Routing.add(workflow: W, deps: Deps, api: HttpApi<W>) {
-    api.addToRouter(this, deps, workflow)
+fun <W> Router.add(scope: CoroutineScope, workflow: W, deps: Deps, api: HttpApi<W>) {
+    route(api.method, api.path).handler(api.createHandler(scope, deps, workflow))
 }

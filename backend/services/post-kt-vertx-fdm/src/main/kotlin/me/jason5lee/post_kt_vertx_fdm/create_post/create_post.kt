@@ -6,12 +6,12 @@ import me.jason5lee.post_kt_vertx_fdm.common.Title
 import me.jason5lee.post_kt_vertx_fdm.common.UserId
 
 data class Command(
-    val title: me.jason5lee.post_kt_vertx_fdm.common.Title,
-    val content: me.jason5lee.post_kt_vertx_fdm.common.PostContent,
+    val title: Title,
+    val content: PostContent,
 )
 
 abstract class Workflow : Errors {
-    abstract suspend fun run(caller: me.jason5lee.post_kt_vertx_fdm.common.UserId, input: Command): me.jason5lee.post_kt_vertx_fdm.common.PostId
+    abstract suspend fun run(caller: UserId, input: Command): PostId
 }
 
 interface Errors {

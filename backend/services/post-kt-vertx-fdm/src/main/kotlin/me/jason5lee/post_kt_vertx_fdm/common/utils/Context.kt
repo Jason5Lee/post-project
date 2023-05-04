@@ -1,22 +1,18 @@
 package me.jason5lee.post_kt_vertx_fdm.common.utils
 
-import io.ktor.http.*
-import io.ktor.server.application.*
-import io.ktor.server.plugins.*
-import io.ktor.server.request.*
-import io.ktor.server.response.*
-import io.ktor.util.pipeline.*
-import me.jason5lee.post_kt_vertx_fdm.common.Identity
-import me.jason5lee.post_kt_vertx_fdm.common.Time
-import me.jason5lee.post_kt_vertx_fdm.common.api.badRequest
+import io.vertx.core.MultiMap
+import io.vertx.core.http.HttpHeaders
+import io.vertx.ext.web.RoutingContext
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
 import me.jason5lee.post_kt_vertx_fdm.common.api.getToken
 
 class Context(
-    val pipelineContext: PipelineContext<Unit, ApplicationCall>,
+    val routingContext: RoutingContext,
     val deps: Deps,
 ) {
     fun getCallerIdentity(): me.jason5lee.post_kt_vertx_fdm.common.Identity? =
-        me.jason5lee.post_kt_vertx_fdm.common.api.getToken(pipelineContext.context.request.headers)?.let { token ->
+        getToken(routingContext.request().headers())?.let { token ->
             deps.auth.getIdentity(token)
         }
 
@@ -26,24 +22,33 @@ class Context(
     fun generateToken(identity: me.jason5lee.post_kt_vertx_fdm.common.Identity, expire: me.jason5lee.post_kt_vertx_fdm.common.Time): String =
         deps.auth.generateToken(identity, expire)
 
-    fun pathParameters(): Parameters =
-        pipelineContext.context.parameters
+    fun pathParameters(): Map<String, String> =
+        routingContext.pathParams()
 
-    fun responseHeaders(): ResponseHeaders =
-        pipelineContext.context.response.headers
+    fun responseHeaders(): MultiMap =
+        routingContext.response().headers()
 
-    suspend inline fun <reified T : Any> getRequestBody(): T = try {
-        pipelineContext.call.receive()
-    } catch (e: BadRequestException) {
+    inline fun <reified T : Any> getRequestBody(): T = try {
+        json.decodeFromString(routingContext.body().asString())
+    } catch (e: kotlinx.serialization.SerializationException) {
         throw me.jason5lee.post_kt_vertx_fdm.common.api.badRequest("Invalid request body")
     }
 
-    suspend inline fun <reified T : Any> respond(status: HttpStatusCode, body: T) {
-        pipelineContext.call.respond(status, body)
+    inline fun <reified T : Any> respond(statusCode: Int, body: T) {
+        val resp = routingContext.response()
+        resp.statusCode = statusCode
+        resp.putHeader(HttpHeaders.CONTENT_TYPE, "application/json")
+        resp.end(json.encodeToString(body))
     }
 
     fun respondNoContent() {
-        pipelineContext.call.response.status(HttpStatusCode.NoContent)
+        routingContext.response().statusCode = 204
+    }
+
+    companion object {
+        val json = kotlinx.serialization.json.Json {
+            encodeDefaults = false
+        }
     }
 }
 

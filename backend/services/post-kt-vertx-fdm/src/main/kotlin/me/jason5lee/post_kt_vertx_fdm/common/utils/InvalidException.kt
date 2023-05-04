@@ -1,18 +1,16 @@
 package me.jason5lee.post_kt_vertx_fdm.common.utils
 
-import io.ktor.http.*
-
 interface InvalidException {
     operator fun invoke(body: FailureBody): Exception
 }
 
-class OnInvalidRespond(private val status: HttpStatusCode, private val prefix: String? = null) : InvalidException {
+class OnInvalidRespond(private val statusCode: Int, private val prefix: String? = null) : InvalidException {
     override fun invoke(body: FailureBody): Exception =
         if (prefix == null) {
-            HttpException(status, body)
+            HttpException(statusCode, body)
         } else {
             HttpException(
-                status, FailureBody(
+                statusCode, FailureBody(
                     error = body.error.copy(error = prefix + body.error.error)
                 )
             )

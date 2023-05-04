@@ -36,6 +36,12 @@ dependencies {
     implementation("io.vertx:vertx-lang-kotlin-coroutines")
     implementation("io.vertx:vertx-lang-kotlin")
     implementation(kotlin("stdlib-jdk8"))
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
+    implementation("org.mongodb:mongodb-driver-reactivestreams:4.9.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactive:1.6.4")
+    implementation("me.jason5lee:resukt:1.0.0")
+
     testImplementation("io.vertx:vertx-junit5")
     testImplementation("org.junit.jupiter:junit-jupiter:$junitJupiterVersion")
 }
