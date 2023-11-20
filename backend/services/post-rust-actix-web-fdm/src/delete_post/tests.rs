@@ -60,7 +60,7 @@ async fn test_deleted_by_admin() {
 
     assert_eq!(
         super::Steps(&Mock)
-            .workflow(Identity::Admin(AdminId("2".into())), PostId("1".into()))
+            .workflow(Identity::Admin, PostId("1".into()))
             .await,
         Ok(()),
     );

@@ -5,7 +5,7 @@ pub mod deps;
 
 pub enum IdentityInfo {
     User { id: UserId, name: UserName },
-    Admin { id: AdminId },
+    Admin,
 }
 
 impl<'a> Steps<'a> {
@@ -15,7 +15,7 @@ impl<'a> Steps<'a> {
                 name: self.get_user_name(&id).await?,
                 id,
             })),
-            Some(Identity::Admin(id)) => Ok(Some(IdentityInfo::Admin { id })),
+            Some(Identity::Admin) => Ok(Some(IdentityInfo::Admin)),
             None => Ok(None),
         }
     }

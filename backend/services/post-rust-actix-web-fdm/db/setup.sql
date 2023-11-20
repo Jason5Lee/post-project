@@ -1,5 +1,5 @@
 CREATE TABLE users (
-    user_id BINARY(16) NOT NULL PRIMARY KEY,
+    user_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
     user_name VARCHAR(20) NOT NULL,
     encrypted_password CHAR(60) NOT NULL,
     creation_time BIGINT UNSIGNED NOT NULL
@@ -8,7 +8,7 @@ CREATE UNIQUE INDEX idx_user_name
 ON users (user_name);
 
 CREATE TABLE post (
-    post_id BIGINT UNSIGNED NOT NULL PRIMARY KEY,
+    post_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
     creator BIGINT UNSIGNED NOT NULL,
     creation_time BIGINT UNSIGNED NOT NULL,
     last_modified BIGINT UNSIGNED,

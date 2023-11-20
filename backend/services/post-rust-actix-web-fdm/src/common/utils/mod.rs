@@ -1,7 +1,7 @@
 use std::convert::Infallible;
 use std::sync::Mutex;
 
-use actix_web::{dev::Payload, FromRequest, HttpRequest, http::Method};
+use actix_web::{dev::Payload, FromRequest, HttpRequest};
 use futures_util::future::{ready, Ready};
 use crate::common::utils::id_generation::Snowflake;
 
@@ -12,7 +12,8 @@ pub mod error;
 pub mod id_generation;
 pub mod macros;
 
-pub type Endpoint = (&'static str, Method);
+pub use actix_web::http::Method as HttpMethod;
+pub type Endpoint = (HttpMethod, &'static str);
 pub struct Context {
     pub request: HttpRequest,
     pub payload: Payload,

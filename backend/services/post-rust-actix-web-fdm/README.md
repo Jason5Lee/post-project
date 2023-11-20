@@ -9,8 +9,7 @@ Here is [the API document](../../api-document).
 ## Deployment
 
 * Setup an MySQL database.
-* Execute [setup.sql](../setup.sql) in the database.
-* (Optional) use [create admin tool](../../createadmin) to create admin.
+* Execute [setup.sql](./db/setup.sql) in the database.
 * Config by either setting up environment variables or using a `.env` file.
   * `LISTEN_ADDR`: listening address, e.g. `localhost:8432`.
   * `MYSQL_URI`: MySQL URI, e.g. `mysql://username:password@localhost/database`.

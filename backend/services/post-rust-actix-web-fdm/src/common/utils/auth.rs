@@ -23,7 +23,7 @@ impl super::Context {
         match get_auth_token(self)? {
             AuthToken::Guest => Ok(None),
             AuthToken::User(user_token) => get_user_identity_from_token(&self.deps, user_token),
-            AuthToken::Admin(admin_token) => if admin_token == self.deps.auth.admin_token {
+            AuthToken::Admin(admin_token) => if admin_token == self.deps.auth.admin_token.as_bytes() {
                 Ok(Some(Identity::Admin))
             } else {
                 Err(invalid_auth())
@@ -89,11 +89,5 @@ fn get_user_identity_from_token(deps: &utils::Deps, user_token: &[u8]) -> Result
         Ok(Some(Identity::User(UserId(user_id))))
     } else {
         Err(invalid_auth())
-    }
-}
-fn get_claim(ctx: &utils::Context) -> Result<Option<Claim>> {
-    match api::get_auth_token(ctx)? {
-        None => Ok(None),
-        Some(token) => decode_jwt_from_auth_header(&ctx.deps, token).map(Some),
     }
 }

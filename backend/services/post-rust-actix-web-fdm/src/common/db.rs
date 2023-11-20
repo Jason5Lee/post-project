@@ -106,6 +106,8 @@ const ID_ENGINE: FastPortable = FastPortable::from(&alphabet::URL_SAFE, fast_por
 pub fn format_id(id: u64) -> String {
     base64::encode_engine(id.to_le_bytes(), &ID_ENGINE)
 }
-pub fn parse_id(value: &str) -> Option<Vec<u8>> {
-    base64::decode_engine(value, &ID_ENGINE).ok()
+pub fn parse_id(value: &str) -> Option<u64> {
+    let bytes = base64::decode_engine(value, &ID_ENGINE).ok()?;
+    let bytes = (&bytes as &[u8]).try_into().ok()?;
+    Some(u64::from_le_bytes(bytes))
 }

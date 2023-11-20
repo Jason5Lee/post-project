@@ -1,13 +1,14 @@
 use std::rc::Rc;
 
 use crate::common::*;
-use actix_web::{get, HttpResponse, Result};
+use crate::common::utils::{Endpoint, HttpMethod};
+use actix_web::{HttpResponse, Result};
 use apply::Apply;
 use serde::Serialize;
 
 use super::*;
 
-#[get("/identity")]
+pub const ENDPOINT: Endpoint = (HttpMethod::GET, "/identity");
 pub async fn api(ctx: utils::Context) -> Result<HttpResponse> {
     let caller = ctx.get_caller_identity()?;
     let output = super::Steps::from_ctx(&ctx).workflow(caller).await?;
@@ -17,18 +18,13 @@ pub async fn api(ctx: utils::Context) -> Result<HttpResponse> {
             pub struct ResponseDto {
                 #[serde(skip_serializing_if = "Option::is_none")]
                 user: Option<UserDto>,
-                #[serde(skip_serializing_if = "Option::is_none")]
-                admin: Option<AdminDto>,
+                #[serde(skip_serializing_if = "std::ops::Not::not")] // Skip if false
+                admin: bool,
             }
 
             #[derive(Serialize)]
             pub struct UserDto {
                 pub name: Rc<str>,
-                pub id: String,
-            }
-
-            #[derive(Serialize)]
-            pub struct AdminDto {
                 pub id: String,
             }
 
@@ -40,8 +36,8 @@ pub async fn api(ctx: utils::Context) -> Result<HttpResponse> {
                     }),
                     ..Default::default()
                 },
-                Some(IdentityInfo::Admin { id }) => ResponseDto {
-                    admin: Some(AdminDto { id: id.0 }),
+                Some(IdentityInfo::Admin) => ResponseDto {
+                    admin: true,
                     ..Default::default()
                 },
                 None => Default::default(),
