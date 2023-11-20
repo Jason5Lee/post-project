@@ -125,10 +125,10 @@ Authorization: post creator or admin only.
 ### Request
 
 Query parameters:
-- `before`: timestamp of the last post on the previous page. This will return the most recent posts prior to the specified time. If not present, the most recent posts will be returned.
-- `after`: timestamp of the first post on the next page. This parameter is mutually exclusive with `before`. If this parameter is present, it will return the oldest posts after the specified time.
-- `size`: the maximum number of posts to return. If not present, the default value is 20. The maximum value is 500.
-- `creator`: the ID of the post's creator. If not present, all posts will be returned.
+- `offset`: the offset of the query. If not present, the default value is 0.
+- `size`: the maximum number of posts to return. If not present, the default value is 20. The maximum value is 500. The maximum value of offset plus size is 10000.
+- `creator`: If present, only the posts created by the user with the ID specified in this parameter will be returned.
+- `search`: If present, only the posts that match the search term specified in this parameter will be returned. Note that not all implementations support this parameter.
 
 ### Response
 

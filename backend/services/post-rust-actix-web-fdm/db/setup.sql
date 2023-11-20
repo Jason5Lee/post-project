@@ -1,5 +1,5 @@
 CREATE TABLE users (
-    user_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    user_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY NOT NULL,
     user_name VARCHAR(20) NOT NULL,
     encrypted_password CHAR(60) NOT NULL,
     creation_time BIGINT UNSIGNED NOT NULL
@@ -8,7 +8,7 @@ CREATE UNIQUE INDEX idx_user_name
 ON users (user_name);
 
 CREATE TABLE post (
-    post_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    post_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY NOT NULL,
     creator BIGINT UNSIGNED NOT NULL,
     creation_time BIGINT UNSIGNED NOT NULL,
     last_modified BIGINT UNSIGNED,
@@ -19,10 +19,5 @@ CREATE TABLE post (
 );
 CREATE INDEX idx_creator
 ON post (creator);
-CREATE INDEX idx_last_modified
-ON post (last_modified);
-
-CREATE TABLE admins (
-    admin_id BIGINT UNSIGNED NOT NULL PRIMARY KEY,
-    encrypted_password CHAR(60) NOT NULL
-);
+CREATE INDEX idx_creation_time
+ON post (creation_time);

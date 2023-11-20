@@ -4,12 +4,14 @@ use super::*;
 use crate::common::api::{bad_request, CLIENT_BUG_MESSAGE};
 use crate::common::utils::error::*;
 use crate::common::utils::Context;
+use crate::common::utils::{Endpoint, HttpMethod};
+
 use actix_web::http::StatusCode;
-use actix_web::{get, web::Query as QueryString, HttpResponse};
+use actix_web::{web::Query as QueryString, HttpResponse};
 use apply::Apply;
 use serde::{Deserialize, Serialize};
 
-#[get("/post")]
+pub const ENDPOINT: Endpoint = (HttpMethod::GET, "/post");
 pub async fn api(mut ctx: Context) -> Result<HttpResponse> {
     #[derive(Deserialize)]
     pub struct RequestDto {
