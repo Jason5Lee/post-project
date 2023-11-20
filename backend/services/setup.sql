@@ -1,5 +1,5 @@
 CREATE TABLE users (
-    user_id BIGINT UNSIGNED NOT NULL PRIMARY KEY,
+    user_id BINARY(16) NOT NULL PRIMARY KEY,
     user_name VARCHAR(20) NOT NULL,
     encrypted_password CHAR(60) NOT NULL,
     creation_time BIGINT UNSIGNED NOT NULL

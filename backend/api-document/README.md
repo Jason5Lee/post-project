@@ -4,8 +4,15 @@
 
 - [Identity API](identity.md)
 - [User API](user.md)
-- [Admin API](admin.md)
 - [Post API](post.md)
+
+## Authentication
+
+The authentication process requires including the appropriate token in the Authorization header. There are two types of tokens based on user 
+
+For regular users, the format should be `Bearer <token>`, where `<token>` is the token returned from the login process.
+
+For administrative users, the format should be `Admin <admin_token>`, where `<admin_token>` is the token configured for admin access. 
 
 ## Error response
 

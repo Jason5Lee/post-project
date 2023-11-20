@@ -5,7 +5,8 @@ use crate::common::{db::*, utils::Deps, *};
 
 pub async fn workflow(deps: &Deps, creator: UserId, input: Command) -> Result<PostId> {
     let db_creator = db::parse_id(&creator.0).ok_or_else(invalid_auth)?;
-    let (db_id, now) = deps.post_id_gen.lock().unwrap().generate_id()?;
+    uuid::Uuid::now_v7();
+    // let (db_id, now) = (uuid::new_v4(), chrono::Utc::now());
     let (text, url) = match input.content {
         PostContent::Text(text) => (Some(text.0), None),
         PostContent::Url(url) => (None, Some(url.0)),

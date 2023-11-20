@@ -19,14 +19,11 @@ pub struct Time {
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Identity {
     User(UserId),
-    Admin(AdminId),
+    Admin,
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct UserId(pub String);
-
-#[derive(Debug, PartialEq, Eq, Clone)]
-pub struct AdminId(pub String);
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct UserName(pub Rc<str>);

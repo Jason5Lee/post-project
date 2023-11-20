@@ -18,9 +18,7 @@ Body:
         "id": "<user ID>",
         "name": "<user name>"
     },
-    "admin": {
-        "id": "<admin ID>"
-    }
+    "admin": true
 }
 ```
 

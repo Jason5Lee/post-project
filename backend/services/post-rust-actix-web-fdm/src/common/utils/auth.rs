@@ -7,6 +7,7 @@ use serde::{Deserialize, Serialize};
 pub struct AuthConfig {
     pub valid_secs: u64,
     pub secret: Vec<u8>,
+    pub admin_token: String,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
@@ -14,22 +15,19 @@ pub struct AuthConfig {
 pub struct Claim {
     pub exp: u64,
     pub userId: Option<String>,
-    pub adminId: Option<String>,
+    pub admin: Option<bool>,
 }
 
 impl super::Context {
     pub fn get_caller_identity(&self) -> Result<Option<Identity>> {
-        match get_claim(self)? {
-            None => Ok(None),
-            Some(claim) => {
-                if let Some(user_id) = claim.userId {
-                    Ok(Some(Identity::User(UserId(user_id))))
-                } else if let Some(admin_id) = claim.adminId {
-                    Ok(Some(Identity::Admin(AdminId(admin_id))))
-                } else {
-                    Err(invalid_auth())
-                }
-            }
+        match get_auth_token(self)? {
+            AuthToken::Guest => Ok(None),
+            AuthToken::User(user_token) => get_user_identity_from_token(&self.deps, user_token),
+            AuthToken::Admin(admin_token) => if admin_token == self.deps.auth.admin_token {
+                Ok(Some(Identity::Admin))
+            } else {
+                Err(invalid_auth())
+            },
         }
     }
 
@@ -50,12 +48,12 @@ impl super::Context {
             Identity::User(user_id) => Claim {
                 exp,
                 userId: Some(user_id.0),
-                adminId: None,
+                admin: None,
             },
-            Identity::Admin(admin_id) => Claim {
+            Identity::Admin => Claim {
                 exp,
                 userId: None,
-                adminId: Some(admin_id.0),
+                admin: Some(true),
             },
         };
         jsonwebtoken::encode(
@@ -85,6 +83,14 @@ fn decode_jwt_from_auth_header(deps: &utils::Deps, token: &[u8]) -> Result<Claim
     decode_jwt(deps, token)
 }
 
+fn get_user_identity_from_token(deps: &utils::Deps, user_token: &[u8]) -> Result<Option<Identity>> {
+    let claim = decode_jwt_from_auth_header(&deps, user_token)?;
+    if let Some(user_id) = claim.userId {
+        Ok(Some(Identity::User(UserId(user_id))))
+    } else {
+        Err(invalid_auth())
+    }
+}
 fn get_claim(ctx: &utils::Context) -> Result<Option<Claim>> {
     match api::get_auth_token(ctx)? {
         None => Ok(None),

@@ -9,7 +9,7 @@ pub struct Snowflake {
 impl Snowflake {
     pub fn new(machine_id: u16) -> Self {
         if machine_id >= 1024 {
-            panic!("machine_id  must be between 0 and 1023")
+            panic!("machine_id must be between 0 and 1023")
         }
         Self {
             machine_id,

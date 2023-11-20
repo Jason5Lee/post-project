@@ -12,18 +12,17 @@ async fn main() {
     #[derive(Deserialize)]
     struct Config {
         listen_addr: String,
-        machine_id: u16,
+        admin_token: String,
         mysql_max_connections: Option<u32>,
         mysql_uri: String,
         secret_key: String,
-        token_valid: String,
+        token_valid_duration: String,
         cost: Option<u32>,
+        // rust_log is read by env_logger
     }
 
     let config: Config = envy::from_env().expect("unable to read config");
 
-    let user_id_gen = std::sync::Mutex::new(Snowflake::new(config.machine_id));
-    let post_id_gen = std::sync::Mutex::new(Snowflake::new(config.machine_id));
     let mut pool = MySqlPoolOptions::new();
 
     if let Some(mc) = config.mysql_max_connections {
@@ -37,7 +36,7 @@ async fn main() {
 
     let secret = base64::decode(&config.secret_key).expect("invalid secret key");
     let valid_secs = config
-        .token_valid
+        .token_valid_duration
         .parse::<humantime::Duration>()
         .expect("invalid token_valid")
         .as_secs();
@@ -45,11 +44,9 @@ async fn main() {
     let cost = config.cost.unwrap_or(bcrypt::DEFAULT_COST);
 
     let deps = actix_web::web::Data::new(post_rust_actix_web_fdm::common::utils::Deps {
-        user_id_gen,
-        post_id_gen,
         pool,
         encryptor: Encryptor { cost },
-        auth: AuthConfig { valid_secs, secret },
+        auth: AuthConfig { valid_secs, secret, admin_token: config.admin_token },
     });
 
     env_logger::init();
@@ -64,7 +61,6 @@ async fn main() {
             .service(post_rust_actix_web_fdm::get_post::api::api)
             .service(post_rust_actix_web_fdm::delete_post::api::api)
             .service(post_rust_actix_web_fdm::edit_post::api::api)
-            .service(post_rust_actix_web_fdm::admin_login::api::api)
             .service(post_rust_actix_web_fdm::get_identity::api::api)
             .service(post_rust_actix_web_fdm::get_user::api::api)
             .default_service(
