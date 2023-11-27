@@ -10,23 +10,13 @@ pub async fn workflow(
     deps: &Deps,
     Query {
         creator,
-        condition,
-        size,
+        page,
+        page_size,
     }: Query,
 ) -> Result<Output> {
-    // For convenient I don't use binding for time range.
-    let (mut post_condition_sql, order) = match condition {
-        Condition::No => ("WHERE true".to_string(), "DESC"),
-        Condition::Before(before) => (
-            format!("WHERE `{POST_CREATION_TIME}` < {}", before.utc),
-            "DESC",
-        ),
-        Condition::After(after) => (
-            format!("WHERE `{POST_CREATION_TIME}` > {}", after.utc),
-            "ASC",
-        ),
-    };
     let mut creator_map: Option<HashMap<u64, UserName>> = None;
+    let mut where_statement: String = String::new();
+
     if let Some(creator) = creator {
         let db_creator_id = db::parse_id(&creator.0).ok_or_else(creator_not_found)?;
         let creator_name: (String,) = sqlx::query_as(&format!(
@@ -39,12 +29,7 @@ pub async fn workflow(
         .ok_or_else(creator_not_found)?;
 
         let creator_name = UserName(creator_name.0.into());
-        write!(
-            &mut post_condition_sql,
-            " AND `{POST_CREATOR}` = {}",
-            db_creator_id
-        )
-        .unwrap();
+        where_statement = format!(" WHERE `{POST_CREATOR}` = {}", db_creator_id);
         creator_map = Some(HashMap::from_iter([(db_creator_id, creator_name)]))
     }
     let post_sql = format!(
@@ -52,8 +37,8 @@ pub async fn workflow(
         `{POST_CREATOR}`,\
         `{POST_CREATION_TIME}`,\
         `{POST_TITLE}` \
-        FROM `{POST}` {post_condition_sql} \
-        ORDER BY `{POST_CREATION_TIME}` {order} LIMIT ?"
+        FROM `{POST}`{where_statement} \
+        ORDER BY `{POST_CREATION_TIME}` DESC, `{POST_POST_ID}` DESC LIMIT ?,?"
     );
     let mut posts_db_result: Vec<(u64, u64, u64, String)> = sqlx::query_as(&post_sql)
         .bind(size.0)
