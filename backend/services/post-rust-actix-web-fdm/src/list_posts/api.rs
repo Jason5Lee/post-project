@@ -14,10 +14,10 @@ use serde::{Deserialize, Serialize};
 pub const ENDPOINT: Endpoint = (HttpMethod::GET, "/post");
 pub async fn api(mut ctx: Context) -> Result<HttpResponse> {
     #[derive(Deserialize)]
+    #[allow(non_snake_case)]
     pub struct RequestDto {
-        pub before: Option<u64>,
-        pub after: Option<u64>,
-        pub size: Option<u32>,
+        pub page: u64,
+        pub pageSize: u64,
         pub creator: Option<String>,
     }
     let req = ctx
@@ -26,28 +26,9 @@ pub async fn api(mut ctx: Context) -> Result<HttpResponse> {
         .map_err(bad_request)?
         .0;
     let input = Query {
-        creator: match req.creator {
-            None => None,
-            Some(id) => Some(UserId(id)),
-        },
-        condition: match (req.before, req.after) {
-            (None, None) => Condition::No,
-            (Some(utc), None) => Condition::Before(Time { utc }),
-            (None, Some(utc)) => Condition::After(Time { utc }),
-            _ => {
-                return Err(ErrorResponse {
-                    status_code: StatusCode::UNPROCESSABLE_ENTITY,
-                    body: ErrorBody {
-                        error: ErrBody {
-                            error: "BOTH_BEFORE_AFTER".into(),
-                            reason: "only one of before and after should present".into(),
-                            message: CLIENT_BUG_MESSAGE.into(),
-                        },
-                    },
-                })
-            }
-        },
-        size: Size::try_new(req.size).map_err(as_unprocessable_entity)?,
+        creator: req.creator.map(UserId),
+        page: Page::try_new(req.page).map_err(as_unprocessable_entity)?,
+        page_size: PageSize::try_new(req.pageSize).map_err(as_unprocessable_entity)?,
     };
     let output = super::Steps::from_ctx(&ctx).workflow(input).await?;
 
@@ -56,6 +37,7 @@ pub async fn api(mut ctx: Context) -> Result<HttpResponse> {
             #[derive(Serialize)]
             #[allow(non_snake_case)]
             pub struct ResponseDto {
+                pub total: u64,
                 pub posts: Vec<PostInfoDto>,
             }
 
@@ -70,6 +52,7 @@ pub async fn api(mut ctx: Context) -> Result<HttpResponse> {
             }
 
             ResponseDto {
+                total: output.total,
                 posts: output
                     .posts
                     .into_iter()
@@ -94,6 +77,20 @@ pub fn creator_not_found() -> ErrorResponse {
                 error: "CREATOR_NOT_FOUND".into(),
                 reason: "creator not found".to_string(),
                 message: "the creator does not exist".to_string(),
+            },
+        },
+    )
+        .into()
+}
+
+pub fn page_too_large() -> ErrorResponse {
+    (
+        StatusCode::NOT_FOUND,
+        ErrorBody {
+            error: ErrBody {
+                error: "PAGE_TOO_LARGE".into(),
+                reason: "page too large".to_string(),
+                message: "the page is too large".to_string(),
             },
         },
     )

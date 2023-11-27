@@ -54,8 +54,11 @@ pub enum PostContent {
     Url(UrlPostContent),
 }
 
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
-pub struct Size(pub u32);
+#[derive(Debug, PartialEq, Eq, Clone)]
+pub struct Page(pub u64);
+
+#[derive(Debug, PartialEq, Eq, Clone)]
+pub struct PageSize(pub u64);
 
 impl UserName {
     fn is_legal_character(ch: char) -> bool {
@@ -146,22 +149,22 @@ impl Password {
     }
 }
 
-const DEFAULT_SIZE: u32 = 20;
-const MAX_SIZE: u32 = 500;
+impl Page {
+    pub fn try_new(page: u64) -> Result<Page, ErrorBody> {
+        if page == 0 {
+            Err(Self::invalid_page())
+        } else {
+            Ok(Page(page))
+        }
+    }
+}
 
-impl Size {
-    pub fn try_new(s: Option<u32>) -> Result<Self, ErrorBody> {
-        match s {
-            None => Ok(Self(DEFAULT_SIZE)),
-            Some(size) => {
-                if size == 0 {
-                    Err(Self::size_non_positive())
-                } else if size > MAX_SIZE {
-                    Ok(Self(MAX_SIZE))
-                } else {
-                    Ok(Self(size))
-                }
-            }
+impl PageSize {
+    pub fn try_new(page_size: u64) -> Result<PageSize, ErrorBody> {
+        if page_size == 0 {
+            Err(Self::invalid_page_size())
+        } else {
+            Ok(PageSize(page_size))
         }
     }
 }

@@ -125,8 +125,8 @@ Authorization: post creator or admin only.
 ### Request
 
 Query parameters:
-- `offset`: the offset of the query. If not present, the default value is 0.
-- `size`: the maximum number of posts to return. If not present, the default value is 20. The maximum value is 500. The maximum value of offset plus size is 10000.
+- `page`: the page number.
+- `pageSize`: the size of the page.
 - `creator`: If present, only the posts created by the user with the ID specified in this parameter will be returned.
 - `search`: If present, only the posts that match the search term specified in this parameter will be returned. Note that not all implementations support this parameter.
 
@@ -138,6 +138,7 @@ Body:
 
 ```json
 {
+    "total": <total number of posts>,
     "posts": [
         {
             "id": "<post ID>",
@@ -154,6 +155,7 @@ The posts are sorted by their creation time in descending order.
 
 ### Errors
 
-- `BOTH_BEFORE_AFTER`: `422 Unprocessable Entity`, both `before` and `after` parameters are present.
+- Errors related to invalid page.
+- Errors related to invalid page size.
 - `CREATOR_NOT_FOUND`: `404 Not Found`, the specified creator does not exist.
-- Errors related to invalid size, prefixed with `BEFORE_` or `AFTER_` to indicate whether the `before` parameter or the `after` parameter is invalid.
+- `PAGE_TOO_LARGE`: `404 Not Found`, the page number or page size is too large so that no result is in the page.

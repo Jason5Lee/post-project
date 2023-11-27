@@ -79,10 +79,6 @@ pub const USER_USER_NAME: UniqueColumn = Column::unique("user_name", "idx_user_n
 pub const USER_ENCRYPTED_PASSWORD: Column = Column::name("encrypted_password");
 pub const USER_CREATION_TIME: Column = Column::name("creation_time");
 
-pub const ADMIN: Table = Table("admins"); // `admin` is MySQL reserved word
-pub const ADMIN_ADMIN_ID: UniqueColumn = Column::primary("admin_id");
-pub const ADMIN_ENCRYPTED_PASSWORD: Column = Column::name("encrypted_password");
-
 pub enum UniqueViolationError {
     PrimaryKey,
     OtherColumn,
