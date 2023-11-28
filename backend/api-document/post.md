@@ -158,4 +158,3 @@ The posts are sorted by their creation time in descending order.
 - Errors related to invalid page.
 - Errors related to invalid page size.
 - `CREATOR_NOT_FOUND`: `404 Not Found`, the specified creator does not exist.
-- `PAGE_TOO_LARGE`: `404 Not Found`, the page number or page size is too large so that no result is in the page.
