@@ -1,15 +1,12 @@
 use std::convert::Infallible;
-use std::sync::Mutex;
 
 use actix_web::{dev::Payload, FromRequest, HttpRequest};
 use futures_util::future::{ready, Ready};
-use crate::common::utils::id_generation::Snowflake;
 
 use super::{api::handle_internal_error, Result};
 
 pub mod auth;
 pub mod error;
-pub mod id_generation;
 pub mod macros;
 
 pub use actix_web::http::Method as HttpMethod;
@@ -62,9 +59,6 @@ pub struct Deps {
     pub pool: sqlx::MySqlPool,
     pub encryptor: Encryptor,
     pub auth: auth::AuthConfig,
-    // According to the docs of tokio Mutex, using std Mutex would be more efficient
-    pub user_id_generator: Mutex<Snowflake>,
-    pub post_id_generator: Mutex<Snowflake>,
 }
 
 type DataDeps = actix_web::web::Data<Deps>;

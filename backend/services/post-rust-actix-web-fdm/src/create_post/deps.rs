@@ -1,6 +1,5 @@
 use super::*;
 use crate::common::api::{handle_internal_error, invalid_auth};
-use crate::common::utils::id_generation::ID_DUPLICATE_MESSAGE;
 use crate::common::{db::*, utils::Deps, *};
 
 pub async fn workflow(deps: &Deps, creator: UserId, input: Command) -> Result<PostId> {

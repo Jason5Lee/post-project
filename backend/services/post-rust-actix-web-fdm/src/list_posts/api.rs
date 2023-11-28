@@ -1,7 +1,7 @@
 use std::rc::Rc;
 
 use super::*;
-use crate::common::api::{bad_request, CLIENT_BUG_MESSAGE};
+use crate::common::api::bad_request;
 use crate::common::utils::error::*;
 use crate::common::utils::Context;
 use crate::common::utils::{Endpoint, HttpMethod};
@@ -77,20 +77,6 @@ pub fn creator_not_found() -> ErrorResponse {
                 error: "CREATOR_NOT_FOUND".into(),
                 reason: "creator not found".to_string(),
                 message: "the creator does not exist".to_string(),
-            },
-        },
-    )
-        .into()
-}
-
-pub fn page_too_large() -> ErrorResponse {
-    (
-        StatusCode::NOT_FOUND,
-        ErrorBody {
-            error: ErrBody {
-                error: "PAGE_TOO_LARGE".into(),
-                reason: "page too large".to_string(),
-                message: "the page is too large".to_string(),
             },
         },
     )
