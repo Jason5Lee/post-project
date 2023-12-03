@@ -1,12 +1,14 @@
 use crate::common::api::bad_request;
 use crate::common::utils::error::*;
+use crate::common::utils::{Endpoint, HttpMethod};
 use crate::common::*;
+
 use actix_web::http::StatusCode;
-use actix_web::{get, web::Path as UrlPath, HttpResponse};
+use actix_web::{web::Path as UrlPath, HttpResponse};
 use serde::Serialize;
 use std::rc::Rc;
 
-#[get("/user/{id}")]
+pub const ENDPOINT: Endpoint = (HttpMethod::GET, "/user/{id}");
 pub async fn api(mut ctx: utils::Context) -> Result<HttpResponse> {
     let (id,) = ctx
         .get::<UrlPath<(String,)>>()

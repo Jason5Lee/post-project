@@ -56,3 +56,18 @@ All errors caused by invalid values return `422 Unprocessable Entity`.
 - `INVALID_TIME`: The time is not a positive integer.
   - Depending on the deserialization implementation, an invalid time value might be considered a deserialization error, which would result in a `BAD_REQUEST`.
   - In JavaScript-based implementations (e.g. TypeScript), this error will also be returned when the time provided is not a safe integer.
+
+### Page
+
+- `INVALID_PAGE`: The page is not a positive integer.
+  - Depending on the deserialization implementation, an invalid page value might be considered a deserialization error, which would result in a `BAD_REQUEST`.
+  - In JavaScript-based implementations (e.g. TypeScript), this error will also be returned when the page provided is not a safe integer.
+  - Note: there isn't a page too large error. Page being too large results in empty posts being responded.
+
+### Page Size
+
+- `INVALID_PAGE_SIZE`: The page size is not a positive integer.
+  - Depending on the deserialization implementation, an invalid page size value might be considered a deserialization error, which would result in a `BAD_REQUEST`.
+  - In JavaScript-based implementations (e.g. TypeScript), this error will also be returned when the page size provided is not a safe integer.
+- `PAGE_SIZE_TOO_LARGE`: The page size is too large.
+  

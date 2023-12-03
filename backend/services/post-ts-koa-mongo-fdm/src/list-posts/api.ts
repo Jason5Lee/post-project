@@ -1,41 +1,31 @@
 import { Context, Method, Route } from "../common/utils";
-import { Condition, Workflow } from ".";
+import { Workflow } from ".";
 import { onInvalidRespond, ResponseError } from "../common/utils/error";
-import { checkSize, newTime, UserId } from "../common";
-import { CLIENT_BUG_MESSAGE } from "../common/api";
+import { checkPage, checkPageSize, newTime, UserId, PageSize } from "../common";
 
 export const route: Route = [Method.GET, "/post"];
 
 export async function run(ctx: Context, workflow: Workflow): Promise<void> {
-    const beforeParam = ctx.getQueryParam("before", { optional: true });
-    const afterParam = ctx.getQueryParam("after", { optional: true });
-    const sizeParam = ctx.getQueryParam("size", { optional: true });
-    const creatorParam = ctx.getQueryParam("creator", { optional: true });
-
-    let condition: Condition | undefined = undefined;
-    if (beforeParam !== undefined) {
-        if (afterParam !== undefined) {
-            throw errors.bothBeforeAfter();
-        }
-        const time = newTime(+beforeParam, onInvalidRespond({ status: 422, prefix: "BEFORE_" }));
-        condition = { type: "Before", time };
-    } else {
-        if (afterParam !== undefined) {
-            const time = newTime(+afterParam, onInvalidRespond({ status: 422, prefix: "AFTER_" }));
-            condition = { type: "After", time };
-        }
+    if (ctx.getQueryParam("search", { optional: true }) !== undefined) {
+        throw errors.searchNotImplemented();
     }
-    const size = checkSize(sizeParam === undefined ? undefined : +sizeParam, onInvalidRespond({ status: 422 }));
-    const creator = creatorParam === undefined ? undefined : creatorParam as UserId;
+
+    const page = +ctx.getQueryParam("page");
+    const pageSize = +ctx.getQueryParam("pageSize");
+    const creator = ctx.getQueryParam("creator", { optional: true }) as (UserId | undefined);
+
+    checkPage(page, onInvalidRespond({ status: 422 }));
+    checkPageSize(pageSize, 50 as PageSize, onInvalidRespond({ status: 422 }));
 
     const output = await workflow.run({
-        condition,
-        size,
+        page,
+        pageSize,
         creator,
     });
     ctx.setResponse(
         200,
         {
+            total: output.total,
             posts: output.posts.map(post => ({
                 id: post.id,
                 title: post.title,
@@ -44,6 +34,7 @@ export async function run(ctx: Context, workflow: Workflow): Promise<void> {
                 creationTime: post.creationTime.utc,
             })),
         } satisfies {
+            total: number,
             posts: {
                 id: string,
                 title: string,
@@ -66,13 +57,13 @@ export const errors = {
             },
         }
     ),
-    bothBeforeAfter: () => new ResponseError(
-        400,
+    searchNotImplemented: () => new ResponseError(
+        501,
         {
             error: {
-                error: "BOTH_BEFORE_AFTER",
-                reason: "only one of before and after should present",
-                message: CLIENT_BUG_MESSAGE,
+                error: "SEARCH_NOT_IMPLEMENTED",
+                reason: "search not implemented",
+                message: "the search function is not implemented in this service",
             }
         }
     )

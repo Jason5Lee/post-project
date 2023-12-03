@@ -1,5 +1,6 @@
+pub mod invalid_page;
+pub mod invalid_page_size;
 pub mod invalid_password;
-pub mod invalid_size;
 pub mod invalid_text_post_content;
 pub mod invalid_title;
 pub mod invalid_url_post_content;
@@ -11,13 +12,24 @@ use crate::common::Result;
 use actix_web::http::StatusCode;
 
 const AUTHORIZATION: &str = "Authorization";
-pub fn get_auth_token(ctx: &Context) -> Result<Option<&[u8]>> {
+pub enum AuthToken<'a> {
+    Guest,
+    User(&'a [u8]),
+    Admin(&'a [u8]),
+}
+pub fn get_auth_token(ctx: &Context) -> Result<AuthToken> {
     match ctx.request.headers().get(AUTHORIZATION) {
-        None => Ok(None),
-        Some(header_value) => match header_value.as_bytes().strip_prefix(b"Bearer ") {
-            None => Err(invalid_auth()),
-            Some(token) => Ok(Some(token)),
-        },
+        None => Ok(AuthToken::Guest),
+        Some(header_value) => {
+            let header_value = header_value.as_bytes();
+            if let Some(user_token) = header_value.strip_prefix(b"Bearer ") {
+                Ok(AuthToken::User(user_token))
+            } else if let Some(admin_token) = header_value.strip_prefix(b"Admin ") {
+                Ok(AuthToken::Admin(admin_token))
+            } else {
+                Err(invalid_auth())
+            }
+        }
     }
 }
 
@@ -47,8 +59,8 @@ pub fn handle_internal_error(err: impl std::fmt::Display) -> ErrorResponse {
         ErrorBody {
             error: ErrBody {
                 error: "INTERNAL_SERVER_ERROR".into(),
-                reason: format!("internal server error, trace id: {trace_id}"),
-                message: "something went wrong".to_string(),
+                reason: format!("Internal server error, trace id: {trace_id}"),
+                message: "Something went wrong".to_string(),
             },
         },
     )
@@ -61,7 +73,7 @@ pub fn invalid_auth() -> ErrorResponse {
         ErrorBody {
             error: ErrBody {
                 error: "INVALID_AUTH".into(),
-                reason: "authorization is invalid".to_string(),
+                reason: "Authorization is invalid".to_string(),
                 message: CLIENT_BUG_MESSAGE.to_string(),
             },
         },
@@ -75,8 +87,8 @@ pub fn user_only() -> ErrorResponse {
         ErrorBody {
             error: ErrBody {
                 error: "USER_ONLY".into(),
-                reason: "only user can call this API".into(),
-                message: "you are not allowed to perform this action".into(),
+                reason: "Only user can call this API".into(),
+                message: "You are not allowed to perform this action".into(),
             },
         },
     )

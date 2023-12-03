@@ -2,11 +2,12 @@ use super::*;
 use crate::common::api::bad_request;
 use crate::common::utils;
 use crate::common::utils::error::*;
+use crate::common::utils::{Endpoint, HttpMethod};
 use actix_web::http::StatusCode;
-use actix_web::{post, web::Json as BodyJson, HttpResponse};
+use actix_web::{web::Json as BodyJson, HttpResponse};
 use serde::{Deserialize, Serialize};
 
-#[post("/login")]
+pub const ENDPOINT: Endpoint = (HttpMethod::POST, "/login");
 pub async fn api(mut ctx: utils::Context) -> Result<HttpResponse> {
     #[derive(Deserialize)]
     #[allow(non_snake_case)]
@@ -38,7 +39,7 @@ pub async fn api(mut ctx: utils::Context) -> Result<HttpResponse> {
         ResponseDto {
             id: output.0.clone(),
             expire: expired_time.utc,
-            token: ctx.generate_token(expired_time, Identity::User(output)),
+            token: ctx.generate_user_token(expired_time, output),
         }
     }))
 }

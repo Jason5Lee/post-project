@@ -10,7 +10,7 @@ pub type Command = PostId;
 impl<'a> Steps<'a> {
     pub async fn workflow(self, caller: Identity, input: Command) -> Result<()> {
         let auth: bool = match caller {
-            Identity::Admin(_) => true,
+            Identity::Admin => true,
             Identity::User(id) => id == self.get_post_creator(&input).await?,
         };
 

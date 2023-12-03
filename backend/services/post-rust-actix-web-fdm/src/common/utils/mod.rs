@@ -7,9 +7,10 @@ use super::{api::handle_internal_error, Result};
 
 pub mod auth;
 pub mod error;
-pub mod id_generation;
 pub mod macros;
 
+pub use actix_web::http::Method as HttpMethod;
+pub type Endpoint = (HttpMethod, &'static str);
 pub struct Context {
     pub request: HttpRequest,
     pub payload: Payload,
@@ -25,7 +26,7 @@ impl Context {
         drop(self.payload.take())
     }
 }
-impl<'a> FromRequest for Context {
+impl FromRequest for Context {
     type Error = Infallible;
     type Future = Ready<Result<Context, Infallible>>;
 
@@ -57,10 +58,6 @@ impl Encryptor {
 pub struct Deps {
     pub pool: sqlx::MySqlPool,
     pub encryptor: Encryptor,
-    // The recent Mutex implementation in Rust standard library
-    // performs better than parking_lot's.
-    pub post_id_gen: std::sync::Mutex<id_generation::Snowflake>,
-    pub user_id_gen: std::sync::Mutex<id_generation::Snowflake>,
     pub auth: auth::AuthConfig,
 }
 

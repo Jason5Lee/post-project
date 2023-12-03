@@ -1,9 +1,6 @@
 import Router from "@koa/router";
 import { addRoute, Deps } from "./common/utils";
 
-import * as admin_loginApi from "./admin-login/api";
-import * as admin_loginImpl from "./admin-login/impl";
-
 import * as create_postApi from "./create-post/api";
 import * as create_postImpl from "./create-post/impl";
 
@@ -32,7 +29,6 @@ import * as user_registerApi from "./user-register/api";
 import * as user_registerImpl from "./user-register/impl";
 
 export function addRoutes(router: Router, deps: Deps) {
-    addRoute(router, deps, admin_loginApi, admin_loginImpl.WorkflowImpl);
     addRoute(router, deps, create_postApi, create_postImpl.WorkflowImpl);
     addRoute(router, deps, delete_postApi, delete_postImpl.WorkflowImpl);
     addRoute(router, deps, edit_postApi, edit_postImpl.WorkflowImpl);

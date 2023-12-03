@@ -1,10 +1,11 @@
 use crate::common::api::*;
 use crate::common::utils::error::*;
+use crate::common::utils::{Endpoint, HttpMethod};
 use crate::common::*;
 use actix_web::http::StatusCode;
-use actix_web::{delete, web::Path as UrlPath, HttpResponse};
+use actix_web::{web::Path as UrlPath, HttpResponse};
 
-#[delete("/post/{id}")]
+pub const ENDPOINT: Endpoint = (HttpMethod::DELETE, "/post/{id}");
 pub async fn api(mut ctx: utils::Context) -> Result<HttpResponse> {
     let caller = ctx.get_caller_identity()?.ok_or_else(not_creator_admin)?;
     let (id,): (String,) = ctx

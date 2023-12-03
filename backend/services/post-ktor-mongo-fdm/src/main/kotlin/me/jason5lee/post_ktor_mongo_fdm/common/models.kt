@@ -15,11 +15,10 @@ data class Time(val utc: Long)
 
 sealed class Identity {
     data class User(val id: UserId) : Identity()
-    data class Admin(val id: AdminId) : Identity()
+    object Admin : Identity()
 }
 
 data class UserId(val value: String)
-data class AdminId(val value: String)
 data class UserName(val value: String)
 
 data class User(
@@ -46,7 +45,8 @@ sealed class PostContent {
     data class Url(val value: UrlPostContent) : PostContent()
 }
 
-data class Size(val value: Int)
+data class Page(val value: Int)
+data class PageSize(val value: Int)
 
 fun newTime(utc: Long): ValidationResult<Time> = when {
     utc >= 0 -> Valid(Time(utc))
@@ -99,12 +99,13 @@ fun newUrlPostContent(value: String): ValidationResult<UrlPostContent> =
         }
     }
 
-private const val DEFAULT_SIZE = 20
-private const val MAX_SIZE = 500
+fun newPage(value: Int): ValidationResult<Page> = when {
+    value <= 0 -> Invalid(InvalidPage.invalidPage)
+    else -> Valid(Page(value))
+}
 
-fun newSize(value: Int?): ValidationResult<Size> = when {
-    value == null -> Valid(Size(DEFAULT_SIZE))
-    value < 0 -> Invalid(InvalidSize.nonPositiveInteger)
-    value > MAX_SIZE -> Valid(Size(MAX_SIZE))
-    else -> Valid(Size(value))
+fun newPageSize(value: Int, maximumPageSize: PageSize): ValidationResult<PageSize> = when {
+    value <= 0 -> Invalid(InvalidPageSize.invalidPageSize)
+    value > maximumPageSize.value -> Invalid(InvalidPageSize.pageSizeTooLarge)
+    else -> Valid(PageSize(value))
 }

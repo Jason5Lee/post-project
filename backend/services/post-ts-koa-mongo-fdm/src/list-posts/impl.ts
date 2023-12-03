@@ -29,32 +29,30 @@ export class WorkflowImpl implements Workflow {
             }
             filter = { creator: creatorOid };
         }
-        let timeSort: 1 | -1 = -1;
-        if (query.condition !== undefined) {
-            if (query.condition.type === "Before") {
-                filter = { ...filter, creationTime: { $lt: Long.fromNumber(query.condition.time.utc) } };
-            } else if (query.condition.type === "After") {
-                filter = { ...filter, creationTime: { $gt: Long.fromNumber(query.condition.time.utc) } };
-                timeSort = 1;
-            } else {
-                throwUnexpectedValue(query.condition);
-            }
+        
+        const total = await this.deps.mongoDb
+            .collection(db.posts)
+            .countDocuments(filter);
+        
+        const pagePosts: WithId<unknown>[] = await this.deps.mongoDb
+            .collection(db.posts)
+            .find(filter)
+            .sort({ creationTime: -1, _id: -1 })
+            .skip((query.page - 1) * query.pageSize)
+            .limit(query.pageSize)
+            .toArray();
+        if (pagePosts.length === 0) {
+            return { total, posts: [] };
         }
-
-        const posts: WithId<unknown>[] = await this.deps.mongoDb.collection(db.posts).find(filter).sort({ creationTime: timeSort }).limit(query.size).toArray();
-        if (posts.length === 0) {
-            return { posts: [] };
-        }
-        db.validateArray(WorkflowImpl.expectedPost, db.posts, posts);
-        if (timeSort === 1) {
-            posts.reverse();
-        }
-        const creatorIds = posts.map(post => post.creator);
+        db.validateArray(WorkflowImpl.expectedPost, db.posts, pagePosts);
+        const creatorIds = pagePosts.map(post => post.creator);
         const creators: WithId<unknown>[] = await this.deps.mongoDb.collection(db.users).find({ _id: { $in: creatorIds } }).toArray();
         db.validateArray(WorkflowImpl.userHasName, db.users, creators);
+
         const creatorMap = new Map(creators.map(creator => [creator._id.toHexString(), creator]));
         return {
-            posts: posts.map(post => {
+            total,
+            posts: pagePosts.map(post => {
                 const creator = creatorMap.get(post.creator.toHexString());
                 if (creator === undefined) {
                     throw new Error(`The creator of post ${post._id}, ${post.creator}, not found`);

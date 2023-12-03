@@ -2,7 +2,6 @@
 #[macro_use]
 extern crate async_trait;
 
-pub mod admin_login;
 pub mod common;
 pub mod create_post;
 pub mod delete_post;

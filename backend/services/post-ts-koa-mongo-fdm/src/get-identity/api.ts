@@ -18,18 +18,14 @@ export async function run(ctx: Context, workflow: Workflow) {
                     }
                 } :
                     result.type === "Admin" ? {
-                        admin: {
-                            id: result.id,
-                        }
+                        admin: true,
                     } : throwUnexpectedValue(result)
         ) satisfies {
             user?: {
                 name: string,
                 id: string,
             },
-            admin?: {
-                id: string,
-            },
+            admin?: true,
         }
     );
 }

@@ -6,7 +6,6 @@ import bcrypt from "bcrypt";
 
 export const users = "users";
 export const posts = "posts";
-export const admins = "admins";
 
 export function validate<A, ID>(schema: RuntypeBase<A>, collection: string, record: { _id: ID }): asserts record is (A & { _id: ID}) {
     try {
@@ -32,7 +31,7 @@ export async function initDB(db: MongoDb): Promise<void> {
     await db.collection(users).createIndex({ name: 1 }, { unique: true });
     await db.collection(posts).createIndex({ title: 1 }, { unique: true });
     await db.collection(posts).createIndex({ creator: 1 });
-    await db.collection(posts).createIndex({ lastModified: 1 });
+    await db.collection(posts).createIndex({ creationTime: -1, _id: -1 });
 }
 
 export function tryParseId(id: string): ObjectId | undefined {

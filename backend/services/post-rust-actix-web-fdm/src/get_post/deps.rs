@@ -2,7 +2,7 @@ use super::*;
 use crate::common::{api::*, db::*};
 
 pub async fn workflow(deps: &utils::Deps, input: Query) -> Result<Post> {
-    let db_post_id = db::parse_id(&input.0).ok_or_else(post_not_found)?;
+    let db_post_id = parse_id(&input.0).ok_or_else(post_not_found)?;
     let (creator, creation_time_utc, last_modified_utc, title, text, url): (
         u64,
         u64,

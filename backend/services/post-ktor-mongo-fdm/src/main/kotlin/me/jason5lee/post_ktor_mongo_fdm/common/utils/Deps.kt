@@ -22,6 +22,7 @@ class Deps(
                         JWT.require(algorithm).build(),
                         algorithm,
                         env.tokenValidSecs,
+                        env.adminToken,
                     )
                 },
                 MongoClients.create(env.mongoUrl).getDatabase(env.mongoDatabase),

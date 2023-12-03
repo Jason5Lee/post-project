@@ -3,14 +3,15 @@ use std::rc::Rc;
 use crate::common::api::bad_request;
 use crate::common::utils::error::*;
 use crate::common::utils::Context;
+use crate::common::utils::{Endpoint, HttpMethod};
 use actix_web::http::StatusCode;
-use actix_web::{get, web::Path as UrlPath, HttpResponse};
+use actix_web::{web::Path as UrlPath, HttpResponse};
 use apply::Apply;
 use serde::Serialize;
 
 use super::*;
 
-#[get("/post/{id}")]
+pub const ENDPOINT: Endpoint = (HttpMethod::GET, "/post/{id}");
 pub async fn api(mut ctx: Context) -> Result<HttpResponse> {
     let (id,) = ctx
         .get::<UrlPath<(String,)>>()

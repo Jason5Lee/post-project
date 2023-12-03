@@ -1,4 +1,4 @@
-import { Identity, newTime, Time } from "..";
+import { UserId, Identity, newTime, Time } from "..";
 import Koa from "koa";
 import { AuthConfig, getIdentity, generateToken } from "./auth";
 import { getToken } from "../api/auth";
@@ -21,7 +21,7 @@ export class Context {
     ) {}
 
     getCallerIdentity(): Identity | undefined {
-        return getIdentity(getToken(this.koaCtx.header), this.deps.authConfig.secret);
+        return getIdentity(getToken(this.koaCtx.header), this.deps.authConfig.secret, this.deps.adminToken);
     }
 
     getTokenExpireTime(): Time {
@@ -31,8 +31,8 @@ export class Context {
         );
     }
 
-    generateToken(identity: Identity, expire: Time): string {
-        return generateToken(identity, this.deps.authConfig.secret, expire);
+    generateUserToken(user: UserId, expire: Time): string {
+        return generateToken(user, this.deps.authConfig.secret, expire);
     }
 
     getRequestBody(): unknown { return this.koaCtx.request.body; }
@@ -74,9 +74,10 @@ export class Context {
 }
 
 export interface Deps {
-    readonly mongoDb: MongoDb,
-    readonly authConfig: AuthConfig,
-    readonly encryptor: PasswordEncryptor,
+    readonly mongoDb: MongoDb;
+    readonly authConfig: AuthConfig;
+    readonly encryptor: PasswordEncryptor;
+    readonly adminToken: string;
 
     close(): Promise<void>;
 }

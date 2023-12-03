@@ -2,39 +2,26 @@ package me.jason5lee.post_ktor_mongo_fdm.list_posts
 
 import io.ktor.http.*
 import kotlinx.serialization.Serializable
-import me.jason5lee.post_ktor_mongo_fdm.common.Time
-import me.jason5lee.post_ktor_mongo_fdm.common.UserId
-import me.jason5lee.post_ktor_mongo_fdm.common.api.InvalidSize
+import me.jason5lee.post_ktor_mongo_fdm.common.*
 import me.jason5lee.post_ktor_mongo_fdm.common.api.InvalidTime
-import me.jason5lee.post_ktor_mongo_fdm.common.api.clientBugMessage
-import me.jason5lee.post_ktor_mongo_fdm.common.newSize
-import me.jason5lee.post_ktor_mongo_fdm.common.newTime
+import me.jason5lee.post_ktor_mongo_fdm.common.api.badRequest
 import me.jason5lee.post_ktor_mongo_fdm.common.utils.*
 
 val api = HttpApi(HttpMethod.Get, "/post") { ctx, workflow: Workflow ->
-    val condition = run {
-        val beforeParam = ctx.pathParameters()["before"]
-        val afterParam = ctx.pathParameters()["after"]
-        if (beforeParam != null) {
-            if (afterParam != null) {
-                throw bothBeforeAfter()
-            }
-            Condition.Before(validateTimeParam(beforeParam, errorPrefix = "BEFORE_"))
-        } else if (afterParam != null) {
-            Condition.After(validateTimeParam(afterParam, errorPrefix = "AFTER_"))
-        } else {
-            null
-        }
+    if (ctx.pathParameters()["search"] != null) {
+        throw searchNotImplemented()
     }
-    val size = (
-            ctx.pathParameters()["size"]?.let { sizeParam ->
-                sizeParam.toIntOrNull()?.let { newSize(it) }
-                    ?: ValidationResult.Invalid(InvalidSize.nonPositiveInteger)
-            } ?: newSize(null)
-            ).onInvalidRespond(HttpStatusCode.UnprocessableEntity)
+    val pageParam = ctx.pathParameters()["page"] ?: throw badRequest("Missing path parameter `page`")
+    val pageSizeParam = ctx.pathParameters()["pageSize"] ?: throw badRequest("Missing path parameter `pageSize`")
+
+    val page = newPage(pageParam.toIntOrNull() ?: throw badRequest("Invalid path parameter `page`"))
+        .onInvalidRespond(HttpStatusCode.UnprocessableEntity)
+    val pageSize =
+        newPageSize(pageSizeParam.toIntOrNull() ?: throw badRequest("Invalid path parameter `pageSize`"), PageSize(50))
+            .onInvalidRespond(HttpStatusCode.UnprocessableEntity)
     val creator = ctx.pathParameters()["creator"]?.let { UserId(it) }
 
-    val output = workflow.run(Query(creator, condition, size))
+    val output = workflow.run(Query(page, pageSize, creator))
     ctx.respond(
         HttpStatusCode.OK,
         run {
@@ -49,10 +36,12 @@ val api = HttpApi(HttpMethod.Get, "/post") { ctx, workflow: Workflow ->
 
             @Serializable
             class ResponseBody(
+                val total: Long,
                 val posts: List<PostBody>,
             )
             ResponseBody(
-                posts = output.map { post ->
+                total = output.total,
+                posts = output.posts.map { post ->
                     PostBody(
                         id = post.id.value,
                         title = post.title.value,
@@ -86,13 +75,13 @@ interface ErrorsImpl : Errors {
     )
 }
 
-fun bothBeforeAfter(): Exception = HttpException(
-    HttpStatusCode.BadRequest,
+fun searchNotImplemented(): Exception = HttpException(
+    HttpStatusCode.NotImplemented,
     FailureBody(
         error = Err(
-            error = "BOTH_BEFORE_AFTER",
-            reason = "Only one of `before` and `after` can be specified",
-            message = clientBugMessage,
+            error = "SEARCH_NOT_IMPLEMENTED",
+            reason = "search is not implemented",
+            message = "the search function is not implemented in this service",
         )
     )
 )

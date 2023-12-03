@@ -1,14 +1,14 @@
 use super::*;
 use crate::common::api::*;
 use crate::common::utils::error::*;
+use crate::common::utils::{Endpoint, HttpMethod};
 
 use actix_web::http::StatusCode;
-use actix_web::post;
 use actix_web::web::Json as BodyJson;
 use actix_web::HttpResponse;
 use serde::{Deserialize, Serialize};
 
-#[post("/post")]
+pub const ENDPOINT: Endpoint = (HttpMethod::POST, "/post");
 pub async fn api(mut ctx: utils::Context) -> Result<HttpResponse> {
     let caller = match ctx.get_caller_identity()? {
         Some(Identity::User(user_id)) => user_id,

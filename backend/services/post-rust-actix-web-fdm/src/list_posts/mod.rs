@@ -3,15 +3,10 @@ pub mod deps;
 
 use crate::{common::*, define_error, define_steps};
 
-pub enum Condition {
-    No,
-    Before(Time),
-    After(Time),
-}
 pub struct Query {
     creator: Option<UserId>,
-    condition: Condition,
-    size: Size,
+    page: Page,
+    page_size: PageSize,
 }
 
 pub struct Post {
@@ -27,6 +22,7 @@ pub struct Creator {
 }
 
 pub struct Output {
+    pub total: u64,
     pub posts: Vec<Post>,
 }
 

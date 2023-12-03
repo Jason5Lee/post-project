@@ -1,51 +1,41 @@
 use std::rc::Rc;
 
 use super::*;
-use crate::common::api::{bad_request, CLIENT_BUG_MESSAGE};
+use crate::common::api::bad_request;
 use crate::common::utils::error::*;
 use crate::common::utils::Context;
+use crate::common::utils::{Endpoint, HttpMethod};
+
 use actix_web::http::StatusCode;
-use actix_web::{get, web::Query as QueryString, HttpResponse};
+use actix_web::{web::Query as QueryString, HttpResponse};
 use apply::Apply;
 use serde::{Deserialize, Serialize};
 
-#[get("/post")]
+pub const ENDPOINT: Endpoint = (HttpMethod::GET, "/post");
 pub async fn api(mut ctx: Context) -> Result<HttpResponse> {
     #[derive(Deserialize)]
+    #[allow(non_snake_case)]
     pub struct RequestDto {
-        pub before: Option<u64>,
-        pub after: Option<u64>,
-        pub size: Option<u32>,
+        pub page: u64,
+        pub pageSize: u64,
         pub creator: Option<String>,
+        pub search: Option<String>,
     }
     let req = ctx
         .get::<QueryString<RequestDto>>()
         .await
         .map_err(bad_request)?
         .0;
+
+    if req.search.is_some() {
+        return Err(search_not_implemented());
+    }
+
     let input = Query {
-        creator: match req.creator {
-            None => None,
-            Some(id) => Some(UserId(id)),
-        },
-        condition: match (req.before, req.after) {
-            (None, None) => Condition::No,
-            (Some(utc), None) => Condition::Before(Time { utc }),
-            (None, Some(utc)) => Condition::After(Time { utc }),
-            _ => {
-                return Err(ErrorResponse {
-                    status_code: StatusCode::UNPROCESSABLE_ENTITY,
-                    body: ErrorBody {
-                        error: ErrBody {
-                            error: "BOTH_BEFORE_AFTER".into(),
-                            reason: "only one of before and after should present".into(),
-                            message: CLIENT_BUG_MESSAGE.into(),
-                        },
-                    },
-                })
-            }
-        },
-        size: Size::try_new(req.size).map_err(as_unprocessable_entity)?,
+        creator: req.creator.map(UserId),
+        page: Page::try_new(req.page).map_err(as_unprocessable_entity)?,
+        page_size: PageSize::try_new(req.pageSize, PageSize(50))
+            .map_err(as_unprocessable_entity)?,
     };
     let output = super::Steps::from_ctx(&ctx).workflow(input).await?;
 
@@ -54,6 +44,7 @@ pub async fn api(mut ctx: Context) -> Result<HttpResponse> {
             #[derive(Serialize)]
             #[allow(non_snake_case)]
             pub struct ResponseDto {
+                pub total: u64,
                 pub posts: Vec<PostInfoDto>,
             }
 
@@ -68,6 +59,7 @@ pub async fn api(mut ctx: Context) -> Result<HttpResponse> {
             }
 
             ResponseDto {
+                total: output.total,
                 posts: output
                     .posts
                     .into_iter()
@@ -92,6 +84,20 @@ pub fn creator_not_found() -> ErrorResponse {
                 error: "CREATOR_NOT_FOUND".into(),
                 reason: "creator not found".to_string(),
                 message: "the creator does not exist".to_string(),
+            },
+        },
+    )
+        .into()
+}
+
+pub fn search_not_implemented() -> ErrorResponse {
+    (
+        StatusCode::NOT_IMPLEMENTED,
+        ErrorBody {
+            error: ErrBody {
+                error: "SEARCH_NOT_IMPLEMENTED".into(),
+                reason: "search not implemented".to_string(),
+                message: "the search function is not implemented in this service".to_string(),
             },
         },
     )

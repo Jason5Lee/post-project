@@ -1,20 +1,13 @@
-import { PostId, Size, Time, Title, UserId, UserName } from "../common";
-
-export type Condition = {
-    readonly type: "Before",
-    readonly time: Time,
-} | {
-    readonly type: "After",
-    readonly time: Time,
-}
+import { PostId, Page, PageSize, Time, Title, UserId, UserName } from "../common";
 
 export interface Query {
     readonly creator?: UserId | undefined,
-    readonly condition?: Condition | undefined,
-    readonly size: Size,
+    readonly page: Page,
+    readonly pageSize: PageSize,
 }
 
 export interface Output {
+    readonly total: number,
     readonly posts: ReadonlyArray<{
         readonly id: PostId,
         readonly title: Title,

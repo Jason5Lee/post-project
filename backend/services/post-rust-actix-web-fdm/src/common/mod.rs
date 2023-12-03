@@ -19,14 +19,11 @@ pub struct Time {
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Identity {
     User(UserId),
-    Admin(AdminId),
+    Admin,
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct UserId(pub String);
-
-#[derive(Debug, PartialEq, Eq, Clone)]
-pub struct AdminId(pub String);
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct UserName(pub Rc<str>);
@@ -57,8 +54,11 @@ pub enum PostContent {
     Url(UrlPostContent),
 }
 
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
-pub struct Size(pub u32);
+#[derive(Debug, PartialEq, Eq, Clone)]
+pub struct Page(pub u64);
+
+#[derive(Debug, PartialEq, Eq, Clone)]
+pub struct PageSize(pub u64);
 
 impl UserName {
     fn is_legal_character(ch: char) -> bool {
@@ -149,22 +149,24 @@ impl Password {
     }
 }
 
-const DEFAULT_SIZE: u32 = 20;
-const MAX_SIZE: u32 = 500;
+impl Page {
+    pub fn try_new(page: u64) -> Result<Self, ErrorBody> {
+        if page == 0 {
+            Err(Self::invalid_page())
+        } else {
+            Ok(Page(page))
+        }
+    }
+}
 
-impl Size {
-    pub fn try_new(s: Option<u32>) -> Result<Self, ErrorBody> {
-        match s {
-            None => Ok(Self(DEFAULT_SIZE)),
-            Some(size) => {
-                if size == 0 {
-                    Err(Self::size_non_positive())
-                } else if size > MAX_SIZE {
-                    Ok(Self(MAX_SIZE))
-                } else {
-                    Ok(Self(size))
-                }
-            }
+impl PageSize {
+    pub fn try_new(page_size: u64, maximum_page_size: Self) -> Result<Self, ErrorBody> {
+        if page_size == 0 {
+            Err(Self::invalid_page_size())
+        } else if page_size > maximum_page_size.0 {
+            Err(Self::page_size_too_large())
+        } else {
+            Ok(PageSize(page_size))
         }
     }
 }

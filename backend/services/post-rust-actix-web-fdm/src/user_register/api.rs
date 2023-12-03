@@ -1,12 +1,13 @@
 use super::Command;
 use crate::common::api::bad_request;
 use crate::common::utils::error::*;
+use crate::common::utils::{Endpoint, HttpMethod};
 use crate::common::*;
 use actix_web::http::StatusCode;
-use actix_web::{post, web::Json as BodyJson, HttpResponse, Result};
+use actix_web::{web::Json as BodyJson, HttpResponse, Result};
 use serde::{Deserialize, Serialize};
 
-#[post("/register")]
+pub const ENDPOINT: Endpoint = (HttpMethod::POST, "/register");
 pub async fn api(mut ctx: utils::Context) -> Result<HttpResponse> {
     #[derive(Deserialize)]
     #[allow(non_snake_case)]
