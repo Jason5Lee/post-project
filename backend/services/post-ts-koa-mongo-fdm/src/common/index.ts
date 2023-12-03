@@ -12,14 +12,13 @@ export type Identity = {
     readonly id: UserId,
 } | {
     readonly type: "Admin",
-    readonly id: AdminId,
 }
 
 export type UserId = string & { [__brand]: "UserId" };
-export type AdminId = string & { [__brand]: "AdminId" };
 
 export type UserName = string & { [__brand]: "UserName" };
 
+import { PasswordEncryptor, PasswordVerifier } from "./utils/password";
 export class Password {
     constructor(private readonly plain: string, invalidErr: InvalidError) { checkPassword(plain, invalidErr); }
     encrypt(encryptor: PasswordEncryptor): Promise<string> { return encryptor.encrypt(this.plain); }
@@ -40,7 +39,8 @@ export type PostContent = {
     readonly content: UrlPostContent,
 };
 
-export type Size = number & { [__brand]: "Size" };
+export type Page = number & { [__brand]: "Page" };
+export type PageSize = number & { [__brand]: "PageSize" };
 
 import * as invalidTime from "./api/invalid-time";
 export function newTime(utc: number, invalidErr: InvalidError): Time {
@@ -121,18 +121,19 @@ export function checkPassword(plain: string, invalidErr: InvalidError) {
     }
 }
 
-const DEFAULT_SIZE = 20;
-const MAX_SIZE = 500;
-
-import * as invalidSize from "./api/invalid-size";
-import { PasswordEncryptor, PasswordVerifier } from "./utils/password";
-export function checkSize(value: number | undefined, invalidErr: InvalidError): Size {
-    if (value === undefined) {
-        return DEFAULT_SIZE as Size;
-    } else if (!(value > 0) || !Number.isInteger(value)) {
-        throw invalidErr(invalidSize.invalid);
-    } else if (value > MAX_SIZE) {
-        return MAX_SIZE as Size;
+import * as invalidPage from "./api/invalid-page";
+export function checkPage(value: number, invalidErr: InvalidError): asserts value is Page {
+    if (!(value > 0) || !Number.isSafeInteger(value)) {
+        throw invalidErr(invalidPage.invalidPage);
     }
-    return value as Size;
+}
+
+import * as invalidPageSize from "./api/invalid-page-size";
+export function checkPageSize(value: number, maximumPageSize: PageSize, invalidErr: InvalidError): asserts value is PageSize {
+    if (!(value > 0) || !Number.isSafeInteger(value)) {
+        throw invalidErr(invalidPageSize.invalidPageSize);
+    }
+    if (value > maximumPageSize) {
+        throw invalidErr(invalidPageSize.pageSizeTooLarge);
+    }
 }

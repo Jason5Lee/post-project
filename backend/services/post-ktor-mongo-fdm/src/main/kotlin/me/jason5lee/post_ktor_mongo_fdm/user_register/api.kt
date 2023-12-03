@@ -4,9 +4,9 @@ import io.ktor.http.*
 import kotlinx.serialization.Serializable
 import me.jason5lee.post_ktor_mongo_fdm.common.newPassword
 import me.jason5lee.post_ktor_mongo_fdm.common.newUserName
-import me.jason5lee.post_ktor_mongo_fdm.common.utils.HttpApi
 import me.jason5lee.post_ktor_mongo_fdm.common.utils.Err
 import me.jason5lee.post_ktor_mongo_fdm.common.utils.FailureBody
+import me.jason5lee.post_ktor_mongo_fdm.common.utils.HttpApi
 import me.jason5lee.post_ktor_mongo_fdm.common.utils.HttpException
 
 val api = HttpApi(HttpMethod.Post, "/register") { ctx, workflow: Workflow ->

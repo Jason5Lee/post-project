@@ -10,6 +10,7 @@ class Env(
     val mongoDatabase: String,
     val tokenValidSecs: Int,
     val tokenSecret: String,
+    val adminToken: String,
     val encryptionCost: Int,
 ) {
     companion object {
@@ -25,6 +26,7 @@ class Env(
                 mongoDatabase = dotenv.getString("MONGO_DATABASE"),
                 tokenValidSecs = dotenv.getInt("TOKEN_VALID_SECS"),
                 tokenSecret = dotenv.getString("TOKEN_SECRET"),
+                adminToken = dotenv.getString("ADMIN_TOKEN"),
                 encryptionCost = dotenv.getIntOptional("ENCRYPTION_COST") ?: 10,
             )
         }

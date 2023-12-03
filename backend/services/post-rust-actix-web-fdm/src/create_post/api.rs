@@ -8,7 +8,7 @@ use actix_web::web::Json as BodyJson;
 use actix_web::HttpResponse;
 use serde::{Deserialize, Serialize};
 
-pub const ENDPOINT: Endpoint = (HttpMethod::GET, "/post");
+pub const ENDPOINT: Endpoint = (HttpMethod::POST, "/post");
 pub async fn api(mut ctx: utils::Context) -> Result<HttpResponse> {
     let caller = match ctx.get_caller_identity()? {
         Some(Identity::User(user_id)) => user_id,

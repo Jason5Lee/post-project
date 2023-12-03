@@ -33,12 +33,13 @@ pub async fn workflow(
         creator_map = Some(HashMap::from_iter([(db_creator_id, creator_name)]))
     }
 
-    let (total,): (u64,) = sqlx::query_as(&format!(
-        "SELECT COUNT(*) FROM `{POST}`{where_statement}"
-    ))
-        .fetch_one(&deps.pool)
-        .await
-        .map_err(handle_internal_error)?;
+    // Have to use `i64` here to make sqlx happy.
+    let (total,): (i64,) =
+        sqlx::query_as(&format!("SELECT COUNT(*) FROM `{POST}`{where_statement}"))
+            .fetch_one(&deps.pool)
+            .await
+            .map_err(handle_internal_error)?;
+    let total = total as u64;
 
     let offset = (page.0 - 1) * page_size.0;
     let posts_db_result: Vec<(u64, u64, u64, String)> = sqlx::query_as(&format!(
@@ -49,14 +50,17 @@ pub async fn workflow(
         FROM `{POST}`{where_statement} \
         ORDER BY `{POST_CREATION_TIME}` DESC, `{POST_POST_ID}` DESC LIMIT ?,?"
     ))
-        .bind(offset)
-        .bind(page_size.0)
-        .fetch_all(&deps.pool)
-        .await
-        .map_err(handle_internal_error)?;
+    .bind(offset)
+    .bind(page_size.0)
+    .fetch_all(&deps.pool)
+    .await
+    .map_err(handle_internal_error)?;
 
     if posts_db_result.is_empty() {
-        return Ok(Output { total, posts: Vec::new() });
+        return Ok(Output {
+            total,
+            posts: Vec::new(),
+        });
     }
 
     let creator_map: HashMap<u64, UserName> = if let Some(c) = creator_map {

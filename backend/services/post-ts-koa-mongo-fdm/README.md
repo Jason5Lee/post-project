@@ -15,13 +15,13 @@ Here is [the API document](../../api-document).
 * Run `npm install`.
 * If you change the workflows, run `npm run generate` to generate `src/addRoutes.ts`.
   * You can customize the implementation class by modifying the `customWorkflowImpl` object in [`generate.js`](./src/common/utils/generate.js) file.
-* (Optional) use [create admin tool](../../createadmin) to create admin.
 * Config by either setting up environment variables or using a `.env` file.
   * `LISTEN_HOST`: listening host.
   * `LISTEN_PORT`: listening port.
   * `MONGO_URL`: MongoDB URL. It should contain the database. E.g. `mongodb://localhost:27017/post`.
   * `TOKEN_VALID_SECS`: seconds of the authorization token validity.
   * `TOKEN_SECRET`: the secret to encrypt the authorization token.
+  * `ADMIN_TOKEN`: the admin token.
   * `ENCRYPTION_COST`: cost of the encryption of the password, default to `10`.
 * Run the application by `npm run start`.
 

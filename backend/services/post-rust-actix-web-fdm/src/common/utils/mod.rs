@@ -26,7 +26,7 @@ impl Context {
         drop(self.payload.take())
     }
 }
-impl<'a> FromRequest for Context {
+impl FromRequest for Context {
     type Error = Infallible;
     type Future = Ready<Result<Context, Infallible>>;
 

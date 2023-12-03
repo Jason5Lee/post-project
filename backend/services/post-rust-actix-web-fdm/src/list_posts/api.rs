@@ -19,16 +19,23 @@ pub async fn api(mut ctx: Context) -> Result<HttpResponse> {
         pub page: u64,
         pub pageSize: u64,
         pub creator: Option<String>,
+        pub search: Option<String>,
     }
     let req = ctx
         .get::<QueryString<RequestDto>>()
         .await
         .map_err(bad_request)?
         .0;
+
+    if req.search.is_some() {
+        return Err(search_not_implemented());
+    }
+
     let input = Query {
         creator: req.creator.map(UserId),
         page: Page::try_new(req.page).map_err(as_unprocessable_entity)?,
-        page_size: PageSize::try_new(req.pageSize).map_err(as_unprocessable_entity)?,
+        page_size: PageSize::try_new(req.pageSize, PageSize(50))
+            .map_err(as_unprocessable_entity)?,
     };
     let output = super::Steps::from_ctx(&ctx).workflow(input).await?;
 
@@ -77,6 +84,20 @@ pub fn creator_not_found() -> ErrorResponse {
                 error: "CREATOR_NOT_FOUND".into(),
                 reason: "creator not found".to_string(),
                 message: "the creator does not exist".to_string(),
+            },
+        },
+    )
+        .into()
+}
+
+pub fn search_not_implemented() -> ErrorResponse {
+    (
+        StatusCode::NOT_IMPLEMENTED,
+        ErrorBody {
+            error: ErrBody {
+                error: "SEARCH_NOT_IMPLEMENTED".into(),
+                reason: "search not implemented".to_string(),
+                message: "the search function is not implemented in this service".to_string(),
             },
         },
     )

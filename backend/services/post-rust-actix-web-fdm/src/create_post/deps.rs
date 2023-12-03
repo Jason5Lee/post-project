@@ -19,10 +19,10 @@ pub async fn workflow(deps: &Deps, creator: UserId, input: Command) -> Result<Po
         .execute(&deps.pool)
         .await
         .map_err(|err|
-            match analysis_unique_violation_error(&err) {
-                Some(UniqueViolationError::PrimaryKey) => handle_internal_error(ID_DUPLICATE_MESSAGE),
-                Some(UniqueViolationError::OtherColumn) => duplicate_title(),
-                None => handle_internal_error(err)
+            if is_unique_violation_error(&err) {
+                duplicate_title()
+            } else {
+                handle_internal_error(err)
             }
         )
         .map(|result| PostId(db::format_id(result.last_insert_id())))

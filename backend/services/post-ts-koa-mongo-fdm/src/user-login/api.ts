@@ -19,7 +19,7 @@ export async function run(ctx: Context, workflow: Workflow): Promise<void> {
         password: new Password(input.password, onInvalid(errors.userNameOrPasswordIncorrect)),
     });
     const expire = ctx.getTokenExpireTime();
-    const token = ctx.generateToken({ type: "User", id: output }, expire);
+    const token = ctx.generateUserToken(output, expire);
     ctx.setResponse(
         200,
         {

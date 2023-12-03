@@ -8,6 +8,7 @@ import io.ktor.server.response.*
 import io.ktor.util.pipeline.*
 import me.jason5lee.post_ktor_mongo_fdm.common.Identity
 import me.jason5lee.post_ktor_mongo_fdm.common.Time
+import me.jason5lee.post_ktor_mongo_fdm.common.UserId
 import me.jason5lee.post_ktor_mongo_fdm.common.api.badRequest
 import me.jason5lee.post_ktor_mongo_fdm.common.api.getToken
 
@@ -23,8 +24,8 @@ class Context(
     fun getTokenExpireTime(): Time =
         deps.auth.getTokenExpireTime()
 
-    fun generateToken(identity: Identity, expire: Time): String =
-        deps.auth.generateToken(identity, expire)
+    fun generateUserToken(user: UserId, expire: Time): String =
+        deps.auth.generateUserToken(user, expire)
 
     fun pathParameters(): Parameters =
         pipelineContext.context.parameters

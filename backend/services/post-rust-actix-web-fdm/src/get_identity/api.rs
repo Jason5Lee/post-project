@@ -1,7 +1,7 @@
 use std::rc::Rc;
 
-use crate::common::*;
 use crate::common::utils::{Endpoint, HttpMethod};
+use crate::common::*;
 use actix_web::{HttpResponse, Result};
 use apply::Apply;
 use serde::Serialize;

@@ -138,7 +138,7 @@ Body:
 
 ```json
 {
-    "total": <total number of posts>,
+    "total": <total number of all posts (not just the page)>,
     "posts": [
         {
             "id": "<post ID>",
@@ -158,3 +158,4 @@ The posts are sorted by their creation time in descending order.
 - Errors related to invalid page.
 - Errors related to invalid page size.
 - `CREATOR_NOT_FOUND`: `404 Not Found`, the specified creator does not exist.
+- `SEARCH_NOT_IMPLEMENTED`: `501 Not Implemented`, the search function is not implemented in this service.

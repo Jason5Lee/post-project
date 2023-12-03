@@ -5,13 +5,23 @@ import me.jason5lee.post_ktor_mongo_fdm.common.utils.Err
 import me.jason5lee.post_ktor_mongo_fdm.common.utils.FailureBody
 import me.jason5lee.post_ktor_mongo_fdm.common.utils.HttpException
 
-private const val BEARER = "Bearer "
-fun getToken(headers: Headers): String? =
+sealed class Token {
+    data class User(val value: String) : Token()
+    data class Admin(val value: String) : Token()
+}
+
+private const val USER_PREFIX = "Bearer "
+private const val ADMIN_PREFIX = "Admin "
+
+fun getToken(headers: Headers): Token? =
     headers["Authorization"]?.let { authHeader ->
-        if (!authHeader.startsWith(BEARER)) {
-            throw invalidAuth()
+        if (authHeader.startsWith(USER_PREFIX)) {
+            return Token.User(authHeader.substring(USER_PREFIX.length))
         }
-        return authHeader.substring(BEARER.length)
+        if (authHeader.startsWith(ADMIN_PREFIX)) {
+            return Token.Admin(authHeader.substring(ADMIN_PREFIX.length))
+        }
+        throw invalidAuth()
     }
 
 fun invalidAuth(): HttpException = HttpException(

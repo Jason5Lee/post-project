@@ -45,7 +45,11 @@ async fn main() {
     let deps = actix_web::web::Data::new(post_rust_actix_web_fdm::common::utils::Deps {
         pool,
         encryptor: Encryptor { cost },
-        auth: AuthConfig { valid_secs, secret, admin_token: config.admin_token },
+        auth: AuthConfig {
+            valid_secs,
+            secret,
+            admin_token: config.admin_token,
+        },
     });
 
     env_logger::init();
@@ -53,15 +57,13 @@ async fn main() {
         macro_rules! register_service {
             ($app:ident, $api_name:ident) => {
                 $app = $app.route(
-                    post_rust_actix_web_fdm::$api_name::api::ENDPOINT.1, 
+                    post_rust_actix_web_fdm::$api_name::api::ENDPOINT.1,
                     actix_web::web::method(post_rust_actix_web_fdm::$api_name::api::ENDPOINT.0)
-                        .to(post_rust_actix_web_fdm::$api_name::api::api)
+                        .to(post_rust_actix_web_fdm::$api_name::api::api),
                 )
             };
         }
-        let mut app = App::new()
-            .wrap(Logger::default())
-            .app_data(deps.clone());
+        let mut app = App::new().wrap(Logger::default()).app_data(deps.clone());
         register_service!(app, create_post);
         register_service!(app, user_login);
         register_service!(app, list_posts);
@@ -71,10 +73,9 @@ async fn main() {
         register_service!(app, edit_post);
         register_service!(app, get_identity);
         register_service!(app, get_user);
-        app
-            .default_service(
-                actix_web::web::route().to(post_rust_actix_web_fdm::common::api::api_not_found),
-            )
+        app.default_service(
+            actix_web::web::route().to(post_rust_actix_web_fdm::common::api::api_not_found),
+        )
     })
     .bind(&config.listen_addr)
     .expect("unable to bind")

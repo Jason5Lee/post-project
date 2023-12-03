@@ -10,4 +10,14 @@ impl super::super::PageSize {
             },
         }
     }
+
+    pub(in crate::common) fn page_size_too_large() -> ErrorBody {
+        ErrorBody {
+            error: ErrBody {
+                error: "PAGE_SIZE_TOO_LARGE".into(),
+                reason: "page size is too large".to_string(),
+                message: "page size is too large".to_string(),
+            },
+        }
+    }
 }

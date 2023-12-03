@@ -1,8 +1,8 @@
 use super::Command;
 use crate::common::api::bad_request;
 use crate::common::utils::error::*;
-use crate::common::*;
 use crate::common::utils::{Endpoint, HttpMethod};
+use crate::common::*;
 use actix_web::http::StatusCode;
 use actix_web::{web::Json as BodyJson, HttpResponse, Result};
 use serde::{Deserialize, Serialize};

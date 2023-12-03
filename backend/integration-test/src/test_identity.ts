@@ -1,7 +1,7 @@
 import axios from "axios";
 import { assert, UserToken } from "./common";
 
-export async function testIdentity(base: string, users: [UserToken, UserToken], adminId: string, adminToken: string): Promise<void> {
+export async function testIdentity(base: string, users: [UserToken, UserToken], adminToken: string): Promise<void> {
     const guestResp = await axios.get(`${base}/identity`);
     assert(guestResp.status === 200);
     assert(guestResp.data.user === undefined);
@@ -19,8 +19,8 @@ export async function testIdentity(base: string, users: [UserToken, UserToken], 
     assert(user2Resp.data.user.name === "user2");
     assert(user2Resp.data.admin === undefined);
 
-    const adminResp = await axios.get(`${base}/identity`, { headers: { Authorization: `Bearer ${adminToken}` } });
+    const adminResp = await axios.get(`${base}/identity`, { headers: { Authorization: `Admin ${adminToken}` } });
     assert(adminResp.status === 200);
     assert(adminResp.data.user === undefined);
-    assert(adminResp.data.admin.id === adminId);
+    assert(adminResp.data.admin === true);
 }

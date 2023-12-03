@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactive.awaitFirstOrNull
+import kotlinx.coroutines.reactive.awaitSingle
 import org.bson.Document
 import org.bson.conversions.Bson
 import org.bson.types.ObjectId
@@ -18,13 +19,12 @@ import java.util.*
 object Db {
     val users = "users"
     val posts = "posts"
-    val admins = "admins"
 
     suspend fun initDB(db: MongoDatabase) {
         db.getCollection(users).createIndex(Indexes.ascending("name"), IndexOptions().unique(true)).awaitFirstOrNull()
         db.getCollection(posts).createIndex(Indexes.ascending("title"), IndexOptions().unique(true)).awaitFirstOrNull()
         db.getCollection(posts).createIndex(Indexes.ascending("creator")).awaitFirstOrNull()
-        db.getCollection(posts).createIndex(Indexes.ascending("lastModified")).awaitFirstOrNull()
+        db.getCollection(posts).createIndex(Indexes.descending("creationTime", "_id")).awaitFirstOrNull()
     }
 
     class QueryDoc<Id : Any>(val collection: String, val id: Id, val doc: Document) {
@@ -83,6 +83,15 @@ object Db {
                     throw invalidIdException(collection, idAny, Id::class.java)
                 }
             }
+
+    suspend fun countExact(
+        db: MongoDatabase,
+        collection: String,
+        filter: Document,
+    ): Long =
+        db.getCollection(collection)
+            .countDocuments(filter)
+            .awaitSingle()
 
     private val idEncoder = Base64.getUrlEncoder().withoutPadding()
     private val idDecoder = Base64.getUrlDecoder()

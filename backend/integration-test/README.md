@@ -2,13 +2,11 @@
 
 The integration test script for post backend services.
 
-## Prerequisites
+## Process
 
-- Setting up a backend service with empty data.
-- Create an admin with the [create admin tool](../createadmin).
-- Run `yarn install; yarn run build`.
-- Edit `dist/app.js`, modify the definition of the following constances.
-  - `adminId`: the ID of the admin.
-  - `adminPassword`: the password of the admin.
-  - `service`: the URL of the service.
+- Run `pnpm install` and `pnpm run build` if it hasn't been run yet.
+- Setting up a backend service and empty database.
+- Setting the following environment variables or in `.env` file.
+  - `SERVICE_URL`: the service URL, e.g. `http://localhost:3000`
+  - `ADMIN_TOKEN`: the admin token.
 - Run `node dist/app.js`. If the script quits with no error, the test is passed.

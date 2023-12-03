@@ -1,3 +1,4 @@
+
 # post-ktor-mongo-fdm
 
 The backend service of post using Kotlin, ktor, and MongoDB.
@@ -19,6 +20,7 @@ Here is [the API document](../../api-document).
     * `MONGO_DATABASE`: MongoDB database name.
     * `TOKEN_VALID_SECS`: seconds of the authorization token validity.
     * `TOKEN_SECRET`: the secret to encrypt the authorization token.
+    * `ADMIN_TOKEN`: the admin token.
     * `ENCRYPTION_COST`: cost of the encryption of the password, default to `10`.
 * Run `./gradlew run` to start the server.
 * Run `./gradlew buildFatJar` to build a fat jar.

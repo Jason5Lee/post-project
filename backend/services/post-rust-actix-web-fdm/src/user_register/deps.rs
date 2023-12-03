@@ -1,5 +1,4 @@
 use super::*;
-use crate::common::utils::id_generation::ID_DUPLICATE_MESSAGE;
 use crate::common::{api::handle_internal_error, db::*};
 
 pub async fn insert_user(
@@ -17,10 +16,10 @@ pub async fn insert_user(
         .await
         .map(|r| UserId(db::format_id(r.last_insert_id())))
         .map_err(|err|
-            match analysis_unique_violation_error(&err) {
-                Some(UniqueViolationError::PrimaryKey) => handle_internal_error(ID_DUPLICATE_MESSAGE),
-                Some(UniqueViolationError::OtherColumn) => user_name_already_exists(),
-                None => handle_internal_error(err),
+            if is_unique_violation_error(&err) {
+                user_name_already_exists()
+            } else {
+                handle_internal_error(err)
             }
         )
 }

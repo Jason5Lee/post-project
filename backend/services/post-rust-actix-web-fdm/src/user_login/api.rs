@@ -39,7 +39,7 @@ pub async fn api(mut ctx: utils::Context) -> Result<HttpResponse> {
         ResponseDto {
             id: output.0.clone(),
             expire: expired_time.utc,
-            token: ctx.generate_token(expired_time, Identity::User(output)),
+            token: ctx.generate_user_token(expired_time, output),
         }
     }))
 }

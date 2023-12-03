@@ -12,57 +12,64 @@ type Post = {
 }
 
 async function testListPosts(base: string, user1Posts: Post[], user2Posts: Post[], allPosts: Post[]) {
-    user1Posts.sort((a, b) => a.creationTime - b.creationTime);
-    user2Posts.sort((a, b) => a.creationTime - b.creationTime);
-    allPosts.sort((a, b) => a.creationTime - b.creationTime);
-    const size = 10;
-    for (let i = 0; i < allPosts.length; i++) {
-        const postsBeforeResponse = await axios.get(base + "/post?before=" + allPosts[i].creationTime + "&size=" + size);
-        assert(postsBeforeResponse.status === 200);
-        const postsBefore = postsBeforeResponse.data.posts;
-        const expectSize = Math.min(size, i);
-        assert(postsBefore.length === expectSize);
-        for (let j = 0; j < expectSize; j++) {
-            const postBefore = postsBefore[j];
-            const expectPost = allPosts[i - j - 1];
-            assert(postBefore.id === expectPost.postId);
-            assert(postBefore.title === expectPost.title);
-            assert(postBefore.creatorId === expectPost.creatorId);
-            assert(postBefore.creatorName === expectPost.creatorName);
-            assert(postBefore.creationTime === expectPost.creationTime);
-        }
-
-        const postsAfterResponse = await axios.get(base + "/post?after=" + allPosts[i].creationTime + "&size=" + size);
-        assert(postsAfterResponse.status === 200);
-        const postsAfter = postsAfterResponse.data.posts;
-        const expectSizeAfter = Math.min(size, allPosts.length - i - 1);
-        assert(postsAfter.length === expectSizeAfter);
-        for (let j = 0; j < expectSizeAfter; j++) {
-            const postAfter = postsAfter[j];
-            const expectPost = allPosts[i + expectSizeAfter - j];
-            assert(postAfter.id === expectPost.postId);
-            assert(postAfter.title === expectPost.title);
-            assert(postAfter.creatorId === expectPost.creatorId);
-            assert(postAfter.creatorName === expectPost.creatorName);
-            assert(postAfter.creationTime === expectPost.creationTime);
-        }
+    for (let pageSize = 1; pageSize <= 10; pageSize += 3) {
+        for (let page = 1, pageOffset = 0; pageOffset < allPosts.length; ++page, pageOffset += pageSize) {
+            const pagePostsResp = await axios.get(base + "/post?page=" + page + "&pageSize=" + pageSize);
+            assert(pagePostsResp.status === 200);
+            assert(pagePostsResp.data.total === allPosts.length);
+            const pagePosts = pagePostsResp.data.posts;
+            const expectSize = Math.min(pageSize, allPosts.length - pageOffset);
+            assert(pagePosts.length === expectSize);
+            for (let j = 0; j < expectSize; j++) {
+                const pagePost = pagePosts[j];
+                const expectPost = allPosts[allPosts.length - pageOffset - j - 1];
+                assert(pagePost.id === expectPost.postId);
+                assert(pagePost.title === expectPost.title);
+                assert(pagePost.creatorId === expectPost.creatorId);
+                assert(pagePost.creatorName === expectPost.creatorName);
+                assert(pagePost.creationTime === expectPost.creationTime);
+            }
+        }    
     }
 
-    for (let i = 0; i < user1Posts.length; i++) {
-        const postsBeforeResponse = await axios.get(base + "/post?before=" + user1Posts[i].creationTime + "&size=" + size + "&creator=" + user1Posts[0].creatorId);
-        assert(postsBeforeResponse.status === 200);
-        const postsBefore = postsBeforeResponse.data.posts;
-        const expectSize = Math.min(size, i);
-        assert(postsBefore.length === expectSize);
-        for (let j = 0; j < expectSize; j++) {
-            const postBefore = postsBefore[j];
-            const expectPost = user1Posts[i - j - 1];
-            assert(postBefore.id === expectPost.postId);
-            assert(postBefore.title === expectPost.title);
-            assert(postBefore.creatorId === expectPost.creatorId);
-            assert(postBefore.creatorName === expectPost.creatorName);
-            assert(postBefore.creationTime === expectPost.creationTime);
-        }
+    for (let pageSize = 1; pageSize <= 10; pageSize += 3) {
+        for (let page = 1, pageOffset = 0; pageOffset < user1Posts.length; ++page, pageOffset += pageSize) {
+            const pagePostsResp = await axios.get(base + "/post?page=" + page + "&pageSize=" + pageSize + "&creator=" + user1Posts[0].creatorId);
+            assert(pagePostsResp.status === 200);
+            assert(pagePostsResp.data.total === user1Posts.length);
+            const pagePosts = pagePostsResp.data.posts;
+            const expectSize = Math.min(pageSize, user1Posts.length - pageOffset);
+            assert(pagePosts.length === expectSize);
+            for (let j = 0; j < expectSize; j++) {
+                const postBefore = pagePosts[j];
+                const expectPost = user1Posts[user1Posts.length - pageOffset - j - 1];
+                assert(postBefore.id === expectPost.postId);
+                assert(postBefore.title === expectPost.title);
+                assert(postBefore.creatorId === expectPost.creatorId);
+                assert(postBefore.creatorName === expectPost.creatorName);
+                assert(postBefore.creationTime === expectPost.creationTime);
+            }
+        }    
+    }
+
+    for (let pageSize = 1; pageSize <= 10; pageSize += 3) {
+        for (let page = 1, pageOffset = 0; pageOffset < user2Posts.length; ++page, pageOffset += pageSize) {
+            const pagePostsResp = await axios.get(base + "/post?page=" + page + "&pageSize=" + pageSize + "&creator=" + user2Posts[0].creatorId);
+            assert(pagePostsResp.status === 200);
+            assert(pagePostsResp.data.total === user2Posts.length);
+            const pagePosts = pagePostsResp.data.posts;
+            const expectSize = Math.min(pageSize, user2Posts.length - pageOffset);
+            assert(pagePosts.length === expectSize);
+            for (let j = 0; j < expectSize; j++) {
+                const postBefore = pagePosts[j];
+                const expectPost = user2Posts[user2Posts.length - pageOffset - j - 1];
+                assert(postBefore.id === expectPost.postId);
+                assert(postBefore.title === expectPost.title);
+                assert(postBefore.creatorId === expectPost.creatorId);
+                assert(postBefore.creatorName === expectPost.creatorName);
+                assert(postBefore.creationTime === expectPost.creationTime);
+            }
+        }    
     }
 }
 
@@ -141,7 +148,7 @@ async function testDeletePostByCreator(base: string, user1PostId: string, users:
 }
 
 async function testDeletePostByAdmin(base: string, postId: string, admin_token: string): Promise<void> {
-    const deleteByAdmin = await axios.delete(base + "/post/" + postId, { headers: { "Authorization": "Bearer " + admin_token } });
+    const deleteByAdmin = await axios.delete(base + "/post/" + postId, { headers: { "Authorization": "Admin " + admin_token } });
     assert(deleteByAdmin.status === 204);
 
     const getDeletedPost = await axios.get(base + "/post/" + postId, { validateStatus: () => true });

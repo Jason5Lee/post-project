@@ -1,10 +1,10 @@
+pub mod invalid_page;
+pub mod invalid_page_size;
 pub mod invalid_password;
 pub mod invalid_text_post_content;
 pub mod invalid_title;
 pub mod invalid_url_post_content;
 pub mod invalid_user_name;
-pub mod invalid_page;
-pub mod invalid_page_size;
 
 use crate::common::utils::error::{ErrBody, ErrorBody, ErrorResponse};
 use crate::common::utils::Context;

@@ -27,17 +27,17 @@ macro_rules! define_steps {
         }
         #[cfg(test)]
         impl<'a> Steps<'a> {
-            pub fn from_ctx(_: &'a crate::common::utils::Context) -> Steps<'a> {
+            pub fn from_ctx(_: &'a $crate::common::utils::Context) -> Steps<'a> {
                 panic!("`from_deps` is unavailable in test env")
             }
         }
 
         #[cfg(not(test))]
         #[derive(Clone, Copy)]
-        pub struct Steps<'a>(&'a crate::common::utils::Context);
+        pub struct Steps<'a>(&'a $crate::common::utils::Context);
         #[cfg(not(test))]
         impl<'a> Steps<'a> {
-            pub fn from_ctx(ctx: &'a crate::common::utils::Context) -> Steps<'a> {
+            pub fn from_ctx(ctx: &'a $crate::common::utils::Context) -> Steps<'a> {
                 Steps(ctx)
             }
 

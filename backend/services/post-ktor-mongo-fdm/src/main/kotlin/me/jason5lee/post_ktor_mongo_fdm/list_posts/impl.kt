@@ -9,7 +9,7 @@ import org.bson.Document
 import org.bson.types.ObjectId
 
 class WorkflowImpl(private val deps: Deps) : Workflow(), ErrorsImpl {
-    override suspend fun run(input: Query): List<Post> {
+    override suspend fun run(input: Query): Output {
         val filter = Document()
         val creatorMap: MutableMap<ObjectId, UserName> = mutableMapOf()
         if (input.creator != null) {
@@ -23,27 +23,29 @@ class WorkflowImpl(private val deps: Deps) : Workflow(), ErrorsImpl {
             creatorMap[creatorOid] = UserName(creatorUserDoc.get("name"))
             filter["creator"] = creatorOid
         }
-        var timeSort = -1
-        when (val condition = input.condition) {
-            is Condition.After -> {
-                filter["creationTime"] = Document("\$gt", condition.time.utc)
-                timeSort = 1
-            }
 
-            is Condition.Before -> filter["creationTime"] = Document("\$lt", condition.time.utc)
-            null -> {}
-        }
+        val total = Db.countExact(
+            db = deps.mongoDb,
+            collection = Db.posts,
+            filter = filter,
+        )
         val posts = Db.find<ObjectId>(
             db = deps.mongoDb,
             collection = Db.posts,
             configCollection = {
                 this.find(filter)
-                    .sort(Document("creationTime", timeSort))
-                    .limit(input.size.value)
+                    .sort(Document("creationTime", -1).append("_id", -1))
+                    .skip((input.page.value - 1) * input.pageSize.value)
+                    .limit(input.pageSize.value)
             }
         ).toList()
-            .apply { if (this.isEmpty()) return emptyList() }
-            .let { if (timeSort == 1) it.asReversed() else it }
+
+        if (posts.isEmpty()) {
+            return Output(
+                total = total,
+                posts = emptyList(),
+            )
+        }
 
         if (creatorMap.isEmpty()) {
             val creatorIds = posts.mapTo(HashSet()) { it.get<ObjectId>("creator") }
@@ -61,20 +63,23 @@ class WorkflowImpl(private val deps: Deps) : Workflow(), ErrorsImpl {
             }
         }
 
-        return posts.map { postDoc ->
-            val creatorId = postDoc.get<ObjectId>("creator")
-            val creatorName = creatorMap[creatorId]
-                ?: throw Exception("Invalid query result from `${Db.posts}[_id = ${postDoc.id}].creator`, not found in `${Db.users}`")
+        return Output(
+            total = total,
+            posts = posts.map { postDoc ->
+                val creatorId = postDoc.get<ObjectId>("creator")
+                val creatorName = creatorMap[creatorId]
+                    ?: throw Exception("Invalid query result from `${Db.posts}[_id = ${postDoc.id}].creator`, not found in `${Db.users}`")
 
-            Post(
-                id = PostId(Db.formatId(postDoc.id)),
-                title = Title(postDoc.get("title")),
-                creator = Creator(
-                    id = UserId(Db.formatId(creatorId)),
-                    name = creatorName,
-                ),
-                creationTime = Time(postDoc.get("creationTime")),
-            )
-        }
+                Post(
+                    id = PostId(Db.formatId(postDoc.id)),
+                    title = Title(postDoc.get("title")),
+                    creator = Creator(
+                        id = UserId(Db.formatId(creatorId)),
+                        name = creatorName,
+                    ),
+                    creationTime = Time(postDoc.get("creationTime")),
+                )
+            }
+        )
     }
 }

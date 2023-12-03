@@ -150,7 +150,7 @@ impl Password {
 }
 
 impl Page {
-    pub fn try_new(page: u64) -> Result<Page, ErrorBody> {
+    pub fn try_new(page: u64) -> Result<Self, ErrorBody> {
         if page == 0 {
             Err(Self::invalid_page())
         } else {
@@ -160,9 +160,11 @@ impl Page {
 }
 
 impl PageSize {
-    pub fn try_new(page_size: u64) -> Result<PageSize, ErrorBody> {
+    pub fn try_new(page_size: u64, maximum_page_size: Self) -> Result<Self, ErrorBody> {
         if page_size == 0 {
             Err(Self::invalid_page_size())
+        } else if page_size > maximum_page_size.0 {
+            Err(Self::page_size_too_large())
         } else {
             Ok(PageSize(page_size))
         }
