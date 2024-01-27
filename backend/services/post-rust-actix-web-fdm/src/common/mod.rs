@@ -65,58 +65,43 @@ impl UserName {
         ch.is_ascii_alphanumeric() || ch == '_' || ch == '-'
     }
 
-    pub fn try_new(value: String) -> Result<Self, ErrorBody> {
-        if value.is_empty() {
-            Err(Self::user_name_empty())
-        } else if value.len() < 3 {
-            Err(Self::user_name_too_short())
-        } else if value.len() > 20 {
-            Err(Self::user_name_too_long())
-        } else if !value.chars().all(Self::is_legal_character) {
-            Err(Self::user_name_contains_illegal_character())
+    pub fn try_new(value: String) -> Option<Self> {
+        if value.len() >= 3 && value.len() <= 20 && value.chars().all(Self::is_legal_character) {
+            Some(Self(value.into()))
         } else {
-            Ok(Self(value.into()))
+            None
         }
     }
 }
 
 impl Title {
-    pub fn try_new(value: String) -> Result<Self, ErrorBody> {
-        if value.is_empty() {
-            Err(Self::title_empty())
-        } else if value.len() < 3 {
-            Err(Self::title_too_short())
-        } else if value.len() > 171 {
-            Err(Self::title_too_long())
+    pub fn try_new(value: String) -> Option<Self> {
+        if value.len() >= 3 && value.len() <= 171 {
+            Some(Self(value.into()))
         } else {
-            Ok(Self(value))
+            None
         }
     }
 }
 
 impl TextPostContent {
-    pub fn try_new(value: String) -> Result<Self, ErrorBody> {
-        if value.is_empty() {
-            Err(Self::text_post_content_empty())
-        } else if value.len() > 65535 {
-            Err(Self::text_post_content_too_long())
+    pub fn try_new(value: String) -> Option<Self> {
+        if value.len() <= 65535 {
+            Some(Self(value.into()))
         } else {
-            Ok(Self(value))
+            None
         }
     }
 }
 
 impl UrlPostContent {
-    pub fn try_new(value: String) -> Result<Self, ErrorBody> {
-        if value.is_empty() {
-            Err(Self::url_post_content_empty())
-        } else if value.len() > 65535 {
-            Err(Self::url_post_content_too_long())
-        } else {
-            match Url::parse(&value) {
-                Ok(_) => Ok(Self(value)),
-                Err(err) => Err(Self::url_post_content_invalid(err)),
-            }
+    pub fn try_new(value: String) -> Option<Self> {
+        if value.len() > 65535 {
+            return None;
+        }
+        match Url::parse(&value) {
+            Ok(_) => Some(Self(value)),
+            Err(_) => None,
         }
     }
 }
@@ -127,16 +112,12 @@ impl Debug for Password {
     }
 }
 impl Password {
-    pub fn try_from_plain(value: String) -> Result<Self, ErrorBody> {
-        if value.is_empty() {
-            Err(Self::password_empty())
-        } else if value.len() < 5 {
-            Err(Self::password_too_short())
-        } else if value.len() > 72 {
+    pub fn try_from_plain(value: String) -> Option<Self> {
+        if value.len() >= 5 && value.len() <= 72 {
             // Limitation of the bcrypt algorithm.
-            Err(Self::password_too_long())
+            Some(Self { plain: value })
         } else {
-            Ok(Self { plain: value })
+            None
         }
     }
 
@@ -150,23 +131,21 @@ impl Password {
 }
 
 impl Page {
-    pub fn try_new(page: u64) -> Result<Self, ErrorBody> {
+    pub fn try_new(page: u64) -> Option<Self> {
         if page == 0 {
-            Err(Self::invalid_page())
+            None
         } else {
-            Ok(Page(page))
+            Some(Page(page))
         }
     }
 }
 
 impl PageSize {
-    pub fn try_new(page_size: u64, maximum_page_size: Self) -> Result<Self, ErrorBody> {
-        if page_size == 0 {
-            Err(Self::invalid_page_size())
-        } else if page_size > maximum_page_size.0 {
-            Err(Self::page_size_too_large())
+    pub fn try_new(page_size: u64) -> Option<Self> {
+        if page_size > 0 && page_size <= 50 {
+            Some(PageSize(page_size))
         } else {
-            Ok(PageSize(page_size))
+            None
         }
     }
 }

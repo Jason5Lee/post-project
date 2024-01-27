@@ -38,8 +38,7 @@ pub fn user_not_found() -> ErrorResponse {
         ErrorBody {
             error: ErrBody {
                 error: "USER_NOT_FOUND".into(),
-                reason: "user not found".to_string(),
-                message: "the user does not exist".to_string(),
+                reason: "User not found".into(),
             },
         },
     )

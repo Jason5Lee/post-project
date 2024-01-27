@@ -22,13 +22,12 @@ If any error happens, the response will be a JSON object with the following form
 {
   "error": {
     "error": "<error identity>",
-    "reason": "<reason>",
-    "message": "<error message>"
+    "reason": "<reason>"
   }
 }
 ```
 
-`error` is a unique identity string of the error. `reason` is the error description for the developer. `message` is the message that is presentable on user interfaces.
+`error` is a unique identity string of the error. `reason` is the error description.
 
 ## Common errors
 

@@ -1,10 +1,4 @@
-pub mod invalid_page;
-pub mod invalid_page_size;
-pub mod invalid_password;
-pub mod invalid_text_post_content;
-pub mod invalid_title;
-pub mod invalid_url_post_content;
-pub mod invalid_user_name;
+pub mod invalidation;
 
 use crate::common::utils::error::{ErrBody, ErrorBody, ErrorResponse};
 use crate::common::utils::Context;
@@ -33,16 +27,13 @@ pub fn get_auth_token(ctx: &Context) -> Result<AuthToken> {
     }
 }
 
-pub const CLIENT_BUG_MESSAGE: &str = "Something went wrong. Looks like a bug of the client. Please report this issue to the client implementation.";
-
 pub fn bad_request(err: impl std::fmt::Display) -> ErrorResponse {
     (
         StatusCode::BAD_REQUEST,
         ErrorBody {
             error: ErrBody {
                 error: "BAD_REQUEST".into(),
-                reason: format!("{err}"),
-                message: CLIENT_BUG_MESSAGE.to_string(),
+                reason: format!("{err}").into(),
             },
         },
     )
@@ -59,8 +50,7 @@ pub fn handle_internal_error(err: impl std::fmt::Display) -> ErrorResponse {
         ErrorBody {
             error: ErrBody {
                 error: "INTERNAL_SERVER_ERROR".into(),
-                reason: format!("Internal server error, trace id: {trace_id}"),
-                message: "Something went wrong".to_string(),
+                reason: format!("Internal server error, trace id: {trace_id}").into(),
             },
         },
     )
@@ -73,8 +63,7 @@ pub fn invalid_auth() -> ErrorResponse {
         ErrorBody {
             error: ErrBody {
                 error: "INVALID_AUTH".into(),
-                reason: "Authorization is invalid".to_string(),
-                message: CLIENT_BUG_MESSAGE.to_string(),
+                reason: "Authorization is invalid".into(),
             },
         },
     )
@@ -88,22 +77,6 @@ pub fn user_only() -> ErrorResponse {
             error: ErrBody {
                 error: "USER_ONLY".into(),
                 reason: "Only user can call this API".into(),
-                message: "You are not allowed to perform this action".into(),
-            },
-        },
-    )
-        .into()
-}
-
-pub fn overloaded() -> ErrorResponse {
-    (
-        StatusCode::SERVICE_UNAVAILABLE,
-        ErrorBody {
-            error: ErrBody {
-                error: "OVERLOADED".into(),
-                reason: "The operation cannot be completed due to an excessive number of requests"
-                    .to_string(),
-                message: "Something went wrong, please try again later".to_string(),
             },
         },
     )
@@ -115,7 +88,6 @@ pub async fn api_not_found() -> actix_web::HttpResponse {
         error: ErrBody {
             error: "API_NOT_FOUND".into(),
             reason: "The API does not exist".into(),
-            message: CLIENT_BUG_MESSAGE.into(),
         },
     })
 }

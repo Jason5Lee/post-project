@@ -62,8 +62,7 @@ pub fn post_not_found() -> ErrorResponse {
         ErrorBody {
             error: ErrBody {
                 error: "POST_NOT_FOUND".into(),
-                reason: "post not found".to_string(),
-                message: "the post does not exist".to_string(),
+                reason: "Post not found".into(),
             },
         },
     )

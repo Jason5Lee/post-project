@@ -34,7 +34,6 @@ export const errors: Workflow["errors"] = {
             error: {
                 error: "POST_NOT_FOUND",
                 reason: "The post does not exist",
-                message: "The post does not exist",
             }
         }
     ),

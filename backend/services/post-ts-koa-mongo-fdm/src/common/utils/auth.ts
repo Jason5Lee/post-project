@@ -27,7 +27,7 @@ export function getIdentity(token: Token | undefined, secret: string, adminToken
             throw e;
         }
     }
-    
+
     if (decoded === undefined || typeof decoded === "string") {
         throw invalidAuth();
     } else {

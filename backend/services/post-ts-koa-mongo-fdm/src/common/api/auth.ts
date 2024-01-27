@@ -1,4 +1,3 @@
-import { CLIENT_BUG_MESSAGE } from ".";
 import { ResponseError } from "../utils/error";
 
 export type Token = {
@@ -12,7 +11,7 @@ export function getToken(header: { authorization?: string | undefined }): Token 
     if (header.authorization === undefined) {
         return undefined;
     }
-    
+
     const authorization = header.authorization;
     if (authorization.startsWith(USER_PREFIX)) {
         return {
@@ -37,8 +36,6 @@ export function invalidAuth(): ResponseError {
             error: {
                 error: "INVALID_AUTH",
                 reason: "The authorization is invalid",
-                // When this happens, the client should remove the token instead of showing this message.
-                message: CLIENT_BUG_MESSAGE,
             }
         }
     );

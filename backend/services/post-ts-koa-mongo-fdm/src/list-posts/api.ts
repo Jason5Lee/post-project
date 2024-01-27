@@ -1,7 +1,9 @@
 import { Context, Method, Route } from "../common/utils";
 import { Workflow } from ".";
-import { onInvalidRespond, ResponseError } from "../common/utils/error";
-import { checkPage, checkPageSize, newTime, UserId, PageSize } from "../common";
+import { ResponseError } from "../common/utils/error";
+import { checkPage, checkPageSize, UserId } from "../common";
+
+import { invalidPage, invalidPageSize } from "../common/api";
 
 export const route: Route = [Method.GET, "/post"];
 
@@ -14,9 +16,12 @@ export async function run(ctx: Context, workflow: Workflow): Promise<void> {
     const pageSize = +ctx.getQueryParam("pageSize");
     const creator = ctx.getQueryParam("creator", { optional: true }) as (UserId | undefined);
 
-    checkPage(page, onInvalidRespond({ status: 422 }));
-    checkPageSize(pageSize, 50 as PageSize, onInvalidRespond({ status: 422 }));
-
+    if (!checkPage(page)) {
+        throw new ResponseError(400, invalidPage);
+    }
+    if (!checkPageSize(pageSize)) {
+        throw new ResponseError(400, invalidPageSize);
+    }
     const output = await workflow.run({
         page,
         pageSize,
@@ -53,7 +58,6 @@ export const errors = {
             error: {
                 error: "CREATOR_NOT_FOUND",
                 reason: "The creator does not exist",
-                message: "The creator does not exist",
             },
         }
     ),
@@ -63,7 +67,6 @@ export const errors = {
             error: {
                 error: "SEARCH_NOT_IMPLEMENTED",
                 reason: "search not implemented",
-                message: "the search function is not implemented in this service",
             }
         }
     )

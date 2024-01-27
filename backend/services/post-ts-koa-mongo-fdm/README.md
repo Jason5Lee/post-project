@@ -32,3 +32,6 @@ Because of ~~being too lazy~~ the time limitation, I only write a few unit tests
   * [Model validation unit-tests](test/common).
 
 `npm run test` will run the tests.
+
+TODO:
+[ ] Clean commented code src/common/utils/error.ts

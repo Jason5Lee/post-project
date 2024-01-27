@@ -1,4 +1,4 @@
-import { AdminId, PostId, UserId } from "../../src/common";
+import { PostId, UserId } from "../../src/common";
 import { Workflow } from "../../src/delete-post";
 import { ExpectedError } from "../common";
 
@@ -58,6 +58,6 @@ describe("Delete post workflow", () => {
             };
         }
         const workflow = new MockWorkflow();
-        await workflow.run({ type: "Admin", id: "1" as AdminId }, "2" as PostId);
+        await workflow.run({ type: "Admin" }, "2" as PostId);
     });
 });

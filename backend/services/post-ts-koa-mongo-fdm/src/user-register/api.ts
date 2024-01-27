@@ -2,7 +2,8 @@ import { Context, Method, Route } from "../common/utils";
 import * as runtypes from "runtypes";
 import { Workflow } from ".";
 import { checkUserName, Password } from "../common";
-import { onInvalidRespond, ResponseError } from "../common/utils/error";
+import { ResponseError } from "../common/utils/error";
+import { invalidUserName, invalidPassword } from "../common/api";
 
 export const route: Route = [Method.POST, "/register"];
 
@@ -13,10 +14,16 @@ const requestBody = runtypes.Record({
 
 export async function run(ctx: Context, workflow: Workflow): Promise<void> {
     const input = requestBody.check(ctx.getRequestBody());
-    checkUserName(input.userName, onInvalidRespond({ status: 422 }));
+    if (!checkUserName(input.userName)) {
+        throw new ResponseError(400, invalidUserName);
+    }
+    const password = Password.new(input.password);
+    if (password === undefined) {
+        throw new ResponseError(400, invalidPassword);
+    }
     const output = await workflow.run({
         userName: input.userName,
-        password: new Password(input.password, onInvalidRespond({ status: 422 })),
+        password,
     });
     ctx.setResponseHeader("Location", "/user/" + output);
     ctx.setResponse(
@@ -34,7 +41,6 @@ export const errors: Workflow["errors"] = {
             error: {
                 error: "USER_NAME_ALREADY_EXISTS",
                 reason: "The user name already exists",
-                message: "The user name already exists",
             }
         }
     ),

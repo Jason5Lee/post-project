@@ -7,6 +7,8 @@ use actix_web::http::StatusCode;
 use actix_web::{web::Json as BodyJson, web::Path as UrlPath, HttpResponse};
 use serde::Deserialize;
 
+use crate::common::api::invalidation::{invalid_text_post_content, invalid_url_post_content};
+
 pub const ENDPOINT: Endpoint = (HttpMethod::PATCH, "/post/{id}");
 pub async fn api(mut ctx: utils::Context) -> Result<HttpResponse> {
     let caller = match ctx.get_caller_identity()? {
@@ -34,12 +36,14 @@ pub async fn api(mut ctx: utils::Context) -> Result<HttpResponse> {
                 .0,
         ),
         new_content: match (req.text, req.url) {
-            (Some(text), None) => {
-                PostContent::Text(TextPostContent::try_new(text).map_err(as_unprocessable_entity)?)
-            }
-            (None, Some(url)) => {
-                PostContent::Url(UrlPostContent::try_new(url).map_err(as_unprocessable_entity)?)
-            }
+            (Some(text), None) => PostContent::Text(
+                TextPostContent::try_new(text)
+                    .ok_or_else(|| (StatusCode::BAD_REQUEST, invalid_text_post_content()))?,
+            ),
+            (None, Some(url)) => PostContent::Url(
+                UrlPostContent::try_new(url)
+                    .ok_or_else(|| (StatusCode::BAD_REQUEST, invalid_url_post_content()))?,
+            ),
             _ => return Err(test_url_exact_one()),
         },
     };
@@ -53,8 +57,7 @@ pub fn post_not_found() -> ErrorResponse {
         ErrorBody {
             error: ErrBody {
                 error: "POST_NOT_FOUND".into(),
-                reason: "post not found".to_string(),
-                message: "the post does not exist".to_string(),
+                reason: "Post not found".into(),
             },
         },
     )
@@ -67,8 +70,7 @@ pub fn not_creator() -> ErrorResponse {
         ErrorBody {
             error: ErrBody {
                 error: "NOT_CREATOR".into(),
-                reason: "the user is not the creator of the post".to_string(),
-                message: "you have no permission to edit this post".to_string(),
+                reason: "The user is not the creator of the post".into(),
             },
         },
     )
@@ -81,8 +83,7 @@ pub fn type_diff() -> ErrorResponse {
         ErrorBody {
             error: ErrBody {
                 error: "TYPE_DIFF".into(),
-                reason: "the type of the post is different from the request".to_string(),
-                message: "you cannot change the post type".to_string(),
+                reason: "The type of the post is different from the request".into(),
             },
         },
     )
@@ -91,12 +92,11 @@ pub fn type_diff() -> ErrorResponse {
 
 pub fn test_url_exact_one() -> ErrorResponse {
     (
-        StatusCode::UNPROCESSABLE_ENTITY,
+        StatusCode::BAD_REQUEST,
         ErrorBody {
             error: ErrBody {
                 error: "TEXT_URL_EXACT_ONE".into(),
-                reason: "exact one of the text and the url field should exist".to_string(),
-                message: CLIENT_BUG_MESSAGE.to_string(),
+                reason: "Exact one of the text and the url field should exist".into(),
             },
         },
     )

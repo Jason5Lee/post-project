@@ -22,9 +22,9 @@ pub async fn api(mut ctx: utils::Context) -> Result<HttpResponse> {
         .0;
     let input = Query {
         user_name: UserName::try_new(req_body.userName)
-            .map_err(|_| super::user_name_or_password_incorrect())?,
+            .ok_or_else(super::user_name_or_password_incorrect)?,
         password: Password::try_from_plain(req_body.password)
-            .map_err(|_| super::user_name_or_password_incorrect())?,
+            .ok_or_else(super::user_name_or_password_incorrect)?,
     };
     let output = super::Steps::from_ctx(&ctx).workflow(input).await?;
     Ok(HttpResponse::Ok().json({
@@ -50,8 +50,7 @@ pub fn user_name_or_password_incorrect() -> ErrorResponse {
         ErrorBody {
             error: ErrBody {
                 error: "USER_NAME_OR_PASSWORD_INCORRECT".into(),
-                reason: "the user name does not exist, or the password is incorrect".to_string(),
-                message: "the user name or password is incorrect".to_string(),
+                reason: "The user name does not exist, or the password is incorrect".into(),
             },
         },
     )

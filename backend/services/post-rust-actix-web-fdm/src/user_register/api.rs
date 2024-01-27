@@ -4,8 +4,10 @@ use crate::common::utils::error::*;
 use crate::common::utils::{Endpoint, HttpMethod};
 use crate::common::*;
 use actix_web::http::StatusCode;
-use actix_web::{web::Json as BodyJson, HttpResponse, Result};
+use actix_web::{web::Json as BodyJson, HttpResponse};
 use serde::{Deserialize, Serialize};
+
+use crate::common::api::invalidation::{invalid_password, invalid_user_name};
 
 pub const ENDPOINT: Endpoint = (HttpMethod::POST, "/register");
 pub async fn api(mut ctx: utils::Context) -> Result<HttpResponse> {
@@ -22,8 +24,10 @@ pub async fn api(mut ctx: utils::Context) -> Result<HttpResponse> {
         .map_err(bad_request)?
         .0;
     let input = Command {
-        user_name: UserName::try_new(req.userName).map_err(as_unprocessable_entity)?,
-        password: Password::try_from_plain(req.password).map_err(as_unprocessable_entity)?,
+        user_name: UserName::try_new(req.userName)
+            .ok_or_else(|| (StatusCode::BAD_REQUEST, invalid_user_name()))?,
+        password: Password::try_from_plain(req.password)
+            .ok_or_else(|| (StatusCode::BAD_REQUEST, invalid_password()))?,
     };
     let output = super::Steps::from_ctx(&ctx).workflow(input).await?;
     let user_id = output.0;
@@ -46,8 +50,7 @@ pub fn user_name_already_exists() -> ErrorResponse {
         ErrorBody {
             error: ErrBody {
                 error: "USER_NAME_ALREADY_EXISTS".into(),
-                reason: "the user name already exists".to_string(),
-                message: "the user name already exists".to_string(),
+                reason: "The user name already exists".into(),
             },
         },
     )

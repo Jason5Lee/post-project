@@ -2,8 +2,9 @@ import { checkTextPostContent, checkTitle, checkUrlPostContent, PostContent } fr
 import * as runtypes from "runtypes";
 import { Command, Workflow } from ".";
 import { Context, Method, Route, validateRequest } from "../common/utils";
-import { onInvalidRespond, ResponseError } from "../common/utils/error";
-import { CLIENT_BUG_MESSAGE } from "../common/api";
+import { ResponseError } from "../common/utils/error";
+
+import { invalidTitle, invalidTextPostContent, invalidUrlPostContent } from "../common/api";
 
 export const route: Route = [Method.POST, "/post"];
 
@@ -20,13 +21,19 @@ export async function run(ctx: Context, workflow: Workflow) {
     }
 
     const req = validateRequest(requestBody, ctx.getRequestBody());
-    checkTitle(req.title, onInvalidRespond({ status: 422 }));
+    if (!checkTitle(req.title)) {
+        throw new ResponseError(400, invalidTitle);
+    }
     let content: PostContent;
     if (req.text !== undefined && req.url === undefined) {
-        checkTextPostContent(req.text, onInvalidRespond({ status: 422 }));
+        if (!checkTextPostContent(req.text)) {
+            throw new ResponseError(400, invalidTextPostContent);
+        }
         content = { type: "Text", content: req.text };
     } else if (req.text === undefined && req.url !== undefined) {
-        checkUrlPostContent(req.url, onInvalidRespond({ status: 422 }));
+        if (!checkUrlPostContent(req.url)) {
+            throw new ResponseError(400, invalidUrlPostContent);
+        }
         content = { type: "Url", content: req.url };
     } else {
         throw errors.textUrlExactOne();
@@ -43,7 +50,7 @@ export async function run(ctx: Context, workflow: Workflow) {
     } satisfies {
         postId: string,
     });
-    
+
 }
 
 export const errors = {
@@ -54,18 +61,16 @@ export const errors = {
                 error: {
                     error: "DUPLICATE_TITLE",
                     reason: "The title is already used",
-                    message: "The title is already used",
                 }
             }
         );
     },
     textUrlExactOne: () => new ResponseError(
-        422,
+        400,
         {
             error: {
                 error: "TEXT_URL_EXACT_ONE",
                 reason: "Exactly one of `text` and `url` must be provided",
-                message: CLIENT_BUG_MESSAGE,
             }
         }
     ),
@@ -75,7 +80,6 @@ export const errors = {
             error: {
                 error: "USER_ONLY",
                 reason: "Only users can create post",
-                message: "Only users can create post",
             }
         }
     ),

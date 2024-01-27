@@ -23,8 +23,7 @@ pub struct ErrorBody {
 #[derive(PartialEq, Debug, Serialize)]
 pub struct ErrBody {
     pub error: Cow<'static, str>,
-    pub reason: String,
-    pub message: String,
+    pub reason: Cow<'static, str>,
 }
 
 impl std::fmt::Display for ErrorResponse {
@@ -44,8 +43,4 @@ impl actix_web::ResponseError for ErrorResponse {
             .json(&self.body)
             .map_into_boxed_body()
     }
-}
-
-pub fn as_unprocessable_entity(body: ErrorBody) -> ErrorResponse {
-    (StatusCode::UNPROCESSABLE_ENTITY, body).into()
 }

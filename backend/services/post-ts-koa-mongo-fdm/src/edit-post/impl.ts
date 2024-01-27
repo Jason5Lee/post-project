@@ -24,7 +24,7 @@ export class WorkflowImpl extends Workflow {
             throw this.errors.postNotFound();
         }
         db.validate(WorkflowImpl.postHasCreator_TextOrUrl, db.posts, post);
-        
+
         const userOid = db.tryParseId(userId);
         if (userOid === undefined) {
             throw this.errors.notCreator();

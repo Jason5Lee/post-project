@@ -1,9 +1,9 @@
 import { Context, Method, Route, validateRequest } from "../common/utils";
 import { Workflow } from ".";
-import { onInvalidRespond, ResponseError } from "../common/utils/error";
+import { ResponseError } from "../common/utils/error";
 import { checkTextPostContent, checkUrlPostContent, PostContent, PostId } from "../common";
 import * as runtypes from "runtypes";
-import { CLIENT_BUG_MESSAGE } from "../common/api";
+import { invalidTextPostContent, invalidUrlPostContent } from "../common/api";
 
 export const route: Route = [Method.PATCH, "/post/:id"];
 
@@ -21,10 +21,14 @@ export async function run(ctx: Context, workflow: Workflow) {
     const req = validateRequest(requestStructure, ctx.getRequestBody());
     let newContent: PostContent;
     if (req.text !== undefined && req.url === undefined) {
-        checkTextPostContent(req.text, onInvalidRespond({ status: 422 }));
+        if (!checkTextPostContent(req.text)) {
+            throw new ResponseError(400, invalidTextPostContent);
+        }
         newContent = { type: "Text", content: req.text };
     } else if (req.text === undefined && req.url !== undefined) {
-        checkUrlPostContent(req.url, onInvalidRespond({ status: 422 }));
+        if (!checkUrlPostContent(req.url)) {
+            throw new ResponseError(400, invalidUrlPostContent);
+        }
         newContent = { type: "Url", content: req.url };
     } else {
         throw errors.textUrlExactOne();
@@ -44,7 +48,6 @@ export const errors = {
                 error: {
                     error: "POST_NOT_FOUND",
                     reason: "The post does not exist",
-                    message: "The post does not exist",
                 }
             }
         );
@@ -56,7 +59,6 @@ export const errors = {
                 error: {
                     error: "NOT_CREATOR",
                     reason: "You are not the creator of the post",
-                    message: "You are not the creator of the post",
                 }
             }
         );
@@ -68,18 +70,16 @@ export const errors = {
                 error: {
                     error: "TYPE_DIFF",
                     reason: "The type of the post cannot be changed",
-                    message: "The type of the post cannot be changed",
                 }
             }
         );
     },
     textUrlExactOne: () => new ResponseError(
-        422,
+        400,
         {
             error: {
                 error: "TEXT_URL_EXACT_ONE",
                 reason: "Exactly one of `text` and `url` must be provided",
-                message: CLIENT_BUG_MESSAGE,
             }
         }
     ),

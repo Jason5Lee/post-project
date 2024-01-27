@@ -24,8 +24,7 @@ pub fn not_creator_admin() -> ErrorResponse {
         ErrorBody {
             error: ErrBody {
                 error: "NOT_CREATOR_ADMIN".into(),
-                reason: "the user is neither the creator of the post nor admin".to_string(),
-                message: "you are neither the creator of the post nor admin".to_string(),
+                reason: "The user is neither the creator of the post nor admin".into(),
             },
         },
     )
@@ -38,8 +37,7 @@ pub fn post_not_found() -> ErrorResponse {
         ErrorBody {
             error: ErrBody {
                 error: "POST_NOT_FOUND".into(),
-                reason: "post not found".to_string(),
-                message: "post not found".to_string(),
+                reason: "Post not found".into(),
             },
         },
     )

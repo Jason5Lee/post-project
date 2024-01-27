@@ -38,7 +38,7 @@ export async function loadEnv(): Promise<Env> {
     const tokenSecret = getStringEnv("TOKEN_SECRET");
     const encryptionCost = getIntEnv("ENCRYPTION_COST", { default: 10 });
     const adminToken = getStringEnv("ADMIN_TOKEN");
-    
+
     const mongoClient = await MongoClient.connect(mongoUrl);
     const mongoDbClient = mongoClient.db();
     initDB(mongoDbClient);
@@ -54,7 +54,7 @@ export async function loadEnv(): Promise<Env> {
                 secret: tokenSecret,
             },
             adminToken,
-            
+
             close(): Promise<void> {
                 return mongoClient.close();
             }

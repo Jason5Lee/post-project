@@ -7,7 +7,7 @@ import bcrypt from "bcrypt";
 export const users = "users";
 export const posts = "posts";
 
-export function validate<A, ID>(schema: RuntypeBase<A>, collection: string, record: { _id: ID }): asserts record is (A & { _id: ID}) {
+export function validate<A, ID>(schema: RuntypeBase<A>, collection: string, record: { _id: ID }): asserts record is (A & { _id: ID }) {
     try {
         schema.assert(record);
     } catch (e) {
@@ -20,7 +20,7 @@ export function validate<A, ID>(schema: RuntypeBase<A>, collection: string, reco
     record satisfies A;
 }
 
-export function validateArray<A, ID>(schema: RuntypeBase<A>, collection: string, records: { _id: ID }[]): asserts records is (A & { _id: ID})[] {
+export function validateArray<A, ID>(schema: RuntypeBase<A>, collection: string, records: { _id: ID }[]): asserts records is (A & { _id: ID })[] {
     for (const record of records) {
         validate(schema, collection, record);
         record satisfies A;
@@ -47,7 +47,7 @@ export function formatId(id: ObjectId): string {
 }
 
 export class BCryptEncryptor implements PasswordEncryptor {
-    constructor(private readonly cost: number) {}
+    constructor(private readonly cost: number) { }
 
     encrypt(plain: string): Promise<string> {
         return new Promise((resolve, reject) => {
@@ -63,7 +63,7 @@ export class BCryptEncryptor implements PasswordEncryptor {
 }
 
 export class BCryptVerifier implements PasswordVerifier {
-    constructor(private readonly encrypted: string) {}
+    constructor(private readonly encrypted: string) { }
     verify(plain: string): Promise<boolean> {
         return new Promise((resolve, reject) => {
             bcrypt.compare(plain, this.encrypted, (err, res) => {

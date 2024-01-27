@@ -7,8 +7,8 @@ import { badRequest } from "../api";
 import Router from "@koa/router";
 import { Db as MongoDb } from "mongodb";
 import { RuntypeBase } from "runtypes/lib/runtype";
-import { throwUnexpectedValue } from "./error";
 import { PasswordEncryptor } from "./password";
+import { throwUnexpectedValue } from "../utils/error";
 
 export function now(): Time {
     return { utc: Date.now() } as Time;
@@ -18,17 +18,20 @@ export class Context {
     constructor(
         readonly koaCtx: Koa.Context,
         public deps: Deps,
-    ) {}
+    ) { }
 
     getCallerIdentity(): Identity | undefined {
         return getIdentity(getToken(this.koaCtx.header), this.deps.authConfig.secret, this.deps.adminToken);
     }
 
     getTokenExpireTime(): Time {
-        return newTime(
-            Date.now() + this.deps.authConfig.validSecs * 1000,
-            () => new Error("The expiration time for the token is invalid, which is likely due to an overly prolonged validity period.")
+        const expireTime = newTime(
+            Date.now() + this.deps.authConfig.validSecs * 1000
         );
+        if (expireTime === undefined) {
+            throw new Error("Invalid expire time");
+        }
+        return expireTime;
     }
 
     generateUserToken(user: UserId, expire: Time): string {
@@ -54,7 +57,7 @@ export class Context {
         return value;
     }
 
-    getQueryParam(name: string): string 
+    getQueryParam(name: string): string
     getQueryParam(name: string, options: { optional: true }): string | undefined
     getQueryParam(name: string, options?: { optional: true }): string | undefined {
         const value = this.koaCtx.query[name];
@@ -108,9 +111,9 @@ interface ApiPackage<Workflow> {
     readonly run: (ctx: Context, workflow: Workflow) => Promise<void>;
 }
 
-export function addRoute<Workflow>(router: Router, deps: Deps, api: ApiPackage<Workflow>, workflowImpl: { new(deps: Deps): Workflow}) {
+export function addRoute<Workflow>(router: Router, deps: Deps, api: ApiPackage<Workflow>, workflowImpl: { new(deps: Deps): Workflow }) {
     const [method, path] = api.route;
-    const workflow= new workflowImpl(deps);
+    const workflow = new workflowImpl(deps);
     const runApi = api.run;
     const apiFunc = async (koaCtx: Koa.Context, next: Koa.Next) => {
         const ctx = new Context(

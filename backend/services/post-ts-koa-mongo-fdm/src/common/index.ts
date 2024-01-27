@@ -1,5 +1,3 @@
-import { InvalidError } from "./utils/error";
-
 declare const __brand: unique symbol;
 
 export interface Time {
@@ -20,7 +18,8 @@ export type UserName = string & { [__brand]: "UserName" };
 
 import { PasswordEncryptor, PasswordVerifier } from "./utils/password";
 export class Password {
-    constructor(private readonly plain: string, invalidErr: InvalidError) { checkPassword(plain, invalidErr); }
+    private constructor(private readonly plain: string) { }
+    static new(plain: string): Password | undefined { return checkPassword(plain) ? new Password(plain) : undefined; }
     encrypt(encryptor: PasswordEncryptor): Promise<string> { return encryptor.encrypt(this.plain); }
     verify(verifier: PasswordVerifier): Promise<boolean> { return verifier.verify(this.plain); }
 }
@@ -42,98 +41,49 @@ export type PostContent = {
 export type Page = number & { [__brand]: "Page" };
 export type PageSize = number & { [__brand]: "PageSize" };
 
-import * as invalidTime from "./api/invalid-time";
-export function newTime(utc: number, invalidErr: InvalidError): Time {
-    if (!Number.isSafeInteger(utc) || utc < 0) {
-        throw invalidErr(invalidTime.invalid);
+export function newTime(utc: number): Time | undefined {
+    if (!Number.isSafeInteger(utc) || utc <= 0) {
+        return undefined;
     }
     return { utc } as Time;
 }
 
-import * as invalidUserName from "./api/invalid-user-name";
-export function checkUserName(value: string, invalidErr: InvalidError): asserts value is UserName{
-    if (value.length == 0) {
-        throw invalidErr(invalidUserName.empty);
-    }
-    if (value.length < 3) {
-        throw invalidErr(invalidUserName.tooShort);
-    }
-    if (value.length > 20) {
-        throw invalidErr(invalidUserName.tooLong);
-    }
-    if (!/^[a-zA-Z0-9_-]*$/.test(value)) {
-        throw invalidErr(invalidUserName.containsIllegalCharacter);
-    }
+export function checkUserName(value: string): value is UserName {
+    return value.length >= 3 && value.length <= 20 && /^[a-zA-Z0-9_-]*$/.test(value);
 }
 
-import * as invalidTitle from "./api/invalid-title";
-export function checkTitle(value: string, invalidErr: InvalidError): asserts value is Title {
-    if (value.length == 0) {
-        throw invalidErr(invalidTitle.empty);
-    }
-    if (value.length < 3) {
-        throw invalidErr(invalidTitle.tooShort);
-    }
-    if (value.length > 171) {
-        throw invalidErr(invalidTitle.tooLong);
-    }
+export function checkTitle(value: string): value is Title {
+    return value.length > 0 && value.length <= 171;
 }
 
-import * as invalidTextPostContent from "./api/invalid-text-post-content";
-export function checkTextPostContent(value: string, invalidErr: InvalidError): asserts value is TextPostContent {
-    if (value.length == 0) {
-        throw invalidErr(invalidTextPostContent.empty);
-    }
-    if (value.length > 65535) {
-        throw invalidErr(invalidTextPostContent.tooLong);
-    }
+export function checkTextPostContent(value: string): value is TextPostContent {
+    return value.length <= 65535;
 }
 
-import * as invalidUrlPostContent from "./api/invalid-url-post-content";
-export function checkUrlPostContent(value: string, invalidErr: InvalidError): asserts value is UrlPostContent {
-    if (value.length == 0) {
-        throw invalidErr(invalidUrlPostContent.empty);
+export function checkUrlPostContent(value: string): value is UrlPostContent {
+    if (value.length == 0 || value.length > 65535) {
+        return false;
     }
-    if (value.length > 65535) {
-        throw invalidErr(invalidUrlPostContent.tooLong);
-    }
+
     try {
         new URL(value);
     } catch (e) {
         if (e instanceof TypeError) {
-            throw invalidErr(invalidUrlPostContent.invalid);
+            return false;
         }
         throw e;
     }
+    return true;
 }
 
-import * as invalidPassword from "./api/invalid-password";
-
-export function checkPassword(plain: string, invalidErr: InvalidError) {
-    if (plain.length == 0) {
-        throw invalidErr(invalidPassword.empty);
-    }
-    if (plain.length < 5) {
-        throw invalidErr(invalidPassword.tooShort);
-    }
-    if (plain.length > 72) { // Limitation of bcrypt
-        throw invalidErr(invalidPassword.tooLong);
-    }
+export function checkPassword(plain: string): boolean {
+    return plain.length >= 5 && plain.length <= 72; // Limitation of bcrypt
 }
 
-import * as invalidPage from "./api/invalid-page";
-export function checkPage(value: number, invalidErr: InvalidError): asserts value is Page {
-    if (!(value > 0) || !Number.isSafeInteger(value)) {
-        throw invalidErr(invalidPage.invalidPage);
-    }
+export function checkPage(value: number): value is Page {
+    return value > 0 && Number.isSafeInteger(value);
 }
 
-import * as invalidPageSize from "./api/invalid-page-size";
-export function checkPageSize(value: number, maximumPageSize: PageSize, invalidErr: InvalidError): asserts value is PageSize {
-    if (!(value > 0) || !Number.isSafeInteger(value)) {
-        throw invalidErr(invalidPageSize.invalidPageSize);
-    }
-    if (value > maximumPageSize) {
-        throw invalidErr(invalidPageSize.pageSizeTooLarge);
-    }
+export function checkPageSize(value: number): value is PageSize {
+    return value > 0 && value <= 50;
 }

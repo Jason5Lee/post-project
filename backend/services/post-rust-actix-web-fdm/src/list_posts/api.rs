@@ -11,6 +11,8 @@ use actix_web::{web::Query as QueryString, HttpResponse};
 use apply::Apply;
 use serde::{Deserialize, Serialize};
 
+use crate::common::api::invalidation::{invalid_page, invalid_page_size};
+
 pub const ENDPOINT: Endpoint = (HttpMethod::GET, "/post");
 pub async fn api(mut ctx: Context) -> Result<HttpResponse> {
     #[derive(Deserialize)]
@@ -33,9 +35,9 @@ pub async fn api(mut ctx: Context) -> Result<HttpResponse> {
 
     let input = Query {
         creator: req.creator.map(UserId),
-        page: Page::try_new(req.page).map_err(as_unprocessable_entity)?,
-        page_size: PageSize::try_new(req.pageSize, PageSize(50))
-            .map_err(as_unprocessable_entity)?,
+        page: Page::try_new(req.page).ok_or_else(|| (StatusCode::BAD_REQUEST, invalid_page()))?,
+        page_size: PageSize::try_new(req.pageSize)
+            .ok_or_else(|| (StatusCode::BAD_REQUEST, invalid_page_size()))?,
     };
     let output = super::Steps::from_ctx(&ctx).workflow(input).await?;
 
@@ -82,8 +84,7 @@ pub fn creator_not_found() -> ErrorResponse {
         ErrorBody {
             error: ErrBody {
                 error: "CREATOR_NOT_FOUND".into(),
-                reason: "creator not found".to_string(),
-                message: "the creator does not exist".to_string(),
+                reason: "Creator not found".into(),
             },
         },
     )
@@ -96,8 +97,7 @@ pub fn search_not_implemented() -> ErrorResponse {
         ErrorBody {
             error: ErrBody {
                 error: "SEARCH_NOT_IMPLEMENTED".into(),
-                reason: "search not implemented".to_string(),
-                message: "the search function is not implemented in this service".to_string(),
+                reason: "Search not implemented".into(),
             },
         },
     )

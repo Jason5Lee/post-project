@@ -1,8 +1,7 @@
 import { Deps } from "../common/utils";
 import { Output, Query, Workflow } from ".";
 import * as db from "../common/utils/db";
-import { Long, WithId, ObjectId } from "mongodb";
-import { throwUnexpectedValue } from "../common/utils/error";
+import { WithId, ObjectId } from "mongodb";
 import { PostId, Time, Title, UserId, UserName } from "../common";
 import { errors } from "./api";
 import * as runtypes from "runtypes";
@@ -29,11 +28,11 @@ export class WorkflowImpl implements Workflow {
             }
             filter = { creator: creatorOid };
         }
-        
+
         const total = await this.deps.mongoDb
             .collection(db.posts)
             .countDocuments(filter);
-        
+
         const pagePosts: WithId<unknown>[] = await this.deps.mongoDb
             .collection(db.posts)
             .find(filter)

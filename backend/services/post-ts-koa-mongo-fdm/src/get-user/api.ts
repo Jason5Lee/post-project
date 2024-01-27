@@ -27,7 +27,6 @@ export const errors: Workflow["errors"] = {
             error: {
                 error: "USER_NOT_FOUND",
                 reason: "The user does not exist",
-                message: "The user does not exist",
             }
         }
     ),
