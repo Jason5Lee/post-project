@@ -9,8 +9,7 @@ object ApiNotFound {
     val body = FailureBody(
         error = Err(
             error = "API_NOT_FOUND",
-            reason = "The API does not exist",
-            message = clientBugMessage,
+            reason = "API not found. Please check API path and method.",
         )
     )
 }

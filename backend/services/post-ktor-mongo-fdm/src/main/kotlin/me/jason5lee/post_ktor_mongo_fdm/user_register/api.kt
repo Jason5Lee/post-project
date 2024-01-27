@@ -2,6 +2,7 @@ package me.jason5lee.post_ktor_mongo_fdm.user_register
 
 import io.ktor.http.*
 import kotlinx.serialization.Serializable
+import me.jason5lee.post_ktor_mongo_fdm.common.api.Invalid
 import me.jason5lee.post_ktor_mongo_fdm.common.newPassword
 import me.jason5lee.post_ktor_mongo_fdm.common.newUserName
 import me.jason5lee.post_ktor_mongo_fdm.common.utils.Err
@@ -19,8 +20,8 @@ val api = HttpApi(HttpMethod.Post, "/register") { ctx, workflow: Workflow ->
     val req = ctx.getRequestBody<RequestBody>()
     val output = workflow.run(
         Command(
-            userName = newUserName(req.userName).onInvalidRespond(HttpStatusCode.UnprocessableEntity),
-            password = newPassword(req.password).onInvalidRespond(HttpStatusCode.UnprocessableEntity),
+            userName = newUserName(req.userName) ?: throw HttpException(HttpStatusCode.BadRequest, Invalid.userName),
+            password = newPassword(req.password) ?: throw HttpException(HttpStatusCode.BadRequest, Invalid.password),
         )
     )
 
@@ -46,7 +47,6 @@ interface ErrorsImpl : Errors {
             error = Err(
                 error = "USER_NAME_ALREADY_EXISTS",
                 reason = "The user name already exists",
-                message = "The user name already exists",
             )
         )
     )

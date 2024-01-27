@@ -1,7 +1,6 @@
 package me.jason5lee.post_ktor_mongo_fdm.delete_post
 
 import kotlinx.coroutines.runBlocking
-import me.jason5lee.post_ktor_mongo_fdm.common.AdminId
 import me.jason5lee.post_ktor_mongo_fdm.common.Identity
 import me.jason5lee.post_ktor_mongo_fdm.common.PostId
 import me.jason5lee.post_ktor_mongo_fdm.common.UserId
@@ -64,6 +63,6 @@ class DeletePostTests {
                 throw Exception("Should not be called")
             }
         }
-        runBlocking { mockWorkflow.run(Identity.Admin(AdminId("1")), PostId("0")) }
+        runBlocking { mockWorkflow.run(Identity.Admin, PostId("0")) }
     }
 }

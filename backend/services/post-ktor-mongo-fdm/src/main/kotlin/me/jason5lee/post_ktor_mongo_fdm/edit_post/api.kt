@@ -3,8 +3,8 @@ package me.jason5lee.post_ktor_mongo_fdm.edit_post
 import io.ktor.http.*
 import kotlinx.serialization.Serializable
 import me.jason5lee.post_ktor_mongo_fdm.common.*
+import me.jason5lee.post_ktor_mongo_fdm.common.api.Invalid
 import me.jason5lee.post_ktor_mongo_fdm.common.api.badRequest
-import me.jason5lee.post_ktor_mongo_fdm.common.api.clientBugMessage
 import me.jason5lee.post_ktor_mongo_fdm.common.utils.Err
 import me.jason5lee.post_ktor_mongo_fdm.common.utils.FailureBody
 import me.jason5lee.post_ktor_mongo_fdm.common.utils.HttpApi
@@ -25,9 +25,13 @@ val api = HttpApi(HttpMethod.Patch, "/post/{id}") { ctx, workflow: Workflow ->
     val command = Command(
         id = PostId(id),
         newContent = if (req.text != null && req.url == null) {
-            PostContent.Text(newTextPostContent(req.text).onInvalidRespond(HttpStatusCode.UnprocessableEntity))
+            PostContent.Text(
+                newTextPostContent(req.text) ?: throw HttpException(HttpStatusCode.BadRequest, Invalid.textPostContent)
+            )
         } else if (req.text == null && req.url != null) {
-            PostContent.Url(newUrlPostContent(req.url).onInvalidRespond(HttpStatusCode.UnprocessableEntity))
+            PostContent.Url(
+                newUrlPostContent(req.url) ?: throw HttpException(HttpStatusCode.BadRequest, Invalid.urlPostContent)
+            )
         } else {
             throw textUrlExactOne()
         }
@@ -46,7 +50,6 @@ fun Errors.asException(): Exception = when (this) {
             error = Err(
                 error = "POST_NOT_FOUND",
                 reason = "The post does not exist",
-                message = "The post does not exist",
             )
         )
     )
@@ -57,7 +60,6 @@ fun Errors.asException(): Exception = when (this) {
             error = Err(
                 error = "NOT_CREATOR",
                 reason = "You are not the creator of the post",
-                message = "You are not the creator of the post",
             )
         )
     )
@@ -68,7 +70,6 @@ fun Errors.asException(): Exception = when (this) {
             error = Err(
                 error = "TYPE_DIFF",
                 reason = "The type of the post cannot be changed",
-                message = "The type of the post cannot be changed",
             )
         )
     )
@@ -80,7 +81,6 @@ fun textUrlExactOne(): Exception = HttpException(
         error = Err(
             error = "TEXT_URL_EXACT_ONE",
             reason = "Exactly one of `text` and `url` must be provided",
-            message = clientBugMessage,
         )
     )
 )

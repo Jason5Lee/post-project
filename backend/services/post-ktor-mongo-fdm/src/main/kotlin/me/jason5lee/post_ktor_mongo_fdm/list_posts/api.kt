@@ -3,7 +3,7 @@ package me.jason5lee.post_ktor_mongo_fdm.list_posts
 import io.ktor.http.*
 import kotlinx.serialization.Serializable
 import me.jason5lee.post_ktor_mongo_fdm.common.*
-import me.jason5lee.post_ktor_mongo_fdm.common.api.InvalidTime
+import me.jason5lee.post_ktor_mongo_fdm.common.api.Invalid
 import me.jason5lee.post_ktor_mongo_fdm.common.api.badRequest
 import me.jason5lee.post_ktor_mongo_fdm.common.utils.*
 
@@ -15,10 +15,10 @@ val api = HttpApi(HttpMethod.Get, "/post") { ctx, workflow: Workflow ->
     val pageSizeParam = ctx.pathParameters()["pageSize"] ?: throw badRequest("Missing path parameter `pageSize`")
 
     val page = newPage(pageParam.toIntOrNull() ?: throw badRequest("Invalid path parameter `page`"))
-        .onInvalidRespond(HttpStatusCode.UnprocessableEntity)
+        ?: throw HttpException(HttpStatusCode.BadRequest, Invalid.page)
     val pageSize =
-        newPageSize(pageSizeParam.toIntOrNull() ?: throw badRequest("Invalid path parameter `pageSize`"), PageSize(50))
-            .onInvalidRespond(HttpStatusCode.UnprocessableEntity)
+        newPageSize(pageSizeParam.toIntOrNull() ?: throw badRequest("Invalid path parameter `pageSize`"))
+            ?: throw HttpException(HttpStatusCode.BadRequest, Invalid.pageSize)
     val creator = ctx.pathParameters()["creator"]?.let { UserId(it) }
 
     val output = workflow.run(Query(page, pageSize, creator))
@@ -55,13 +55,6 @@ val api = HttpApi(HttpMethod.Get, "/post") { ctx, workflow: Workflow ->
     )
 }
 
-private fun validateTimeParam(param: String, errorPrefix: String): Time =
-    (param
-        .toLongOrNull()
-        ?.let { newTime(it) }
-        ?: ValidationResult.Invalid(InvalidTime.invalid))
-        .onInvalidRespond(HttpStatusCode.UnprocessableEntity, errorPrefix)
-
 interface ErrorsImpl : Errors {
     override fun creatorNotFound(): Exception = HttpException(
         HttpStatusCode.NotFound,
@@ -69,7 +62,6 @@ interface ErrorsImpl : Errors {
             error = Err(
                 error = "CREATOR_NOT_FOUND",
                 reason = "The creator does not exist",
-                message = "The creator does not exist",
             )
         )
     )
@@ -80,8 +72,7 @@ fun searchNotImplemented(): Exception = HttpException(
     FailureBody(
         error = Err(
             error = "SEARCH_NOT_IMPLEMENTED",
-            reason = "search is not implemented",
-            message = "the search function is not implemented in this service",
+            reason = "Search is not implemented",
         )
     )
 )

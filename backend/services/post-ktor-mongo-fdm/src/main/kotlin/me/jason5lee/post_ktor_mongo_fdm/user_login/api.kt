@@ -15,8 +15,8 @@ val api = HttpApi(HttpMethod.Post, "/login") { ctx, workflow: Workflow ->
 
     val req = ctx.getRequestBody<RequestBody>()
     val query = Query(
-        userName = newUserName(req.userName).onInvalidThrow { workflow.userNameOrPasswordIncorrect() },
-        password = newPassword(req.password).onInvalidThrow { workflow.userNameOrPasswordIncorrect() },
+        userName = newUserName(req.userName) ?: throw workflow.userNameOrPasswordIncorrect(),
+        password = newPassword(req.password) ?: throw workflow.userNameOrPasswordIncorrect(),
     )
     val userId = workflow.run(query)
 
@@ -47,7 +47,6 @@ interface ErrorsImpl : Errors {
             error = Err(
                 error = "USER_NAME_OR_PASSWORD_INCORRECT",
                 reason = "The user name or password is incorrect",
-                message = "The user name or password is incorrect",
             )
         )
     )

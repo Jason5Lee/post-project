@@ -44,16 +44,6 @@ Which is, using `Result<T, F>` to represents the workflow result, where `T` is t
 domain error type.
 For the non-domain errors, they are thrown as exceptions.
 
-### Validation errors
-
-For most of the domain models, they are defined as value classes with private constructors. They have a `validate`
-method
-that returns `ValidationResult`. The `ValidationResult` provides the methods to handle the invalid error in several
-scenarios.
-
-The `Title` is the exception. Its `validate` method accepts a `invalidException` parameter, which determines how the
-invalid error is handled. The method simply returns a valid instance.
-
 ## Tests
 
 The example of unit-testing of the workflows and the domain models with both error modeling methods are provided

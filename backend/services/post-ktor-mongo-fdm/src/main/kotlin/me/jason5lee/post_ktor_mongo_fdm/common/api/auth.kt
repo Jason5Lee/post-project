@@ -30,8 +30,6 @@ fun invalidAuth(): HttpException = HttpException(
         Err(
             error = "INVALID_AUTH",
             reason = "The authorization is invalid",
-            // When this happens, the client should remove the token instead of showing this message.
-            message = clientBugMessage,
         )
     )
 )

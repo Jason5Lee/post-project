@@ -36,7 +36,6 @@ interface ErrorsImpl : Errors {
             error = Err(
                 error = "USER_NOT_FOUND",
                 reason = "The user does not exist",
-                message = "The user does not exist",
             )
         )
     )

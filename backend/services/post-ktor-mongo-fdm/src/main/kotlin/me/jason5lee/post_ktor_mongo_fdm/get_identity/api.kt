@@ -15,9 +15,6 @@ val api = HttpApi(HttpMethod.Get, "/identity") { ctx, workflow: Workflow ->
             class UserResponse(val id: String, val name: String)
 
             @Serializable
-            class AdminResponse(val id: String)
-
-            @Serializable
             class ResponseBody(val user: UserResponse? = null, val admin: Boolean? = null)
 
             when (identityInfo) {

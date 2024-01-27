@@ -64,7 +64,6 @@ fun Errors.asException(): Exception =
                 error = Err(
                     error = "POST_NOT_FOUND",
                     reason = "The post does not exist",
-                    message = "The post does not exist",
                 )
             )
         )

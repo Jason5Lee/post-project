@@ -23,7 +23,6 @@ interface ErrorsImpl : Errors {
             error = Err(
                 error = "NOT_CREATOR_ADMIN",
                 reason = "Only the creator or an admin can delete a post.",
-                message = "Only the creator or an admin can delete a post",
             )
         )
     )
@@ -34,7 +33,6 @@ interface ErrorsImpl : Errors {
             error = Err(
                 error = "POST_NOT_FOUND",
                 reason = "The post does not exist",
-                message = "The post does not exist",
             )
         )
     )

@@ -17,5 +17,4 @@ data class FailureBody(
 data class Err(
     val error: String,
     val reason: String,
-    val message: String,
 )

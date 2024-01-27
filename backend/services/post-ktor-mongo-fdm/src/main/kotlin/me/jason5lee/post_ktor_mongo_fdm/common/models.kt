@@ -1,12 +1,7 @@
 package me.jason5lee.post_ktor_mongo_fdm.common
 
-import me.jason5lee.post_ktor_mongo_fdm.common.api.*
-import me.jason5lee.post_ktor_mongo_fdm.common.utils.InvalidException
 import me.jason5lee.post_ktor_mongo_fdm.common.utils.PasswordEncryptor
 import me.jason5lee.post_ktor_mongo_fdm.common.utils.PasswordVerifier
-import me.jason5lee.post_ktor_mongo_fdm.common.utils.ValidationResult
-import me.jason5lee.post_ktor_mongo_fdm.common.utils.ValidationResult.Invalid
-import me.jason5lee.post_ktor_mongo_fdm.common.utils.ValidationResult.Valid
 import java.net.MalformedURLException
 
 // Public constructor for newtypes without validation for ease of construction from database data.
@@ -48,64 +43,65 @@ sealed class PostContent {
 data class Page(val value: Int)
 data class PageSize(val value: Int)
 
-fun newTime(utc: Long): ValidationResult<Time> = when {
-    utc >= 0 -> Valid(Time(utc))
-    else -> Invalid(InvalidTime.invalid)
+fun newTime(utc: Long): Time? = when {
+    utc >= 0 -> Time(utc)
+    else -> null
 }
 
 private fun isLegalUserNameCharacter(ch: Char): Boolean {
     return ch.isLetterOrDigit() || ch == '_' || ch == '-'
 }
 
-fun newUserName(value: String): ValidationResult<UserName> = when {
-    value.isEmpty() -> Invalid(InvalidUserName.empty)
-    value.length < 3 -> Invalid(InvalidUserName.tooShort)
-    value.length > 20 -> Invalid(InvalidUserName.tooLong)
-    value.any { !isLegalUserNameCharacter(it) } -> Invalid(InvalidUserName.containsIllegalCharacter)
-    else -> Valid(UserName(value))
-}
-
-fun newPassword(plain: String): ValidationResult<Password> =
-    when {
-        plain.isEmpty() -> Invalid(InvalidPassword.empty)
-        plain.length < 5 -> Invalid(InvalidPassword.tooShort)
-        plain.length > 72 -> Invalid(InvalidPassword.tooLong)
-        else -> Valid(Password(plain))
+fun newUserName(value: String): UserName? =
+    if (value.length in 3..20 && value.all { isLegalUserNameCharacter(it) }) {
+        UserName(value)
+    } else {
+        null
     }
 
-fun newTitle(value: String, invalidException: InvalidException): Title = when {
-    value.isEmpty() -> throw invalidException(InvalidTitle.empty)
-    value.length < 3 -> throw invalidException(InvalidTitle.tooShort)
-    value.length > 20 -> throw invalidException(InvalidTitle.tooLong)
-    else -> Title(value)
-}
-
-fun newTextPostContent(value: String): ValidationResult<TextPostContent> =
-    when {
-        value.isEmpty() -> Invalid(InvalidTextPostContent.empty)
-        value.length > 65535 -> Invalid(InvalidTextPostContent.tooLong)
-        else -> Valid(TextPostContent(value))
+fun newPassword(plain: String): Password? =
+    if (plain.length in 5..72) { // Limitation of bcrypt
+        Password(plain)
+    } else {
+        null
     }
 
-fun newUrlPostContent(value: String): ValidationResult<UrlPostContent> =
-    when {
-        value.isEmpty() -> Invalid(InvalidUrlPostContent.empty)
-        value.length > 65535 -> Invalid(InvalidUrlPostContent.tooLong)
-        else -> try {
+fun newTitle(value: String): Title? =
+    if (value.length in 3..20) {
+        Title(value)
+    } else {
+        null
+    }
+
+fun newTextPostContent(value: String): TextPostContent? =
+    if (value.length <= 65535) {
+        TextPostContent(value)
+    } else {
+        null
+    }
+
+fun newUrlPostContent(value: String): UrlPostContent? =
+    if (value.length <= 65535) {
+        try {
             java.net.URL(value)
-            Valid(UrlPostContent(value))
+            UrlPostContent(value)
         } catch (e: MalformedURLException) {
-            Invalid(InvalidUrlPostContent.invalid(e.message))
+            null
         }
+    } else {
+        null
     }
 
-fun newPage(value: Int): ValidationResult<Page> = when {
-    value <= 0 -> Invalid(InvalidPage.invalidPage)
-    else -> Valid(Page(value))
-}
+fun newPage(value: Int): Page? =
+    if (value > 0) {
+        Page(value)
+    } else {
+        null
+    }
 
-fun newPageSize(value: Int, maximumPageSize: PageSize): ValidationResult<PageSize> = when {
-    value <= 0 -> Invalid(InvalidPageSize.invalidPageSize)
-    value > maximumPageSize.value -> Invalid(InvalidPageSize.pageSizeTooLarge)
-    else -> Valid(PageSize(value))
-}
+fun newPageSize(value: Int): PageSize? =
+    if (value in 1..50) {
+        PageSize(value)
+    } else {
+        null
+    }
