@@ -1,1 +1,0 @@
-rootProject.name = "post-ktor-mongo-fdm"
