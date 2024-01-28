@@ -33,10 +33,10 @@ In the real world project, you should choose one of them.
 ### Workflow errors
 
 For most of the workflows, they use the simplified error modeling.
-In the domain model, the errors are model as an interface `Errors`, each method of which represents a domain error.
-The `Workflow` class implements the `Errors` interface, so that the workflow can trigger the error.
+In the domain model, the errors are model as an interface `Failures`, each method of which represents a domain error.
+The `Workflow` class implements the `Failures` interface, so that the workflow can trigger the error.
 
-The implementation of the errors is in the `ErrorsImpl` interface in `api.kt` file.
+The implementation of the errors is in the `FailuresImpl` interface in `api.kt` file.
 The method implementation contains the information about the response of the error.
 
 The `edit_post` and `get_post` workflows are the exceptions. They use the ideal error modeling.
