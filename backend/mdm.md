@@ -2,9 +2,9 @@
 
 This document describes my development methodology, which is inspired by Scott Wlaschin's [Domain Modeling](https://pragprog.com/titles/swdddf/domain-modeling-made-functional/) concept, with some personal ideas. This methodology has been applied in the following projects:
 
-- [post-rust-actix-web-fdm](services/post-rust-actix-web-fdm)
-- [post-ts-koa-mongo-fdm](services/post-ts-koa-mongo-fdm)
-- [post-ktor-mongo-fdm](./services/post-ktor-mongo-fdm)
+- [post-rust-actix-web](services/post-rust-actix-web)
+- [post-ts-koa-mongo](services/post-ts-koa-mongo)
+- [post-ktor-mongo](services/post-ktor-mongo)
 
 ## Code Structure
 
@@ -47,13 +47,8 @@ The ideal error representation is `Result<T, E>`, where `T` is a success value t
 
 To simplify error handling while still properly modeling errors, some service implementations use a simplified error modeling method. In these cases, a general exception or `Result<T, E>` with a general error type is used, which contains the error response. In the domain modeling, the domain errors are modeled as function definitions that return the general error. These functions' implementations are located in the `api` file.
 
-Validation errors are slightly different, as they require specific handling. They can result in a range of responses, such as a 404 Not Found or 403 Forbidden (for login), among others. It is essential to handle validation errors explicitly.
-
-There are two ways to achieve this. First, the validation function can return a `Result<T, Invalid>` or a specific `ValidationResult<T>`. The caller must handle the error before accessing the validated value. Alternatively, the validation function can accept a parameter that determines the error when the value is invalid. The [post-ts-koa-mongo-fdm](./services/post-ts-koa-mongo-fdm) project uses the second approach, while the others use the first.
-
 The simplified error modeling approach is used in the following projects:
 
-- [post-rust-actix-web-fdm](./services/post-rust-actix-web-fdm)
-- [post-ts-koa-mongo-fdm](./services/post-ts-koa-mongo-fdm)
-- [post-ktor-mongo-fdm](./services/post-ktor-mongo-fdm) (this project employs both error modeling approaches)
-- 
+- [post-rust-actix-web](./services/post-rust-actix-web)
+- [post-ts-koa-mongo](./services/post-ts-koa-mongo)
+- [post-ktor-mongo](./services/post-ktor-mongo) (this project employs both error modeling approaches)
